@@ -1,6 +1,7 @@
+import process from "node:process";
 import { getServerSession } from "@calcom/features/auth/lib/getServerSession";
-import { defaultCookies } from "@calcom/lib/default-cookies";
 import { WEBAPP_URL } from "@calcom/lib/constants";
+import { defaultCookies } from "@calcom/lib/default-cookies";
 import prisma from "@calcom/prisma";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { encode } from "next-auth/jwt";
@@ -10,12 +11,21 @@ const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60; // 30 days
 function buildCookieString(
   name: string,
   value: string,
-  options: { httpOnly?: boolean; sameSite?: string; secure?: boolean; domain?: string; path?: string }
+  options: {
+    httpOnly?: boolean;
+    sameSite?: boolean | "lax" | "strict" | "none";
+    secure?: boolean;
+    domain?: string;
+    path?: string;
+  }
 ): string {
   let cookie = `${name}=${value}`;
   if (options.path) cookie += `; Path=${options.path}`;
   if (options.httpOnly) cookie += "; HttpOnly";
-  if (options.sameSite) cookie += `; SameSite=${options.sameSite}`;
+  if (options.sameSite) {
+    // CookieSerializeOptions allows sameSite: true, which maps to "Strict".
+    cookie += `; SameSite=${options.sameSite === true ? "Strict" : options.sameSite}`;
+  }
   if (options.secure) cookie += "; Secure";
   if (options.domain) cookie += `; Domain=${options.domain}`;
   cookie += `; Max-Age=${SESSION_MAX_AGE_SECONDS}`;
