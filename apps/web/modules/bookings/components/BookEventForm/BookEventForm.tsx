@@ -20,6 +20,7 @@ import { useMemo, useState } from "react";
 import type { FieldError } from "react-hook-form";
 import type { IUseBookingErrors, IUseBookingLoadingStates } from "../../hooks/useBookings";
 import { BookingFields } from "./BookingFields";
+import { BookingSummary } from "./BookingSummary";
 import { FormSkeleton } from "./Skeleton";
 
 type BookEventFormProps = {
@@ -41,6 +42,11 @@ type BookEventFormProps = {
     backButton?: string;
   };
   timeslot: string | null;
+  /** OnceHub-style confirmation step: flat layout, time/timezone summary, single "Done"
+   * button, no legal text. Web month view only. */
+  oncehubStyle?: boolean;
+  /** Reopens the OnceHub timezone modal from the booking summary's "(Change)" link. */
+  onOpenTimezoneModal?: () => void;
 };
 
 export const BookEventForm = ({
@@ -60,11 +66,23 @@ export const BookEventForm = ({
   confirmButtonDisabled,
   classNames,
   timeslot,
+  oncehubStyle = false,
+  onOpenTimezoneModal,
 }: Omit<BookEventFormProps, "event"> & {
   eventQuery: {
     isError: boolean;
     isPending: boolean;
-    data?: Pick<BookerEvent, "price" | "currency" | "metadata" | "bookingFields" | "locations"> | null;
+    data?: Pick<
+      BookerEvent,
+      | "price"
+      | "currency"
+      | "metadata"
+      | "bookingFields"
+      | "locations"
+      | "length"
+      | "requiresConfirmation"
+      | "lockTimeZoneToggleOnBookingPage"
+    > | null;
   };
 }) => {
   const eventType = eventQuery.data;
@@ -72,6 +90,7 @@ export const BookEventForm = ({
   const bookingData = useBookerStoreContext((state) => state.bookingData);
   const rescheduleUid = useBookerStoreContext((state) => state.rescheduleUid);
   const username = useBookerStoreContext((state) => state.username);
+  const selectedDuration = useBookerStoreContext((state) => state.selectedDuration);
   const isPlatformBookerEmbed = useIsPlatformBookerEmbed();
   const { timeFormat, timezone } = useBookerTime();
 
@@ -123,6 +142,15 @@ export const BookEventForm = ({
         form={bookingForm}
         handleSubmit={onSubmit}
         noValidate>
+        {oncehubStyle && onCancel && (
+          <BookingSummary
+            timeslot={timeslot}
+            duration={selectedDuration || eventType.length}
+            onChangeSelection={onCancel}
+            onOpenTimezoneModal={eventType.lockTimeZoneToggleOnBookingPage ? undefined : onOpenTimezoneModal}
+            requiresConfirmation={eventType.requiresConfirmation}
+          />
+        )}
         <BookingFields
           isDynamicGroupBooking={!!(username && username.indexOf("+") > -1)}
           fields={eventType.bookingFields}
@@ -131,6 +159,7 @@ export const BookEventForm = ({
           bookingData={bookingData}
           isPaidEvent={isPaidEvent}
           paymentCurrency={paymentCurrency}
+          oncehubStyle={oncehubStyle}
         />
         {errors.hasFormErrors || errors.hasDataErrors ? (
           <div data-testid="booking-fail">
@@ -174,7 +203,7 @@ export const BookEventForm = ({
           </div>
         ) : null}
 
-        {!isPlatform && (
+        {!isPlatform && !oncehubStyle && (
           <div className="my-3 w-full text-xs text-subtle">
             <ServerTrans
               t={t}
@@ -222,7 +251,7 @@ export const BookEventForm = ({
           </div>
         )}
         <div className="flex justify-end mt-auto space-x-2 modalsticky rtl:space-x-reverse">
-          {!!onCancel && (
+          {!oncehubStyle && !!onCancel && (
             <Button
               color="minimal"
               type="button"
@@ -244,15 +273,20 @@ export const BookEventForm = ({
               loadingStates.creatingRecurringBooking ||
               isVerificationCodeSending
             }
-            className={classNames?.confirmButton}
+            className={`${
+              oncehubStyle
+                ? "rounded-[4px]! border-0! bg-[#F5A623]! px-8! py-2.5! text-white! hover:bg-[#E09610]!"
+                : ""
+            } ${classNames?.confirmButton || ""}`}
             data-testid={rescheduleUid && bookingData ? "confirm-reschedule-button" : "confirm-book-button"}>
-            {rescheduleUid && bookingData
-              ? t("reschedule")
-              : renderConfirmNotVerifyEmailButtonCond
-                ? isPaidEvent
-                  ? t("pay_and_book")
-                  : t("confirm")
-                : t("verify_email_button")}
+            {(() => {
+              if (rescheduleUid && bookingData) return t("reschedule");
+              if (!renderConfirmNotVerifyEmailButtonCond) return t("verify_email_button");
+              if (isPaidEvent) return t("pay_and_book");
+              // "Done" only replaces the label for the plain confirm case - paid/verify/reschedule
+              // flows keep their accurate label above since the click doesn't actually finish the booking.
+              return oncehubStyle ? t("done") : t("confirm");
+            })()}
           </Button>
         </div>
       </Form>

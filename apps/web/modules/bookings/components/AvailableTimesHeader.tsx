@@ -1,14 +1,12 @@
-import { shallow } from "zustand/shallow";
-
 import type { Dayjs } from "@calcom/dayjs";
 import dayjs from "@calcom/dayjs";
 import { useBookerStoreContext } from "@calcom/features/bookings/Booker/BookerStoreProvider";
+import { TimeFormatToggle } from "@calcom/features/bookings/components/TimeFormatToggle";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { nameOfDay } from "@calcom/lib/weekday";
 import { BookerLayouts } from "@calcom/prisma/zod-utils";
 import classNames from "@calcom/ui/classNames";
-
-import { TimeFormatToggle } from "@calcom/features/bookings/components/TimeFormatToggle";
+import { shallow } from "zustand/shallow";
 
 type AvailableTimesHeaderProps = {
   date: Dayjs;
@@ -19,6 +17,8 @@ type AvailableTimesHeaderProps = {
     availableTimeSlotsTitle?: string;
     availableTimeSlotsTimeFormatToggle?: string;
   };
+  /** OnceHub-style "Available starting times for <bold date>" header. Web month view only. */
+  oncehubStyle?: boolean;
 };
 
 export const AvailableTimesHeader = ({
@@ -26,12 +26,36 @@ export const AvailableTimesHeader = ({
   showTimeFormatToggle = true,
   availableMonth,
   customClassNames,
+  oncehubStyle = false,
 }: AvailableTimesHeaderProps) => {
   const { t, i18n } = useLocale();
   const [layout] = useBookerStoreContext((state) => [state.layout], shallow);
   const isColumnView = layout === BookerLayouts.COLUMN_VIEW;
   const isMonthView = layout === BookerLayouts.MONTH_VIEW;
   const isToday = dayjs().isSame(date, "day");
+
+  if (oncehubStyle) {
+    const dateLabel = date.format("ddd, MMM D, YYYY");
+    // "before" is the lead-in text ("Available starting times for"); "after" is whatever
+    // (if anything) the translation puts after the date placeholder. Split on the date
+    // itself so the date can be put on its own bold line regardless of locale word order.
+    const fullText = t("available_starting_times_for", { date: dateLabel });
+    const [before, after] = fullText.split(dateLabel);
+    return (
+      <header
+        className={classNames(
+          "mb-3 flex w-full flex-row items-center",
+          customClassNames?.availableTimeSlotsHeaderContainer
+        )}>
+        <p className="text-sm leading-[1.4] text-[#1A1A1A]">
+          {before}
+          <br />
+          <strong>{dateLabel}</strong>
+          {after}
+        </p>
+      </header>
+    );
+  }
 
   return (
     <header

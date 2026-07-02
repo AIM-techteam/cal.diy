@@ -1,24 +1,23 @@
-import { ErrorMessage } from "@hookform/error-message";
-import type { TFunction } from "i18next";
-import { Controller, useFormContext } from "react-hook-form";
-import type { z } from "zod";
-
+import { fieldsThatSupportLabelAsSafeHtml } from "@calcom/features/form-builder/fieldsThatSupportLabelAsSafeHtml";
+import { fieldTypesConfigMap } from "@calcom/features/form-builder/fieldTypes";
+import type { fieldsSchema } from "@calcom/features/form-builder/schema";
+import {
+  getFieldNameFromErrorMessage,
+  useShouldBeDisabledDueToPrefill,
+} from "@calcom/features/form-builder/useShouldBeDisabledDueToPrefill";
+import { getTranslatedConfig as getTranslatedVariantsConfig } from "@calcom/features/form-builder/utils/variantsConfig";
+import { SystemField } from "@calcom/lib/bookings/SystemField";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { markdownToSafeHTML } from "@calcom/lib/markdownToSafeHTML";
 import classNames from "@calcom/ui/classNames";
 import { InfoBadge } from "@calcom/ui/components/badge";
 import { Label } from "@calcom/ui/components/form";
 import { InfoIcon } from "@coss/ui/icons";
-
+import { ErrorMessage } from "@hookform/error-message";
+import type { TFunction } from "i18next";
+import { Controller, useFormContext } from "react-hook-form";
+import type { z } from "zod";
 import { Components, isValidValueProp } from "./Components";
-import { fieldTypesConfigMap } from "@calcom/features/form-builder/fieldTypes";
-import { fieldsThatSupportLabelAsSafeHtml } from "@calcom/features/form-builder/fieldsThatSupportLabelAsSafeHtml";
-import type { fieldsSchema } from "@calcom/features/form-builder/schema";
-import {
-  useShouldBeDisabledDueToPrefill,
-  getFieldNameFromErrorMessage,
-} from "@calcom/features/form-builder/useShouldBeDisabledDueToPrefill";
-import { getTranslatedConfig as getTranslatedVariantsConfig } from "@calcom/features/form-builder/utils/variantsConfig";
 
 // helper to render markdown label safely
 const renderLabel = (field: Partial<RhfFormField>) => {
@@ -65,11 +64,14 @@ export const FormBuilderField = ({
   readOnly,
   className,
   onValueChange,
+  oncehubStyle = false,
 }: {
   field: RhfFormFields[number];
   readOnly: boolean;
   className: string;
   onValueChange?: (args: { name: string; value: unknown; prevValue: unknown }) => void;
+  /** OnceHub-style two-column (label left, input right) field layout. Web month view only. */
+  oncehubStyle?: boolean;
 }) => {
   const { t } = useLocale();
   const { control, formState } = useFormContext();
@@ -101,6 +103,7 @@ export const FormBuilderField = ({
                 setValue={setAndNotify}
                 noLabel={noLabel}
                 translatedDefaultLabel={translatedDefaultLabel}
+                oncehubStyle={oncehubStyle}
               />
               <ErrorMessage
                 name="responses"
@@ -151,39 +154,64 @@ const WithLabel = ({
   readOnly,
   htmlFor,
   noLabel = false,
+  oncehubStyle = false,
 }: {
   field: Partial<RhfFormField>;
   readOnly: boolean;
   children: React.ReactNode;
   noLabel?: boolean;
   htmlFor: string;
+  /** OnceHub-style two-column (label left ~200px, input right) layout instead of stacked. */
+  oncehubStyle?: boolean;
 }) => {
   const { t } = useLocale();
 
+  // multiemail doesn't show a label initially - it's shown on clicking the CTA.
+  // boolean type doesn't have a label overall, the radio has its own label.
+  // Component itself managing its label should remove these checks.
+  const showLabel = !noLabel && field.type !== "boolean" && field.type !== "multiemail" && field.label;
+
+  const label = showLabel && (
+    <Label
+      className={oncehubStyle ? "mb-0! flex items-center pt-2 leading-relaxed!" : "mb-0! flex items-center"}
+      htmlFor={htmlFor}>
+      {renderLabel(field)}
+      <span className="text-emphasis -mb-1 ml-1 text-sm font-medium leading-none">
+        {!readOnly && field.required ? "*" : ""}
+      </span>
+      {field.type === "phone" && !oncehubStyle && <InfoBadge content={t("number_in_international_format")} />}
+    </Label>
+  );
+
+  const smsConsent = field.name === "smsReminderNumber" && (
+    <div className="text-sm text-gray-500">{t("sms_workflow_consent")}</div>
+  );
+
+  if (oncehubStyle) {
+    return (
+      <div className="grid grid-cols-[2fr_3fr] items-start gap-x-4 gap-y-1">
+        {label}
+        <div>
+          {children}
+          {field.name === SystemField.Enum.email && (
+            <p className="mt-1 text-xs text-[#6B7280]">{t("email_confirmation_notice")}</p>
+          )}
+        </div>
+        {smsConsent && (
+          <>
+            <span />
+            {smsConsent}
+          </>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div>
-      {/* multiemail doesnt show label initially. It is shown on clicking CTA */}
-      {/* boolean type doesn't have a label overall, the radio has it's own label */}
-      {/* Component itself managing it's label should remove these checks */}
-      {noLabel
-        ? null
-        : field.type !== "boolean" &&
-          field.type !== "multiemail" &&
-          field.label && (
-            <div className="mb-2 flex items-center">
-              <Label className="mb-0! flex items-center" htmlFor={htmlFor}>
-                {renderLabel(field)}
-                <span className="text-emphasis -mb-1 ml-1 text-sm font-medium leading-none">
-                  {!readOnly && field.required ? "*" : ""}
-                </span>
-                {field.type === "phone" && <InfoBadge content={t("number_in_international_format")} />}
-              </Label>
-            </div>
-          )}
+      {label && <div className="mb-2 flex items-center">{label}</div>}
       {children}
-      {field.name === "smsReminderNumber" && (
-        <div className="text-sm text-gray-500">{t("sms_workflow_consent")}</div>
-      )}
+      {smsConsent}
     </div>
   );
 };
@@ -246,6 +274,7 @@ export const ComponentForField = ({
   readOnly,
   noLabel,
   translatedDefaultLabel,
+  oncehubStyle = false,
 }: {
   field: Omit<RhfFormField, "editable" | "label"> & {
     // Label is optional because radioInput doesn't have a label
@@ -254,6 +283,8 @@ export const ComponentForField = ({
   readOnly: boolean;
   noLabel?: boolean;
   translatedDefaultLabel?: string;
+  /** OnceHub-style two-column field layout, forwarded to WithLabel. Web month view only. */
+  oncehubStyle?: boolean;
 } & ValueProps) => {
   const fieldType = field.type || "text";
   const componentConfig = Components[fieldType];
@@ -274,7 +305,12 @@ export const ComponentForField = ({
 
   if (componentConfig.propsType === "text") {
     return (
-      <WithLabel field={field} htmlFor={field.name} readOnly={readOnly} noLabel={noLabel}>
+      <WithLabel
+        field={field}
+        htmlFor={field.name}
+        readOnly={readOnly}
+        noLabel={noLabel}
+        oncehubStyle={oncehubStyle}>
         <componentConfig.factory
           placeholder={field.placeholder}
           minLength={field.minLength}
@@ -284,6 +320,7 @@ export const ComponentForField = ({
           readOnly={readOnly}
           value={value as string}
           setValue={setValue as (arg: typeof value) => void}
+          {...(field.type === "phone" ? { oncehubStyle } : {})}
         />
       </WithLabel>
     );
@@ -291,7 +328,12 @@ export const ComponentForField = ({
 
   if (componentConfig.propsType === "boolean") {
     return (
-      <WithLabel field={field} htmlFor={field.name} readOnly={readOnly} noLabel={noLabel}>
+      <WithLabel
+        field={field}
+        htmlFor={field.name}
+        readOnly={readOnly}
+        noLabel={noLabel}
+        oncehubStyle={oncehubStyle}>
         <componentConfig.factory
           name={field.name}
           label={field.label}
@@ -306,7 +348,12 @@ export const ComponentForField = ({
 
   if (componentConfig.propsType === "textList") {
     return (
-      <WithLabel field={field} htmlFor={field.name} readOnly={readOnly} noLabel={noLabel}>
+      <WithLabel
+        field={field}
+        htmlFor={field.name}
+        readOnly={readOnly}
+        noLabel={noLabel}
+        oncehubStyle={oncehubStyle}>
         <componentConfig.factory
           placeholder={field.placeholder}
           name={field.name}
@@ -325,7 +372,12 @@ export const ComponentForField = ({
     }
 
     return (
-      <WithLabel field={field} htmlFor={field.name} readOnly={readOnly} noLabel={noLabel}>
+      <WithLabel
+        field={field}
+        htmlFor={field.name}
+        readOnly={readOnly}
+        noLabel={noLabel}
+        oncehubStyle={oncehubStyle}>
         <componentConfig.factory
           readOnly={readOnly}
           value={value as string}
@@ -343,7 +395,12 @@ export const ComponentForField = ({
       throw new Error("Field options is not defined");
     }
     return (
-      <WithLabel field={field} htmlFor={field.name} readOnly={readOnly} noLabel={noLabel}>
+      <WithLabel
+        field={field}
+        htmlFor={field.name}
+        readOnly={readOnly}
+        noLabel={noLabel}
+        oncehubStyle={oncehubStyle}>
         <componentConfig.factory
           placeholder={field.placeholder}
           name={field.name}
@@ -367,7 +424,12 @@ export const ComponentForField = ({
     const options = field.options;
 
     return field.options.length ? (
-      <WithLabel field={field} htmlFor={field.name} readOnly={readOnly} noLabel={noLabel}>
+      <WithLabel
+        field={field}
+        htmlFor={field.name}
+        readOnly={readOnly}
+        noLabel={noLabel}
+        oncehubStyle={oncehubStyle}>
         <componentConfig.factory
           placeholder={field.placeholder}
           readOnly={readOnly}
@@ -399,6 +461,7 @@ export const ComponentForField = ({
         value={value as { value: string; optionValue: string }}
         setValue={setValue as (arg: Record<string, string> | string) => void}
         variants={translatedVariantsConfig.variants}
+        oncehubStyle={oncehubStyle}
       />
     );
   }

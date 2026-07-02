@@ -1,18 +1,63 @@
-import { shallow } from "zustand/shallow";
-
 import type { Dayjs } from "@calcom/dayjs";
 import dayjs from "@calcom/dayjs";
+import { useSlotsViewOnSmallScreen } from "@calcom/embed-core/embed-iframe";
 import { useBookerStoreContext } from "@calcom/features/bookings/Booker/BookerStoreProvider";
 import type { DatePickerClassNames } from "@calcom/features/bookings/Booker/types";
+import type { Slots } from "@calcom/features/bookings/types";
 import { DatePicker as DatePickerComponent } from "@calcom/features/calendars/components/DatePicker";
-import { useNonEmptyScheduleDays } from "@calcom/web/modules/schedules/hooks/useNonEmptyScheduleDays";
 import { weekdayToWeekIndex } from "@calcom/lib/dayjs";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import type { User } from "@calcom/prisma/client";
 import type { PeriodData } from "@calcom/types/Event";
-import { useSlotsViewOnSmallScreen } from "@calcom/embed-core/embed-iframe";
+import { useNonEmptyScheduleDays } from "@calcom/web/modules/schedules/hooks/useNonEmptyScheduleDays";
+import { shallow } from "zustand/shallow";
 
-import type { Slots } from "@calcom/features/bookings/types";
+const formatMonthName = (date: Dayjs, locale: string) =>
+  new Intl.DateTimeFormat(locale, { month: "long" }).format(date.toDate());
+
+/**
+ * OnceHub-style "< previous month" / "next month >" text links, shown below the day grid.
+ * Mirrors the prev-arrow's own disabled guard (`!browsingDate.isAfter(dayjs())`) so a
+ * non-navigable previous month simply doesn't render a link, instead of a disabled one.
+ */
+const OnceHubMonthFooter = ({
+  browsingDate,
+  locale,
+  onMonthChange,
+}: {
+  browsingDate: Dayjs;
+  locale: string;
+  onMonthChange: (date: Dayjs) => void;
+}) => {
+  const canGoToPreviousMonth = browsingDate.isAfter(dayjs());
+  const previousMonthLabel = formatMonthName(browsingDate.subtract(1, "month"), locale);
+  const nextMonthLabel = formatMonthName(browsingDate.add(1, "month"), locale);
+
+  return (
+    <div className="mt-4 flex items-center justify-between text-sm">
+      {canGoToPreviousMonth ? (
+        <button
+          type="button"
+          className="text-[#6B7280] hover:text-[#F5A623]"
+          onClick={() => onMonthChange(browsingDate.subtract(1, "month"))}
+          data-testid="oncehub-previous-month">
+          {"< "}
+          {previousMonthLabel}
+        </button>
+      ) : (
+        <span />
+      )}
+      <button
+        type="button"
+        className="text-[#6B7280] hover:text-[#F5A623]"
+        onClick={() => onMonthChange(browsingDate.add(1, "month"))}
+        data-testid="oncehub-next-month">
+        {nextMonthLabel}
+        {" >"}
+      </button>
+    </div>
+  );
+};
 
 const useMoveToNextMonthOnNoAvailability = ({
   browsingDate,
@@ -60,6 +105,7 @@ export const DatePicker = ({
   scrollToTimeSlots,
   showNoAvailabilityDialog,
   onDateChange,
+  oncehubStyle = false,
 }: {
   event: {
     data?: {
@@ -77,6 +123,8 @@ export const DatePicker = ({
   scrollToTimeSlots?: () => void;
   showNoAvailabilityDialog?: boolean;
   onDateChange?: () => void;
+  /** OnceHub-style bold/gray day styling + prev/next month footer links. Web month view only. */
+  oncehubStyle?: boolean;
 }) => {
   const { i18n } = useLocale();
   const [month, selectedDate, layout] = useBookerStoreContext(
@@ -135,10 +183,25 @@ export const DatePicker = ({
         datePickerTitle: classNames?.datePickerTitle,
         datePickerDays: classNames?.datePickerDays,
         datePickersDates: classNames?.datePickerDate,
-        datePickerDatesActive: classNames?.datePickerDatesActive,
+        // Available days bold; disabled days gray, normal weight. Reuses the existing
+        // dayActive/dayDisabled override slots, only opted into for the OnceHub month view.
+        datePickerDatesActive: oncehubStyle
+          ? "font-semibold text-emphasis bg-emphasis"
+          : classNames?.datePickerDatesActive,
+        datePickerDatesDisabled: oncehubStyle ? "font-normal text-[#9CA3AF]" : undefined,
         datePickerToggle: classNames?.datePickerToggle,
       }}
       className={classNames?.datePickerContainer}
+      oncehubStyle={oncehubStyle}
+      footer={
+        oncehubStyle ? (
+          <OnceHubMonthFooter
+            browsingDate={browsingDate}
+            locale={i18n.language}
+            onMonthChange={onMonthChange}
+          />
+        ) : undefined
+      }
       isLoading={isLoading}
       onChange={(date: Dayjs | null, omitUpdatingParams?: boolean) => {
         const newDate = date === null ? null : date.format("YYYY-MM-DD");

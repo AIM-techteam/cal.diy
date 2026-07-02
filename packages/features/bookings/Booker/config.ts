@@ -1,9 +1,6 @@
-import { cubicBezier, useAnimate } from "framer-motion";
-import { useReducedMotion } from "framer-motion";
-import { useEffect } from "react";
-
 import { BookerLayouts } from "@calcom/prisma/zod-utils";
-
+import { cubicBezier, useAnimate, useReducedMotion } from "framer-motion";
+import { useEffect } from "react";
 import type { BookerLayout, BookerState } from "./types";
 
 // Framer motion fade in animation configs.
@@ -123,10 +120,48 @@ export const resizeAnimationConfig: ResizeAnimationConfig = {
   },
 };
 
+/**
+ * Parallel to `resizeAnimationConfig`, used ONLY for the web (non-platform) OnceHub-style
+ * month view, which has no "meta" sidebar column. Kept separate from `resizeAnimationConfig`
+ * because that config is shared with the platform/atoms Booker (via BookerPlatformWrapper),
+ * which still renders the classic meta sidebar and must not be affected by this variant.
+ * Only overrides the layouts/states that actually differ (month_view); anything absent here
+ * falls back to `resizeAnimationConfig` in `useBookerResizeAnimation`.
+ */
+export const noMetaResizeAnimationConfig: Partial<ResizeAnimationConfig> = {
+  month_view: {
+    default: {
+      width: "var(--booker-main-width)",
+      minHeight: "450px",
+      height: "auto",
+      gridTemplateAreas: `
+      "main"
+      "main"
+      `,
+      gridTemplateColumns: "var(--booker-main-width)",
+      gridTemplateRows: "1fr 0fr",
+    },
+    selecting_time: {
+      width: "calc(var(--booker-main-width) + var(--booker-timeslots-width))",
+      minHeight: "450px",
+      height: "auto",
+      gridTemplateAreas: `
+      "main timeslots"
+      "main timeslots"
+      `,
+      gridTemplateColumns: "1fr var(--booker-timeslots-width)",
+      gridTemplateRows: "1fr 0fr",
+    },
+  },
+};
+
 export const getBookerSizeClassNames = (
   layout: BookerLayout,
   bookerState: BookerState,
-  hideEventTypeDetails = false
+  hideEventTypeDetails = false,
+  // OnceHub confirmation-form step is wider than the classic meta-sidebar booking form
+  // (860px vs 420px), to match the OnceHub reference layout. Web month view only.
+  wideConfirmationStep = false
 ) => {
   const getBookerMetaClass = (className: string) => {
     if (hideEventTypeDetails) {
@@ -145,7 +180,9 @@ export const getBookerSizeClassNames = (
     // of a multi occurrence event. Also makes form less wide, which also looks better.
     layout === BookerLayouts.MONTH_VIEW &&
       bookerState === "booking" &&
-      `[--booker-main-width:420px] ${getBookerMetaClass("lg:[--booker-meta-width:340px]")}`,
+      (wideConfirmationStep
+        ? `[--booker-main-width:860px] ${getBookerMetaClass("lg:[--booker-meta-width:340px]")}`
+        : `[--booker-main-width:420px] ${getBookerMetaClass("lg:[--booker-meta-width:340px]")}`),
     // Smaller meta when not in booking view.
     layout === BookerLayouts.MONTH_VIEW &&
       bookerState !== "booking" &&
@@ -163,13 +200,21 @@ export const getBookerSizeClassNames = (
  * Based on that ref this hook animates the size of the booker element with framer motion.
  * It also takes into account the prefers-reduced-motion setting, to not animate when that's set.
  */
-export const useBookerResizeAnimation = (layout: BookerLayout, state: BookerState) => {
+export const useBookerResizeAnimation = (
+  layout: BookerLayout,
+  state: BookerState,
+  hideMetaColumn = false
+) => {
   const prefersReducedMotion = useReducedMotion();
   const [animationScope, animate] = useAnimate();
   const isEmbed = typeof window !== "undefined" && window?.isEmbed?.();
   ``;
   useEffect(() => {
-    const animationConfig = resizeAnimationConfig[layout][state] || resizeAnimationConfig[layout].default;
+    const activeConfig =
+      hideMetaColumn && noMetaResizeAnimationConfig[layout]
+        ? noMetaResizeAnimationConfig
+        : resizeAnimationConfig;
+    const animationConfig = activeConfig[layout]?.[state] || activeConfig[layout]?.default;
 
     if (!animationScope.current) return;
 
@@ -211,7 +256,7 @@ export const useBookerResizeAnimation = (layout: BookerLayout, state: BookerStat
         ease: cubicBezier(0.4, 0, 0.2, 1),
       });
     }
-  }, [animate, isEmbed, animationScope, layout, prefersReducedMotion, state]);
+  }, [animate, isEmbed, animationScope, layout, prefersReducedMotion, state, hideMetaColumn]);
 
   return animationScope;
 };
