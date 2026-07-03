@@ -3,9 +3,9 @@
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import classNames from "@calcom/ui/classNames";
 import { Icon } from "@calcom/ui/components/icon";
-import { Tooltip } from "@calcom/ui/components/tooltip";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useEffect, useMemo, useState } from "react";
+import { BOOKING_BRAND_VARS } from "../lib/booking-brand";
 import { getCountries, getGmtOffsetLabel, getRegionsForCountry, lookupTimezone } from "../lib/timezone-map";
 
 /**
@@ -21,31 +21,11 @@ type TimezoneSelectFieldProps = {
   onChange: (value: string) => void;
   options: { value: string; label: string }[];
   disabled?: boolean;
-  showDetectedIcon?: boolean;
 };
 
-const TimezoneSelectField = ({
-  label,
-  value,
-  onChange,
-  options,
-  disabled,
-  showDetectedIcon,
-}: TimezoneSelectFieldProps) => {
-  const { t } = useLocale();
-
+const TimezoneSelectField = ({ label, value, onChange, options, disabled }: TimezoneSelectFieldProps) => {
   return (
     <div>
-      <div className="mb-1 flex items-center gap-1.5">
-        <label className="font-medium text-[#6B7280] text-xs">{label}</label>
-        {showDetectedIcon && value && (
-          <Tooltip content={t("detected_from_your_browser")}>
-            <span className="inline-flex">
-              <Icon name="globe" className="h-3.5 w-3.5 text-[#6B7280]" />
-            </span>
-          </Tooltip>
-        )}
-      </div>
       <div className="relative">
         <select
           aria-label={label}
@@ -53,7 +33,7 @@ const TimezoneSelectField = ({
           disabled={disabled}
           onChange={(e) => onChange(e.target.value)}
           className={classNames(
-            "w-full appearance-none truncate border-0 border-[#E5E7EB] border-b-2 bg-transparent py-2 pr-8 text-[#1A1A1A] text-sm focus:border-[var(--cal-brand)] focus:outline-none",
+            "w-full appearance-none truncate border-0 border-[#E5E7EB] border-b-2 bg-transparent py-2 pr-8 text-[#1A1A1A] text-sm focus:outline-none",
             disabled && "cursor-not-allowed opacity-50"
           )}>
           <option value="" disabled>
@@ -91,7 +71,6 @@ export const TimezoneModal = ({ open, currentTimezone, onConfirm, onDismiss }: T
 
   const [country, setCountry] = useState("");
   const [iana, setIana] = useState("");
-  const [isAutoDetected, setIsAutoDetected] = useState(false);
   // Populated when the detected/current zone falls outside TIMEZONE_MAP, so we can still
   // offer a selectable (and Continue-enabling) entry for it.
   const [detectedFallback, setDetectedFallback] = useState<{ iana: string; label: string } | null>(null);
@@ -106,7 +85,6 @@ export const TimezoneModal = ({ open, currentTimezone, onConfirm, onDismiss }: T
       if (currentMatch) {
         setCountry(currentMatch.country);
         setIana(currentTimezone);
-        setIsAutoDetected(false);
         return;
       }
       setDetectedFallback({
@@ -115,7 +93,6 @@ export const TimezoneModal = ({ open, currentTimezone, onConfirm, onDismiss }: T
       });
       setCountry(DETECTED_FALLBACK_COUNTRY);
       setIana(currentTimezone);
-      setIsAutoDetected(false);
       return;
     }
 
@@ -131,7 +108,6 @@ export const TimezoneModal = ({ open, currentTimezone, onConfirm, onDismiss }: T
     if (detectedMatch) {
       setCountry(detectedMatch.country);
       setIana(detectedZone);
-      setIsAutoDetected(true);
       return;
     }
 
@@ -141,7 +117,6 @@ export const TimezoneModal = ({ open, currentTimezone, onConfirm, onDismiss }: T
     });
     setCountry(DETECTED_FALLBACK_COUNTRY);
     setIana(detectedZone);
-    setIsAutoDetected(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, currentTimezone, iana]);
 
@@ -161,7 +136,6 @@ export const TimezoneModal = ({ open, currentTimezone, onConfirm, onDismiss }: T
 
   const handleCountryChange = (nextCountry: string) => {
     setCountry(nextCountry);
-    setIsAutoDetected(false);
     if (nextCountry === DETECTED_FALLBACK_COUNTRY && detectedFallback) {
       setIana(detectedFallback.iana);
       return;
@@ -171,7 +145,6 @@ export const TimezoneModal = ({ open, currentTimezone, onConfirm, onDismiss }: T
 
   const handleRegionChange = (nextIana: string) => {
     setIana(nextIana);
-    setIsAutoDetected(false);
   };
 
   return (
@@ -190,7 +163,11 @@ export const TimezoneModal = ({ open, currentTimezone, onConfirm, onDismiss }: T
         <DialogPrimitive.Overlay className="fadeIn fixed inset-0 z-50 bg-black/45" />
         <DialogPrimitive.Content
           aria-describedby={undefined}
-          className="fadeIn fixed top-1/2 left-1/2 z-50 w-[calc(100vw-2rem)] max-w-[480px] -translate-x-1/2 -translate-y-1/2 rounded bg-white p-8 shadow-xl focus-visible:outline-none">
+          // Portals mount at document.body, outside the booking layout wrapper that
+          // declares the brand variables - re-declare them here or --cal-brand
+          // resolves to the app-wide theme instead.
+          style={BOOKING_BRAND_VARS as React.CSSProperties}
+          className="fadeIn fixed top-1/2 left-1/2 z-50 w-[calc(100vw-2rem)] max-w-[492px] -translate-x-1/2 -translate-y-1/2 bg-white px-6 pt-5 pb-[25px] shadow-xl focus-visible:outline-none">
           <DialogPrimitive.Title className="font-bold text-[#1A1A1A] text-xl">
             {t("your_time_zone")}
           </DialogPrimitive.Title>
@@ -204,7 +181,6 @@ export const TimezoneModal = ({ open, currentTimezone, onConfirm, onDismiss }: T
               value={country}
               onChange={handleCountryChange}
               options={countryOptions}
-              showDetectedIcon={isAutoDetected}
             />
             <TimezoneSelectField
               label={t("region")}
@@ -212,7 +188,6 @@ export const TimezoneModal = ({ open, currentTimezone, onConfirm, onDismiss }: T
               onChange={handleRegionChange}
               options={regions.map((r) => ({ value: r.iana, label: r.region }))}
               disabled={!country}
-              showDetectedIcon={isAutoDetected}
             />
           </div>
 
@@ -221,7 +196,7 @@ export const TimezoneModal = ({ open, currentTimezone, onConfirm, onDismiss }: T
               type="button"
               disabled={!iana}
               onClick={() => iana && onConfirm(iana)}
-              className="rounded-md bg-[var(--cal-brand)] px-6 py-2.5 font-semibold text-sm text-white transition-colors hover:bg-[var(--cal-brand-emphasis)] disabled:cursor-not-allowed disabled:opacity-50">
+              className="bg-[var(--cal-brand)] px-[15px] py-1 text-sm text-white transition-colors hover:bg-[var(--cal-brand-emphasis)] disabled:cursor-not-allowed disabled:opacity-50">
               {t("continue")}
             </button>
           </div>

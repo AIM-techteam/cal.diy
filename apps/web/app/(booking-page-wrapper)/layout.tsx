@@ -1,4 +1,5 @@
 import PageWrapper from "@components/PageWrapperAppDir";
+import { BOOKING_BRAND_VARS } from "@calcom/web/modules/bookings/lib/booking-brand";
 import { Open_Sans } from "next/font/google";
 import { headers } from "next/headers";
 
@@ -18,10 +19,10 @@ export default async function BookingPageWrapperLayout({ children }: { children:
     // document.documentElement at runtime: a CSS var set on this wrapper is a
     // closer ancestor to the booker's DOM than documentElement, so it wins the
     // cascade for every descendant (see packages/config/theme/tokens.css,
-    // where --color-brand-default etc. resolve through --cal-brand).
-    "--cal-brand": "#F5A623",
-    "--cal-brand-emphasis": "#E09610",
-    "--cal-brand-text": "#ffffff",
+    // where --color-brand-default etc. resolve through --cal-brand). Radix
+    // portals escape this wrapper - they re-declare BOOKING_BRAND_VARS on
+    // their own content root.
+    ...BOOKING_BRAND_VARS,
   } as React.CSSProperties;
 
   return (

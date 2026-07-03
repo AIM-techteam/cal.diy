@@ -272,13 +272,18 @@ const OnceHubSlotColumns = ({ slots, ...slotItemProps }: { slots: Slot[] } & Omi
   const { t } = useLocale();
   const { timezone } = useBookerTime();
 
-  const amSlots: Slot[] = [];
-  const pmSlots: Slot[] = [];
-  for (const slot of slots) {
-    if (slot.away) continue;
-    const hour = dayjs.utc(slot.time).tz(timezone).hour();
-    (hour < 12 ? amSlots : pmSlots).push(slot);
-  }
+  // Partition once per slots/timezone change rather than re-running the timezone-mode
+  // dayjs conversion for every slot on every render (hover, store updates, etc.).
+  const { amSlots, pmSlots } = useMemo(() => {
+    const am: Slot[] = [];
+    const pm: Slot[] = [];
+    for (const slot of slots) {
+      if (slot.away) continue;
+      const hour = dayjs.utc(slot.time).tz(timezone).hour();
+      (hour < 12 ? am : pm).push(slot);
+    }
+    return { amSlots: am, pmSlots: pm };
+  }, [slots, timezone]);
 
   return (
     <div className="grid grid-cols-2 gap-4">

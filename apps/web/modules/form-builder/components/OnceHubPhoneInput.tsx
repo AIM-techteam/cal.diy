@@ -17,6 +17,9 @@ type OnceHubPhoneInputProps = {
 const FALLBACK_COUNTRY: CountryCode = "US";
 
 function detectDefaultCountry(): CountryCode {
+  // Runs during the Next.js server render pass for this client component, where
+  // `navigator` is undefined - guard so an SSR'd booking form doesn't crash.
+  if (typeof navigator === "undefined") return FALLBACK_COUNTRY;
   const region = new Intl.Locale(navigator.language).region as CountryCode | undefined;
   return region && getCountries().includes(region) ? region : FALLBACK_COUNTRY;
 }
@@ -45,11 +48,20 @@ export const OnceHubPhoneInput = ({
     () => countryFromValue(value) ?? detectDefaultCountry()
   );
 
+  // Parse the incoming value once per change instead of on every render (and instead of
+  // parsing separately for the country and the national number below).
+  const parsed = useMemo(() => (value ? parsePhoneNumberFromString(value) : undefined), [value]);
+  const parsedCountry = parsed?.country;
+
   // Adopt the country of externally-set values (prefill, reschedule, location-phone sync)
-  // so the visible selection never diverges from what will actually be submitted.
-  const parsedCountry = countryFromValue(value);
+  // so the visible selection never diverges from what will actually be submitted. Only
+  // adopt it when the value belongs to a *different dial code*: libphonenumber resolves a
+  // "+1..." number to a single country, so comparing by country alone would snap a manual
+  // pick among same-dial-code countries (US/CA, KZ/RU, ...) straight back.
   useEffect(() => {
-    if (parsedCountry && parsedCountry !== country) setCountry(parsedCountry);
+    if (parsedCountry && getCountryCallingCode(parsedCountry) !== getCountryCallingCode(country)) {
+      setCountry(parsedCountry);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [parsedCountry]);
 
@@ -64,13 +76,27 @@ export const OnceHubPhoneInput = ({
   }, [i18n.language]);
 
   const dialCode = getCountryCallingCode(country);
-  const nationalDigits = value?.startsWith(`+${dialCode}`)
-    ? value.slice(dialCode.length + 1)
-    : (value ?? "").replace(/\D/g, "");
+  // Prefer libphonenumber's own national-number split so a value whose country code
+  // doesn't match the (possibly lagging) `country` state still shows the right digits
+  // instead of leaking the foreign dial code. Falls back to a prefix strip while the
+  // number is still too partial for libphonenumber to parse.
+  const nationalDigits = parsed?.nationalNumber
+    ? parsed.nationalNumber
+    : value?.startsWith(`+${dialCode}`)
+      ? value.slice(dialCode.length + 1)
+      : (value ?? "").replace(/\D/g, "");
 
   const emit = (nextCountry: CountryCode, digits: string) => {
     const cleaned = digits.replace(/\D/g, "");
-    onChange(cleaned ? `+${getCountryCallingCode(nextCountry)}${cleaned}` : "");
+    if (!cleaned) {
+      onChange("");
+      return;
+    }
+    const candidate = `+${getCountryCallingCode(nextCountry)}${cleaned}`;
+    // Canonicalize to E.164 once the number parses so the stored value matches the
+    // digits we display (parsed.nationalNumber) and never carries a national trunk
+    // prefix - e.g. GB "07911123456" is stored as "+447911123456", not "+4407911123456".
+    onChange(parsePhoneNumberFromString(candidate)?.number ?? candidate);
   };
 
   return (

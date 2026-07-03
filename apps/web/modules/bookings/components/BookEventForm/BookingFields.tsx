@@ -111,10 +111,10 @@ export const BookingFields = ({
     // Plain text/email/number inputs and the notes textarea
     "[&_input]:rounded-none! [&_input]:border-0! [&_input]:border-b! [&_input]:border-b-[#D1D5DB]!",
     "[&_input]:bg-transparent! [&_input]:px-0! [&_input]:py-2! [&_input]:text-sm! [&_input]:shadow-none!",
-    "[&_input:focus]:border-b-[#F5A623]! [&_input:focus]:ring-0! [&_input:focus]:shadow-none!",
+    "[&_input:focus]:border-b-[var(--cal-brand)]! [&_input:focus]:ring-0! [&_input:focus]:shadow-none!",
     "[&_textarea]:rounded-none! [&_textarea]:border-0! [&_textarea]:border-b! [&_textarea]:border-b-[#D1D5DB]!",
     "[&_textarea]:bg-transparent! [&_textarea]:px-0! [&_textarea]:py-2! [&_textarea]:shadow-none!",
-    "[&_textarea:focus]:border-b-[#F5A623]! [&_textarea:focus]:ring-0! [&_textarea:focus]:shadow-none!",
+    "[&_textarea:focus]:border-b-[var(--cal-brand)]! [&_textarea:focus]:ring-0! [&_textarea:focus]:shadow-none!",
   ].join(" ");
 
   const getFieldWithOptionLevelPrices = (field: Fields[number]) => {

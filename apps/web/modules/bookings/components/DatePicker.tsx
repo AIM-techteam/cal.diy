@@ -38,7 +38,7 @@ const OnceHubMonthFooter = ({
       {canGoToPreviousMonth ? (
         <button
           type="button"
-          className="text-[#6B7280] hover:text-[#F5A623]"
+          className="text-[#6B7280] hover:text-[var(--cal-brand)]"
           onClick={() => onMonthChange(browsingDate.subtract(1, "month"))}
           data-testid="oncehub-previous-month">
           {"< "}
@@ -49,7 +49,7 @@ const OnceHubMonthFooter = ({
       )}
       <button
         type="button"
-        className="text-[#6B7280] hover:text-[#F5A623]"
+        className="text-[#6B7280] hover:text-[var(--cal-brand)]"
         onClick={() => onMonthChange(browsingDate.add(1, "month"))}
         data-testid="oncehub-next-month">
         {nextMonthLabel}

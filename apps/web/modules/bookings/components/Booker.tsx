@@ -35,7 +35,7 @@ import TurnstileCaptcha from "@calcom/web/modules/auth/components/Turnstile";
 import { useSkipConfirmStep } from "@calcom/web/modules/bookings/hooks/useSkipConfirmStep";
 import { useNonEmptyScheduleDays } from "@calcom/web/modules/schedules/hooks/useNonEmptyScheduleDays";
 import { AnimatePresence, LazyMotion, m } from "framer-motion";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import StickyBox from "react-sticky-box";
 import { Toaster } from "sonner";
 import { shallow } from "zustand/shallow";
@@ -105,9 +105,11 @@ const BookerComponent = ({
   const { timezone: effectiveTimezone } = useBookerTime();
   const [setTimePreferencesTimezone] = useTimePreferences((state) => [state.setTimezone], shallow);
   const [setBookerStoreContextTimezone] = useBookerStoreContext((state) => [state.setTimezone], shallow);
-  const [isTimezoneModalOpen, setIsTimezoneModalOpen] = useState(
-    () => !isPlatform && !searchParams?.get("cal.tz")
-  );
+  // Opened via the effect below once the event has loaded, rather than eagerly on mount:
+  // eager opening flashed the modal open then closed for timezone-locked events (whose
+  // lock flag isn't known until event.data resolves).
+  const [isTimezoneModalOpen, setIsTimezoneModalOpen] = useState(false);
+  const hasAutoOpenedTimezoneModalRef = useRef(false);
 
   const handleTimezoneConfirm = (iana: string) => {
     // Defense in depth: the modal is already gated off for timezone-locked events (see
@@ -183,12 +185,19 @@ const BookerComponent = ({
   // Deselects the current timeslot to go back to the calendar/slots step. Shared by the
   // confirmation form's own onCancel and the OnceHub "Change selection"/"(Change)" links,
   // which all need to do exactly the same thing.
-  const handleChangeSelection = () => {
+  // `schedule` is a fresh object literal every render (useScheduleForEvent returns a new
+  // object), so keep it in a ref rather than a useCallback dep - otherwise
+  // handleChangeSelection (and the EventBooker memo that depends on it) would be
+  // recreated on every render, defeating the memo.
+  const scheduleRef = useRef(schedule);
+  scheduleRef.current = schedule;
+
+  const handleChangeSelection = useCallback(() => {
     setSelectedTimeslot(null);
     // Temporarily allow disabling it, till we are sure that it doesn't cause any significant load on the system
     if (PUBLIC_INVALIDATE_AVAILABLE_SLOTS_ON_BOOKING_FORM) {
       // Ensures that user has latest available slots when they want to re-choose from the slots
-      schedule?.invalidate();
+      scheduleRef.current?.invalidate();
     }
     if (seatedEventData.bookingUid) {
       setSeatedEventData({
@@ -197,7 +206,18 @@ const BookerComponent = ({
         attendees: undefined,
       });
     }
-  };
+  }, [setSelectedTimeslot, seatedEventData, setSeatedEventData]);
+
+  // Auto-open the timezone modal once - only after the event has loaded, so we know
+  // whether the timezone is locked, and skip embeds/pre-pinned cal.tz links.
+  useEffect(() => {
+    if (hasAutoOpenedTimezoneModalRef.current) return;
+    if (!isOnceHubMonthView || isEmbed) return;
+    if (searchParams?.get("cal.tz")) return;
+    if (!event.data) return;
+    hasAutoOpenedTimezoneModalRef.current = true;
+    if (!event.data.lockTimeZoneToggleOnBookingPage) setIsTimezoneModalOpen(true);
+  }, [event.data, isOnceHubMonthView, isEmbed, searchParams]);
 
   const animationScope = useBookerResizeAnimation(layout, bookerState, isOnceHubMonthView);
 

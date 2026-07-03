@@ -275,7 +275,7 @@ export const BookEventForm = ({
             }
             className={`${
               oncehubStyle
-                ? "rounded-[4px]! border-0! bg-[#F5A623]! px-8! py-2.5! text-white! hover:bg-[#E09610]!"
+                ? "rounded-[4px]! border-0! bg-[var(--cal-brand)]! px-8! py-2.5! text-white! hover:bg-[var(--cal-brand-emphasis)]!"
                 : ""
             } ${classNames?.confirmButton || ""}`}
             data-testid={rescheduleUid && bookingData ? "confirm-reschedule-button" : "confirm-book-button"}>

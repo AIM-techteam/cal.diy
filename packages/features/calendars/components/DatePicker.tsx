@@ -440,7 +440,7 @@ const DatePicker = ({
       </span>
     </time>
   ) : (
-    <SkeletonText className="mx-auto h-8 w-24" />
+    <SkeletonText className={classNames("h-8 w-24", oncehubStyle && "mx-auto")} />
   );
 
   const prevMonthButton = (

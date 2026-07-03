@@ -4773,7 +4773,6 @@
   "pick_a_date_and_time": "Pick a date and time",
   "your_time_zone": "Your time zone",
   "all_times_will_be_displayed_according_to_your_time_zone": "All times will be displayed according to your time zone:",
-  "detected_from_your_browser": "Detected from your browser",
   "country": "Country",
   "region": "Region",
   "duration_with_value": "Duration: {{duration}}",
