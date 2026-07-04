@@ -183,11 +183,10 @@ export const DatePicker = ({
         datePickerTitle: classNames?.datePickerTitle,
         datePickerDays: classNames?.datePickerDays,
         datePickersDates: classNames?.datePickerDate,
-        // Available days bold; disabled days gray, normal weight. Reuses the existing
+        // Available days bold black text with no background (only the selected day gets the
+        // orange circle); disabled days gray, normal weight. Reuses the existing
         // dayActive/dayDisabled override slots, only opted into for the OnceHub month view.
-        datePickerDatesActive: oncehubStyle
-          ? "font-semibold text-emphasis bg-emphasis"
-          : classNames?.datePickerDatesActive,
+        datePickerDatesActive: oncehubStyle ? "font-bold text-[#333333]" : classNames?.datePickerDatesActive,
         datePickerDatesDisabled: oncehubStyle ? "font-normal text-[#9CA3AF]" : undefined,
         datePickerToggle: classNames?.datePickerToggle,
       }}

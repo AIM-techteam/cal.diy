@@ -437,7 +437,10 @@ const BookerComponent = ({
             // page instead of the white/bordered card the calendar+slots step uses.
             showCard ? "bg-default dark:bg-cal-muted" : "bg-transparent",
             // We remove border only when the content covers entire viewport. Because in embed, it can almost never be the case that it covers entire viewport, we show the border there
-            showCard && (layout === BookerLayouts.MONTH_VIEW || isEmbed) && "border-subtle rounded-md",
+            showCard &&
+              (layout === BookerLayouts.MONTH_VIEW || isEmbed) &&
+              // OnceHub reference uses square card corners.
+              (isOnceHubMonthView ? "border-subtle" : "border-subtle rounded-md"),
             !isEmbed && "sm:transition-[width] sm:duration-300",
             isEmbed && layout === BookerLayouts.MONTH_VIEW && "border-booker sm:border-booker-width",
             showCard && !isEmbed && layout === BookerLayouts.MONTH_VIEW && `border-subtle border`,

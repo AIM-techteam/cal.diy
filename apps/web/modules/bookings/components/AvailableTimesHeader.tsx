@@ -44,10 +44,10 @@ export const AvailableTimesHeader = ({
     return (
       <header
         className={classNames(
-          "mb-3 flex w-full flex-row items-center",
+          "mb-3 flex w-full flex-row items-center justify-center",
           customClassNames?.availableTimeSlotsHeaderContainer
         )}>
-        <p className="text-sm leading-[1.4] text-[#1A1A1A]">
+        <p className="w-full text-center text-sm leading-[1.4] text-[#333333]">
           {before}
           <br />
           <strong>{dateLabel}</strong>

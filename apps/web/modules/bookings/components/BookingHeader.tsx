@@ -31,7 +31,12 @@ export const BookingHeader = ({ event, onOpenTimezoneModal, onChangeSelection }:
 
   if (onChangeSelection) {
     return (
-      <div className="flex w-full justify-end" data-testid="booking-header">
+      <div
+        // Match the form section's horizontal inset (`p-6 -ml-px`, see Booker.tsx book-event-form
+        // BookerSection) so the title's left edge lines up exactly with the field labels below.
+        className="-ml-px flex w-full items-center justify-between px-6"
+        data-testid="booking-header">
+        <h1 className="text-2xl font-bold text-[#333333]">{t("provide_information")}</h1>
         <button
           type="button"
           className="text-sm text-[#2563EB] hover:underline"
@@ -45,12 +50,12 @@ export const BookingHeader = ({ event, onOpenTimezoneModal, onChangeSelection }:
 
   return (
     <div className="w-full text-left" data-testid="booking-header">
-      <h1 className="text-2xl font-bold text-[#1A1A1A]">{t("pick_a_date_and_time")}</h1>
-      <p className="mt-2 text-sm text-[#1A1A1A]">
+      <h1 className="text-2xl font-bold text-[#333333]">{t("pick_a_date_and_time")}</h1>
+      <p className="mt-2 text-sm text-[#333333]">
         <strong>{t("duration")}:</strong> {t("minute", { count: selectedDuration || event?.length })}
       </p>
-      <p className="mt-1 text-sm text-[#1A1A1A]">{t("virtual_meeting_details_notice")}</p>
-      <p className="mt-1 text-sm text-[#1A1A1A]">
+      <p className="mt-1 text-sm text-[#333333]">{t("virtual_meeting_details_notice")}</p>
+      <p className="mt-1 text-sm text-[#333333]">
         <strong>{t("your_time_zone")}:</strong> {formatTimezoneLabel(timezone)}{" "}
         {!event?.lockTimeZoneToggleOnBookingPage && (
           <button

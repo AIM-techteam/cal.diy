@@ -172,7 +172,7 @@ const SlotItem = ({
           onClick={onButtonClick}
           className={classNames(
             oncehubStyle
-              ? "mb-2 flex h-auto w-full grow flex-col justify-center rounded-[4px]! border! border-[#D1D5DB]! bg-white! px-4! py-2! text-sm! text-[#1A1A1A]! hover:border-[var(--cal-brand)]! hover:text-[var(--cal-brand)]!"
+              ? "mb-2 flex h-auto w-full grow flex-col items-center justify-center rounded-none! border! border-[#CCCCCC]! bg-[#F2F2F2]! px-4! py-2! text-center! text-sm! text-[#333333]! hover:border-[#333333]! hover:bg-white! hover:text-[#333333]! hover:underline!"
               : "hover:border-brand-default min-h-9 mb-2 flex h-auto w-full grow flex-col justify-center py-2",
             !oncehubStyle && selectedSlots?.includes(slot.time) && "border-brand-default",
             `${customClassNames}`
@@ -187,7 +187,7 @@ const SlotItem = ({
                 )}
               />
             )}
-            {computedDateWithUsersTimezone.format(timeFormat)}
+            {computedDateWithUsersTimezone.format(oncehubStyle ? "h:mm A" : timeFormat)}
           </div>
           {bookingFull && <p className="text-sm">{t("booking_full")}</p>}
           {hasTimeSlots && !bookingFull && (
@@ -288,17 +288,17 @@ const OnceHubSlotColumns = ({ slots, ...slotItemProps }: { slots: Slot[] } & Omi
   return (
     <div className="grid grid-cols-2 gap-4">
       <div>
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#1A1A1A]">{t("am")}</p>
+        <p className="mb-2 text-center text-sm uppercase text-[#6B7280]">{t("am")}</p>
         {amSlots.length === 0 ? (
-          <p className="text-sm text-[#9CA3AF]">{t("no_am_times")}</p>
+          <p className="text-center text-sm text-[#9CA3AF]">{t("no_am_times")}</p>
         ) : (
           amSlots.map((slot) => <SlotItem key={slot.time} slot={slot} oncehubStyle {...slotItemProps} />)
         )}
       </div>
       <div>
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#1A1A1A]">{t("pm")}</p>
+        <p className="mb-2 text-center text-sm uppercase text-[#6B7280]">{t("pm")}</p>
         {pmSlots.length === 0 ? (
-          <p className="text-sm text-[#9CA3AF]">{t("no_pm_times")}</p>
+          <p className="text-center text-sm text-[#9CA3AF]">{t("no_pm_times")}</p>
         ) : (
           pmSlots.map((slot) => <SlotItem key={slot.time} slot={slot} oncehubStyle {...slotItemProps} />)
         )}

@@ -87,11 +87,12 @@ const Day = ({
       type="button"
       style={disabled ? { ...disabledDateButtonEmbedStyles } : { ...enabledDateButtonEmbedStyles }}
       className={classNames(
-        "disabled:text-bookinglighter absolute bottom-0 left-0 right-0 top-0 mx-auto w-full cursor-pointer border-2 border-transparent text-center text-sm font-medium transition disabled:cursor-default disabled:border-transparent disabled:font-light ",
-        // The cell's containing block is a square (see the pt-[100%] aspect-ratio wrapper
-        // in Days below), so width and height are already equal here - rounded-full turns
-        // that square into a true circle rather than stretching an ellipse.
-        oncehubStyle ? "rounded-full" : "rounded-md",
+        oncehubStyle
+          ? // Centered fixed-size circular hit target (not a cell-filling square): the
+            // selected day shows as a ~40px orange circle and available days as bold text
+            // with no background, matching the OnceHub reference.
+            "relative mx-auto flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border-2 border-transparent text-center text-sm transition disabled:cursor-default disabled:border-transparent"
+          : "disabled:text-bookinglighter absolute bottom-0 left-0 right-0 top-0 mx-auto w-full cursor-pointer rounded-md border-2 border-transparent text-center text-sm font-medium transition disabled:cursor-default disabled:border-transparent disabled:font-light ",
         active
           ? "bg-brand-default text-brand"
           : !disabled
@@ -327,7 +328,14 @@ const Days = ({
   return (
     <>
       {daysToRenderForTheMonth.map(({ day, disabled, away, emoji, isFirstDayOfNextMonth }, idx) => (
-        <div key={day === null ? `e-${idx}` : `day-${day.format()}`} className="relative w-full pt-[100%]">
+        <div
+          key={day === null ? `e-${idx}` : `day-${day.format()}`}
+          className={classNames(
+            "relative w-full",
+            // OnceHub: short rows (48px) with a thin divider line under each week, instead
+            // of the tall square (pt-[100%]) cells.
+            oncehubStyle ? "flex h-12 items-center justify-center border-b border-[#EBEBEB]" : "pt-[100%]"
+          )}>
           {day === null ? (
             <div key={`e-${idx}`} />
           ) : props.isLoading ? (
@@ -482,10 +490,15 @@ const DatePicker = ({
         // flex-1 sibling, so it fills (and is centered within) whatever space is left
         // over once both fixed-width arrow buttons are laid out - not just centered
         // within its own half of the row.
-        <div className="mb-1 flex w-full items-center justify-center text-xl">
-          {prevMonthButton}
-          <span className="text-default flex-1 text-center text-base">{monthTitle}</span>
-          {nextMonthButton}
+        // Title absolutely centered over the grid; both arrows grouped at the right with a
+        // thin vertical divider between them, matching the OnceHub reference.
+        <div className="relative mb-1 flex w-full items-center justify-center text-base">
+          <span className="text-default">{monthTitle}</span>
+          <div className="absolute right-0 flex items-center">
+            {prevMonthButton}
+            <span className="mx-1 h-4 w-px bg-[#D1D5DB]" />
+            {nextMonthButton}
+          </div>
         </div>
       ) : (
         <div className="mb-1 flex items-center justify-between text-xl">
@@ -498,19 +511,30 @@ const DatePicker = ({
           </div>
         </div>
       )}
-      <div className="border-subtle mb-2 grid grid-cols-7 gap-4 border-b border-t text-center md:mb-0 md:border-0">
+      <div
+        className={classNames(
+          oncehubStyle
+            ? "mb-0 grid grid-cols-7 border-b border-[#EBEBEB] text-center"
+            : "border-subtle mb-2 grid grid-cols-7 gap-4 border-b border-t text-center md:mb-0 md:border-0"
+        )}>
         {weekdayNames(locale, weekStart, "short").map((weekDay) => (
           <div
             key={weekDay}
             className={classNames(
-              `text-emphasis my-4 text-xs font-medium uppercase tracking-widest`,
+              oncehubStyle
+                ? `py-3 text-xs font-normal text-[#6B7280]`
+                : `text-emphasis my-4 text-xs font-medium uppercase tracking-widest`,
               customClassNames?.datePickerDays
             )}>
             {weekDay}
           </div>
         ))}
       </div>
-      <div className="relative grid grid-cols-7 grid-rows-6 gap-1 text-center">
+      <div
+        className={classNames(
+          "relative grid grid-cols-7 text-center",
+          oncehubStyle ? "" : "grid-rows-6 gap-1"
+        )}>
         <Days
           customClassName={{
             datePickerDate: customClassNames?.datePickersDates,
