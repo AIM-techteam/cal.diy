@@ -1,5 +1,5 @@
-import PageWrapper from "@components/PageWrapperAppDir";
 import { BOOKING_BRAND_VARS } from "@calcom/web/modules/bookings/lib/booking-brand";
+import PageWrapper from "@components/PageWrapperAppDir";
 import { Open_Sans } from "next/font/google";
 import { headers } from "next/headers";
 
