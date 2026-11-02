@@ -217,6 +217,15 @@ const BookerComponent = ({
     }
   }, [setSelectedTimeslot, seatedEventData, setSeatedEventData]);
 
+  // EventMeta applies an event's locked timezone, but the OnceHub month view and the two-day
+  // view don't render EventMeta, so apply it here for them (same rule as EventMeta).
+  const rendersEventMeta = !isOnceHubMonthView && !isTwoDayView;
+  useEffect(() => {
+    if (rendersEventMeta || !event.data?.lockTimeZoneToggleOnBookingPage) return;
+    const lockedTimezone = event.data.lockedTimeZone || event.data.schedule?.timeZone;
+    if (lockedTimezone) setTimePreferencesTimezone(lockedTimezone);
+  }, [rendersEventMeta, event.data, setTimePreferencesTimezone]);
+
   // Auto-open the timezone modal once - only after the event has loaded, so we know
   // whether the timezone is locked, and skip embeds/pre-pinned cal.tz links.
   useEffect(() => {

@@ -10,6 +10,7 @@ import {
   useInitializeBookerStoreContext,
 } from "@calcom/features/bookings/Booker/BookerStoreProvider";
 import { useBookerLayout } from "@calcom/features/bookings/Booker/hooks/useBookerLayout";
+import { useBookerTime } from "@calcom/features/bookings/Booker/hooks/useBookerTime";
 import { useBookingForm } from "@calcom/features/bookings/Booker/hooks/useBookingForm";
 import { useInitializeBookerStore } from "@calcom/features/bookings/Booker/store";
 import {
@@ -144,7 +145,10 @@ const BookerWebWrapperComponent = (props: BookerWebWrapperAtomProps): JSX.Elemen
   // The two-day view needs the next days with slots counted from today, whichever day or month
   // is selected or in the URL, so it fetches a fixed window that starts today.
   const isTwoDayView = isTwoDayViewEvent(event.data);
-  const twoDayWindowStart = dayjs().format("YYYY-MM-DD");
+  // Midnight in the booker's timezone (cal.tz or the browser's), as an instant: a date-only
+  // string would be read as browser-local midnight and shift the window when they differ.
+  const { timezone: bookerTimezone } = useBookerTime();
+  const twoDayWindowStart = dayjs().tz(bookerTimezone).startOf("day").toISOString();
   const schedule = useScheduleForEvent({
     eventId: props.entity.eventTypeId ?? event.data?.id,
     username: props.username,
