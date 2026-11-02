@@ -356,6 +356,7 @@ const BookerComponent = ({
         isPlatform={isPlatform}
         oncehubStyle={useOnceHubForm}
         onOpenTimezoneModal={() => setIsTimezoneModalOpen(true)}
+        onChangeTimezone={isTwoDayView ? handleTimezoneConfirm : undefined}
       />
     );
   }, [
@@ -379,6 +380,7 @@ const BookerComponent = ({
     isVerificationCodeSending,
     unavailableTimeSlots,
     useOnceHubForm,
+    isTwoDayView,
     handleChangeSelection,
     setIsTimezoneModalOpen,
   ]);
@@ -403,7 +405,7 @@ const BookerComponent = ({
   }
 
   const canChangeTimezone = !isEmbed && !event.data?.lockTimeZoneToggleOnBookingPage;
-  const timezoneModal = (isOnceHubMonthView || isTwoDayView) && canChangeTimezone && (
+  const timezoneModal = isOnceHubMonthView && canChangeTimezone && (
     <TimezoneModal
       open={isTimezoneModalOpen}
       currentTimezone={effectiveTimezone}
@@ -479,7 +481,6 @@ const BookerComponent = ({
           {captcha}
         </div>
         {verifyCodeDialog}
-        {timezoneModal}
         <Toaster position="bottom-right" />
       </>
     );

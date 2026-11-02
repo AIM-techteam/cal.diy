@@ -47,6 +47,7 @@ type BookEventFormProps = {
   oncehubStyle?: boolean;
   /** Reopens the OnceHub timezone modal from the booking summary's "(Change)" link. */
   onOpenTimezoneModal?: () => void;
+  onChangeTimezone?: (iana: string) => void;
 };
 
 export const BookEventForm = ({
@@ -68,6 +69,7 @@ export const BookEventForm = ({
   timeslot,
   oncehubStyle = false,
   onOpenTimezoneModal,
+  onChangeTimezone,
 }: Omit<BookEventFormProps, "event"> & {
   eventQuery: {
     isError: boolean;
@@ -148,6 +150,7 @@ export const BookEventForm = ({
             duration={selectedDuration || eventType.length}
             onChangeSelection={onCancel}
             onOpenTimezoneModal={eventType.lockTimeZoneToggleOnBookingPage ? undefined : onOpenTimezoneModal}
+            onChangeTimezone={eventType.lockTimeZoneToggleOnBookingPage ? undefined : onChangeTimezone}
             requiresConfirmation={eventType.requiresConfirmation}
           />
         )}

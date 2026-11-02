@@ -3,7 +3,9 @@
 import dayjs from "@calcom/dayjs";
 import { useBookerTime } from "@calcom/features/bookings/Booker/hooks/useBookerTime";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
-import { formatTimezoneLabel } from "../../lib/timezone-map";
+import { useState } from "react";
+import { formatShortTimezoneLabel, formatTimezoneLabel } from "../../lib/timezone-map";
+import { BookingTimezoneSelect } from "../BookingTimezoneSelect";
 
 type BookingSummaryProps = {
   timeslot: string;
@@ -11,6 +13,9 @@ type BookingSummaryProps = {
   onChangeSelection: () => void;
   /** Omit to hide the timezone "(Change)" link, e.g. when the event locks the timezone. */
   onOpenTimezoneModal?: () => void;
+  /** When set, "(Change)" opens an inline timezone select (two-day view) instead of calling
+   * onOpenTimezoneModal, and the timezone shows by its short name. */
+  onChangeTimezone?: (iana: string) => void;
   requiresConfirmation?: boolean;
 };
 
@@ -28,9 +33,12 @@ export const BookingSummary = ({
   duration,
   onChangeSelection,
   onOpenTimezoneModal,
+  onChangeTimezone,
   requiresConfirmation,
 }: BookingSummaryProps) => {
   const { t } = useLocale();
+  const [isTimezoneSelectOpen, setIsTimezoneSelectOpen] = useState(false);
+  const onTimezoneChangeClick = onChangeTimezone ? () => setIsTimezoneSelectOpen(true) : onOpenTimezoneModal;
   const { timeFormat, timezone } = useBookerTime();
 
   const start = dayjs.utc(timeslot).tz(timezone);
@@ -54,17 +62,30 @@ export const BookingSummary = ({
         </button>
       </span>
       <span>
-        {formatTimezoneLabel(timezone)}{" "}
-        {onOpenTimezoneModal && (
+        {onChangeTimezone ? formatShortTimezoneLabel(timezone) : formatTimezoneLabel(timezone)}{" "}
+        {onTimezoneChangeClick && (
           <button
             type="button"
             className="text-[#2563EB] hover:underline"
-            onClick={onOpenTimezoneModal}
+            aria-expanded={onChangeTimezone ? isTimezoneSelectOpen : undefined}
+            onClick={onTimezoneChangeClick}
             data-testid="booking-summary-change-timezone">
             ({t("change")})
           </button>
         )}
       </span>
+      {onChangeTimezone && isTimezoneSelectOpen && (
+        <BookingTimezoneSelect
+          timezone={timezone}
+          compact
+          className="col-span-2 mt-2"
+          data-testid="booking-summary-timezone-select"
+          onChange={(iana) => {
+            setIsTimezoneSelectOpen(false);
+            onChangeTimezone(iana);
+          }}
+        />
+      )}
       {requiresConfirmation && (
         <>
           <span />
