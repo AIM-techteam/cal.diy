@@ -11,6 +11,10 @@ import {
 import { useBookerLayout } from "@calcom/features/bookings/Booker/hooks/useBookerLayout";
 import { useBookingForm } from "@calcom/features/bookings/Booker/hooks/useBookingForm";
 import { useInitializeBookerStore } from "@calcom/features/bookings/Booker/store";
+import {
+  isTwoDayViewEvent,
+  TWO_DAY_VIEW_LOOKAHEAD_DAYS,
+} from "@calcom/features/bookings/Booker/utils/twoDayView";
 import { useBrandColors } from "@calcom/features/bookings/Booker/utils/use-brand-colors";
 import type { getPublicEvent } from "@calcom/features/eventtypes/lib/getPublicEvent";
 import { DEFAULT_DARK_BRAND_COLOR, DEFAULT_LIGHT_BRAND_COLOR, WEBAPP_URL } from "@calcom/lib/constants";
@@ -136,14 +140,17 @@ const BookerWebWrapperComponent = (props: BookerWebWrapperAtomProps): JSX.Elemen
    * Prioritize dateSchedule load
    * Component will render but use data already fetched from here, and no duplicate requests will be made
    * */
+  // The two-day view needs the next days with slots counted from today, whichever day is
+  // selected, so it fetches a fixed window instead of the month around selectedDate.
+  const isTwoDayView = isTwoDayViewEvent(event.data);
   const schedule = useScheduleForEvent({
     eventId: props.entity.eventTypeId ?? event.data?.id,
     username: props.username,
-    dayCount,
+    dayCount: isTwoDayView ? TWO_DAY_VIEW_LOOKAHEAD_DAYS : dayCount,
     eventSlug: props.eventSlug,
     month: props.month,
     duration: props.duration,
-    selectedDate,
+    selectedDate: isTwoDayView ? null : selectedDate,
     teamMemberEmail: props.teamMemberEmail,
     fromRedirectOfNonOrgLink: props.entity.fromRedirectOfNonOrgLink,
     isTeamEvent: props.isTeamEvent ?? !!event.data?.team,

@@ -12,6 +12,8 @@ type BookingHeaderProps = {
   /** Shown as a "Change selection" link top-right, next to the h1, when a timeslot is
    * already picked (i.e. the booker is on the confirmation-form step). Omit to hide it. */
   onChangeSelection?: () => void;
+  /** Drops the timezone line, for views that show the timezone themselves (two-day view). */
+  hideTimezone?: boolean;
 };
 
 /**
@@ -24,7 +26,12 @@ type BookingHeaderProps = {
  * repeated in BookingSummary's "(Change)" row instead. Only the "Change selection" link
  * remains, top-right, so the confirmation step starts directly with it.
  */
-export const BookingHeader = ({ event, onOpenTimezoneModal, onChangeSelection }: BookingHeaderProps) => {
+export const BookingHeader = ({
+  event,
+  onOpenTimezoneModal,
+  onChangeSelection,
+  hideTimezone = false,
+}: BookingHeaderProps) => {
   const { t } = useLocale();
   const { timezone } = useBookerTime();
   const selectedDuration = useBookerStoreContext((state) => state.selectedDuration);
@@ -55,18 +62,20 @@ export const BookingHeader = ({ event, onOpenTimezoneModal, onChangeSelection }:
         <strong>{t("duration")}:</strong> {t("minute", { count: selectedDuration || event?.length })}
       </p>
       <p className="mt-1 text-sm text-[#333333]">{t("virtual_meeting_details_notice")}</p>
-      <p className="mt-1 text-sm text-[#333333]">
-        <strong>{t("your_time_zone")}:</strong> {formatTimezoneLabel(timezone)}{" "}
-        {!event?.lockTimeZoneToggleOnBookingPage && (
-          <button
-            type="button"
-            className="text-[#6B7280] underline hover:text-[var(--cal-brand)]"
-            onClick={onOpenTimezoneModal}
-            data-testid="booking-header-change-timezone">
-            ({t("change")})
-          </button>
-        )}
-      </p>
+      {!hideTimezone && (
+        <p className="mt-1 text-sm text-[#333333]">
+          <strong>{t("your_time_zone")}:</strong> {formatTimezoneLabel(timezone)}{" "}
+          {!event?.lockTimeZoneToggleOnBookingPage && (
+            <button
+              type="button"
+              className="text-[#6B7280] underline hover:text-[var(--cal-brand)]"
+              onClick={onOpenTimezoneModal}
+              data-testid="booking-header-change-timezone">
+              ({t("change")})
+            </button>
+          )}
+        </p>
+      )}
     </div>
   );
 };

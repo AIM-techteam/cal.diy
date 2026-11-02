@@ -4787,5 +4787,11 @@
   "change_selection": "Change selection",
   "provide_information": "Provide information",
   "email_confirmation_notice": "The scheduling confirmation will be sent to this email",
+  "tomorrow": "Tomorrow",
+  "morning": "Morning",
+  "afternoon": "Afternoon",
+  "times_shown_in": "Times shown in",
+  "confirm_date_at_time": "Confirm {{date}} at {{time}}",
+  "no_upcoming_availability": "There are no available times in the coming days.",
   "ADD_NEW_STRINGS_ABOVE_THIS_LINE_TO_PREVENT_MERGE_CONFLICTS": "↑↑↑↑↑↑↑↑↑↑↑↑↑ Add your new strings above here ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑"
 }
