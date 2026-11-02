@@ -5,6 +5,7 @@ import { ChevronDownIcon } from "@coss/ui/icons";
 import type { CountryCode } from "libphonenumber-js";
 import { getCountries, getCountryCallingCode, parsePhoneNumberFromString } from "libphonenumber-js";
 import { useEffect, useMemo, useState } from "react";
+import { TWO_DAY_INPUT_CLASS, useBookingFormStyle } from "./BookingFormStyleContext";
 
 type OnceHubPhoneInputProps = {
   name?: string;
@@ -44,6 +45,7 @@ export const OnceHubPhoneInput = ({
   onChange,
 }: OnceHubPhoneInputProps) => {
   const { t, i18n } = useLocale();
+  const formStyle = useBookingFormStyle();
   const [country, setCountry] = useState<CountryCode>(
     () => countryFromValue(value) ?? detectDefaultCountry()
   );
@@ -99,12 +101,57 @@ export const OnceHubPhoneInput = ({
     onChange(parsePhoneNumberFromString(candidate)?.number ?? candidate);
   };
 
+  if (formStyle === "two-day") {
+    return (
+      <div className="flex gap-[10px]">
+        <div className="relative w-[32%] shrink-0">
+          {/* The full "Country (+code)" names only fit in the open list; the closed select
+              shows "US +1" through this overlay, with the select's own text transparent. */}
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-(--td-ink) text-lg">
+            {country} +{dialCode}
+          </span>
+          <select
+            aria-label={t("country")}
+            className={`${TWO_DAY_INPUT_CLASS} appearance-none pr-9 text-transparent! [&>option]:text-(--td-ink) [&>option]:bg-(--td-surface)`}
+            value={country}
+            disabled={readOnly}
+            onChange={(e) => {
+              const next = e.target.value as CountryCode;
+              setCountry(next);
+              emit(next, nationalDigits);
+            }}>
+            {countries.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+          <ChevronDownIcon className="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-(--td-olive)" />
+        </div>
+        <input
+          id={name}
+          name={name}
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel-national"
+          className={TWO_DAY_INPUT_CLASS}
+          placeholder={placeholder || "(555) 555-5555"}
+          readOnly={readOnly}
+          value={nationalDigits}
+          onChange={(e) => emit(country, e.target.value)}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-end gap-4">
       <div className="relative w-2/5 shrink-0">
         <select
           aria-label={t("country")}
-          className="w-full appearance-none border-0 border-b border-[#D1D5DB] bg-transparent py-1.5 pr-6 text-sm text-[#1A1A1A] focus:border-[var(--cal-brand)] focus:outline-none disabled:opacity-60"
+          className="w-full appearance-none border-0 border-b border-[#D1D5DB] bg-transparent py-1.5 pr-6 text-sm text-[#1A1A1A] dark:border-[#3f3c33] dark:text-[#ece9df] dark:[&>option]:bg-[#1c1b17] focus:border-[var(--cal-brand)] focus:outline-none disabled:opacity-60"
           value={country}
           disabled={readOnly}
           onChange={(e) => {
@@ -118,7 +165,7 @@ export const OnceHubPhoneInput = ({
             </option>
           ))}
         </select>
-        <ChevronDownIcon className="pointer-events-none absolute right-1 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6B7280]" />
+        <ChevronDownIcon className="pointer-events-none absolute right-1 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6B7280] dark:text-[#b3af9e]" />
       </div>
       <input
         id={name}
@@ -126,7 +173,7 @@ export const OnceHubPhoneInput = ({
         type="tel"
         inputMode="tel"
         autoComplete="tel-national"
-        className="w-full border-0 border-b border-[#D1D5DB] bg-transparent py-1.5 text-sm text-[#1A1A1A] placeholder:text-[#9CA3AF] focus:border-[var(--cal-brand)] focus:outline-none disabled:opacity-60"
+        className="w-full border-0 border-b border-[#D1D5DB] bg-transparent py-1.5 text-sm text-[#1A1A1A] placeholder:text-[#9CA3AF] dark:border-[#3f3c33] dark:text-[#ece9df] dark:placeholder:text-[#7d7a6c] focus:border-[var(--cal-brand)] focus:outline-none disabled:opacity-60"
         placeholder={placeholder}
         readOnly={readOnly}
         value={nationalDigits}

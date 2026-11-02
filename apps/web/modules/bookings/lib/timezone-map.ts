@@ -1,3 +1,4 @@
+import { TimeFormat } from "@calcom/lib/timeFormat";
 /**
  * Static IANA timezone -> country/region lookup for the OnceHub-style timezone
  * picker on the public booking page. Deliberately not exhaustive: this is a
@@ -189,3 +190,37 @@ export const formatTimezoneLabel = (iana: string): string => {
     ? `${match.country}; ${match.region} (${offsetLabel})`
     : `${match.country}; ${match.region}`;
 };
+
+// Labels from the Funnel v3 mockup. Arizona gets its own name because it skips daylight
+// saving, so "Mountain Time" would be wrong half the year.
+export const SHORT_US_TIMEZONE_LABELS: Record<string, string> = {
+  "America/New_York": "Eastern Time",
+  "America/Chicago": "Central Time",
+  "America/Denver": "Mountain Time",
+  "America/Phoenix": "Arizona Time",
+  "America/Los_Angeles": "Pacific Time",
+  "America/Anchorage": "Alaska Time",
+  "Pacific/Honolulu": "Hawaii Time",
+};
+
+/**
+ * Short English name for a timezone ("Central Time"), as the two-day view shows it. Zones
+ * outside the mockup's list use the browser's generic English name ("Eastern Time" for
+ * America/Detroit), and the IANA id if the browser has none.
+ */
+export const formatShortTimezoneLabel = (iana: string): string => {
+  const known = SHORT_US_TIMEZONE_LABELS[iana];
+  if (known) return known;
+  try {
+    const name = new Intl.DateTimeFormat("en-US", { timeZone: iana, timeZoneName: "longGeneric" })
+      .formatToParts(new Date())
+      .find((part) => part.type === "timeZoneName")?.value;
+    return name || iana;
+  } catch {
+    return iana;
+  }
+};
+
+/** Day.js format for a slot time: "9:00 AM" for 12-hour, the user's format otherwise. */
+export const getSlotDisplayFormat = (timeFormat: string): string =>
+  timeFormat === TimeFormat.TWELVE_HOUR ? "h:mm A" : timeFormat;

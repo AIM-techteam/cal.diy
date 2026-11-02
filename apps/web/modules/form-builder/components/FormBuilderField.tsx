@@ -17,6 +17,7 @@ import { ErrorMessage } from "@hookform/error-message";
 import type { TFunction } from "i18next";
 import { Controller, useFormContext } from "react-hook-form";
 import type { z } from "zod";
+import { useBookingFormStyle } from "./BookingFormStyleContext";
 import { Components, isValidValueProp } from "./Components";
 
 // helper to render markdown label safely
@@ -165,6 +166,7 @@ const WithLabel = ({
   oncehubStyle?: boolean;
 }) => {
   const { t } = useLocale();
+  const formStyle = useBookingFormStyle();
 
   // multiemail doesn't show a label initially - it's shown on clicking the CTA.
   // boolean type doesn't have a label overall, the radio has its own label.
@@ -186,6 +188,19 @@ const WithLabel = ({
   const smsConsent = field.name === "smsReminderNumber" && (
     <div className="text-sm text-gray-500">{t("sms_workflow_consent")}</div>
   );
+
+  if (oncehubStyle && formStyle === "two-day") {
+    return (
+      <div>
+        {label && <div className="mb-2">{label}</div>}
+        {children}
+        {field.name === SystemField.Enum.email && (
+          <p className="mt-1 text-(--td-mute) text-sm">{t("email_confirmation_notice")}</p>
+        )}
+        {smsConsent}
+      </div>
+    );
+  }
 
   if (oncehubStyle) {
     return (

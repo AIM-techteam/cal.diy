@@ -8,6 +8,7 @@ import { SystemField } from "@calcom/lib/bookings/SystemField";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { markdownToSafeHTML } from "@calcom/lib/markdownToSafeHTML";
 import type { RouterOutputs } from "@calcom/trpc/react";
+import { useBookingFormStyle } from "@calcom/web/modules/form-builder/components/BookingFormStyleContext";
 import { FormBuilderField } from "@calcom/web/modules/form-builder/components/FormBuilderField";
 import { useMemo, useRef } from "react";
 import { useFormContext } from "react-hook-form";
@@ -43,6 +44,7 @@ export const BookingFields = ({
   oncehubStyle?: boolean;
 }) => {
   const { t, i18n } = useLocale();
+  const formStyle = useBookingFormStyle();
   const { watch, setValue, formState } = useFormContext();
   const locationResponse = watch("responses.location");
   const currentView = rescheduleUid ? "reschedule" : "";
@@ -117,6 +119,15 @@ export const BookingFields = ({
     "[&_textarea:focus]:border-b-[var(--cal-brand)]! [&_textarea:focus]:ring-0! [&_textarea:focus]:shadow-none!",
   ].join(" ");
 
+  const twoDayFieldsClassName = [
+    "[&_input:not([type=checkbox]):not([type=radio])]:rounded-xl! [&_input:not([type=checkbox]):not([type=radio])]:border-[1.5px]! [&_input:not([type=checkbox]):not([type=radio])]:border-(--td-line)!",
+    "[&_input:not([type=checkbox]):not([type=radio])]:bg-(--td-surface)! [&_input:not([type=checkbox]):not([type=radio])]:px-4! [&_input:not([type=checkbox]):not([type=radio])]:py-3! [&_input:not([type=checkbox]):not([type=radio])]:h-auto! [&_input:not([type=checkbox]):not([type=radio])]:text-lg! [&_input:not([type=checkbox]):not([type=radio])]:text-(--td-ink)! [&_input:not([type=checkbox]):not([type=radio])]:shadow-none!",
+    "[&_input:focus]:border-(--td-accent)! [&_input:focus]:ring-0! [&_input:focus]:outline-[3px]! [&_input:focus]:outline-solid! [&_input:focus]:outline-(--td-focus)! [&_input:focus]:outline-offset-1!",
+    "[&_textarea]:rounded-xl! [&_textarea]:border-[1.5px]! [&_textarea]:border-(--td-line)! [&_textarea]:bg-(--td-surface)! [&_textarea]:px-4! [&_textarea]:py-3! [&_textarea]:text-lg! [&_textarea]:text-(--td-ink)! [&_textarea]:shadow-none!",
+    "[&_textarea:focus]:border-(--td-accent)! [&_textarea:focus]:ring-0! [&_textarea:focus]:outline-[3px]! [&_textarea:focus]:outline-solid! [&_textarea:focus]:outline-(--td-focus)! [&_textarea:focus]:outline-offset-1!",
+    "[&_label]:block! [&_label]:text-(--td-ink)! [&_label]:text-base! [&_label]:font-semibold!",
+  ].join(" ");
+
   const getFieldWithOptionLevelPrices = (field: Fields[number]) => {
     if (!fieldTypesConfigMap[field.type]?.optionsSupportPricing || !field.options) return field;
 
@@ -140,7 +151,14 @@ export const BookingFields = ({
   return (
     // TODO: It might make sense to extract this logic into BookingFields config, that would allow to quickly configure system fields and their editability in fresh booking and reschedule booking view
     // The logic here intends to make modifications to booking fields based on the way we want to specifically show Booking Form
-    <div className={oncehubStyle ? onceHubUnderlineFieldsClassName : undefined}>
+    <div
+      className={
+        formStyle === "two-day"
+          ? twoDayFieldsClassName
+          : oncehubStyle
+            ? onceHubUnderlineFieldsClassName
+            : undefined
+      }>
       {fields.map((field, index) => {
         // During reschedule by default all system fields are readOnly. Make them editable on case by case basis.
         // Allowing a system field to be edited might require sending emails to attendees, so we need to be careful

@@ -17,6 +17,7 @@ import PhoneInput from "@calcom/web/components/phone-input";
 import { XIcon } from "@coss/ui/icons";
 import { useEffect } from "react";
 import type { z } from "zod";
+import { useBookingFormStyle } from "./BookingFormStyleContext";
 import { ComponentForField } from "./FormBuilderField";
 import { OnceHubPhoneInput } from "./OnceHubPhoneInput";
 
@@ -108,6 +109,7 @@ export const Components: Record<FieldType, Component> = {
     propsType: propsTypes.name,
     // Keep special "name" type field and later build split(FirstName and LastName) variant of it.
     factory: (props) => {
+      const formStyle = useBookingFormStyle();
       const { variant: variantName = "fullName" } = props;
       const onChange = (name: string, value: string) => {
         let currentValue = props.value;
@@ -137,9 +139,17 @@ export const Components: Record<FieldType, Component> = {
         const variant = props.variants[variantName];
         const variantField = variant.fields[0];
         if (props.oncehubStyle) {
+          const isTwoDay = formStyle === "two-day";
           return (
-            <div className="grid grid-cols-[2fr_3fr] items-start gap-x-4 gap-y-1">
-              <Label className="mb-0! flex items-center pt-2 leading-relaxed!" htmlFor="name">
+            <div
+              className={
+                isTwoDay ? "flex flex-col gap-2" : "grid grid-cols-[2fr_3fr] items-start gap-x-4 gap-y-1"
+              }>
+              <Label
+                className={
+                  isTwoDay ? "mb-0! flex items-center" : "mb-0! flex items-center pt-2 leading-relaxed!"
+                }
+                htmlFor="name">
                 <span>{variantField.label}</span>
                 <span className="text-emphasis -mb-1 ml-1 text-sm font-medium leading-none">
                   {!props.readOnly && variantField.required ? "*" : ""}

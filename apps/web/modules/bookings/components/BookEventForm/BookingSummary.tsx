@@ -40,14 +40,14 @@ export const BookingSummary = ({
 
   return (
     <div
-      className="mb-6 grid grid-cols-[2fr_3fr] gap-x-4 gap-y-1 text-sm text-[#1A1A1A]"
+      className="mb-6 grid grid-cols-[2fr_3fr] gap-x-4 gap-y-1 text-sm text-[#1A1A1A] dark:text-[#ece9df]"
       data-testid="booking-summary">
       <span className="row-span-2 font-medium">{t("time")}</span>
       <span>
         {dateLabel}, {timeLabel}{" "}
         <button
           type="button"
-          className="text-[#2563EB] hover:underline"
+          className="text-[#2563EB] hover:underline dark:text-[#7aa7ff]"
           onClick={onChangeSelection}
           data-testid="booking-summary-change-time">
           ({t("change")})
@@ -58,7 +58,7 @@ export const BookingSummary = ({
         {onOpenTimezoneModal && (
           <button
             type="button"
-            className="text-[#2563EB] hover:underline"
+            className="text-[#2563EB] hover:underline dark:text-[#7aa7ff]"
             onClick={onOpenTimezoneModal}
             data-testid="booking-summary-change-timezone">
             ({t("change")})
