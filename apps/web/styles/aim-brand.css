@@ -52,6 +52,11 @@ body.aim-brand {
   --cal-text-subtle: #4b5848;
   --cal-text-muted: #66735f;
 
+  /* coss-ui components (login page buttons) read these instead of --cal-brand. */
+  --primary: #2b7a24;
+  --primary-foreground: #ffffff;
+  --ring: #42a635;
+
   accent-color: #2b7a24;
   caret-color: #2b7a24;
 }
@@ -81,6 +86,8 @@ body.aim-brand .aim-rail {
 
 /* Dark theme keeps cal's dark neutrals; only brand color and type follow the funnel. */
 html.dark body.aim-brand {
+  --primary: #42a635;
+  --primary-foreground: #0e1a0c;
   --cal-brand: #42a635;
   --cal-brand-emphasis: #5bbd4e;
   --cal-brand-text: #0e1a0c;
