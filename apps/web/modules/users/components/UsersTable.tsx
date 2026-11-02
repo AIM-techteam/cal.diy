@@ -18,7 +18,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const { Cell, ColumnTitle, Header, Row } = Table;
 
-const FETCH_LIMIT = 25;
+// AIM: one page holds the whole instance (~100 users). The original 25-row page only
+// advanced on scroll inside the inner box, which often never fired, so the list looked
+// complete when it was not. The footer below also offers an explicit "Load more".
+const FETCH_LIMIT = 500;
 
 export function UsersTable() {
   const { t } = useLocale();
@@ -80,7 +83,7 @@ export function UsersTable() {
     },
   });
 
-  const { data, fetchNextPage, isFetching } = trpc.viewer.admin.listPaginated.useInfiniteQuery(
+  const { data, fetchNextPage, hasNextPage, isFetching } = trpc.viewer.admin.listPaginated.useInfiniteQuery(
     {
       limit: FETCH_LIMIT,
       searchTerm: debouncedSearchTerm,
@@ -244,6 +247,14 @@ export function UsersTable() {
             deleteMutation.mutate({ userId: userToDelete });
           }}
         />
+      </div>
+      <div className="text-subtle mt-3 flex items-center justify-between text-sm">
+        <span>{t("showing_x_of_y", { x: totalFetched, y: totalRowCount })}</span>
+        {hasNextPage && (
+          <Button color="secondary" loading={isFetching} onClick={() => fetchNextPage()}>
+            {t("load_more_results")}
+          </Button>
+        )}
       </div>
     </div>
   );
