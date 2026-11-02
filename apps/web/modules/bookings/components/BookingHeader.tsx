@@ -14,6 +14,9 @@ type BookingHeaderProps = {
   onChangeSelection?: () => void;
   /** Drops the timezone line, for views that show the timezone themselves (two-day view). */
   hideTimezone?: boolean;
+  /** Two-day view: no side inset on the form step and no "Change selection" link (the time
+   * card below has its own "Pick another time"). */
+  twoDayStyle?: boolean;
 };
 
 /**
@@ -31,10 +34,19 @@ export const BookingHeader = ({
   onOpenTimezoneModal,
   onChangeSelection,
   hideTimezone = false,
+  twoDayStyle = false,
 }: BookingHeaderProps) => {
   const { t } = useLocale();
   const { timezone } = useBookerTime();
   const selectedDuration = useBookerStoreContext((state) => state.selectedDuration);
+
+  if (onChangeSelection && twoDayStyle) {
+    return (
+      <div className="w-full text-left" data-testid="booking-header">
+        <h1 className="font-bold text-2xl text-[#333333] dark:text-[#ece9df]">{t("provide_information")}</h1>
+      </div>
+    );
+  }
 
   if (onChangeSelection) {
     return (
@@ -46,7 +58,7 @@ export const BookingHeader = ({
         <h1 className="text-2xl font-bold text-[#333333] dark:text-[#ece9df]">{t("provide_information")}</h1>
         <button
           type="button"
-          className="text-sm text-[#2563EB] hover:underline dark:text-[#7aa7ff]"
+          className="text-sm text-[var(--td-accent,#2563EB)] hover:underline dark:text-[var(--td-accent,#7aa7ff)]"
           onClick={onChangeSelection}
           data-testid="booking-header-change-selection">
           {t("change_selection")} ▾

@@ -1,5 +1,6 @@
 import { getPaymentAppData } from "@calcom/app-store/_utils/payments/getPaymentAppData";
 import { useIsPlatformBookerEmbed } from "@calcom/atoms/hooks/useIsPlatformBookerEmbed";
+import dayjs from "@calcom/dayjs";
 import { useBookerStoreContext } from "@calcom/features/bookings/Booker/BookerStoreProvider";
 import { useBookerTime } from "@calcom/features/bookings/Booker/hooks/useBookerTime";
 import type { UseBookingFormReturnType } from "@calcom/features/bookings/Booker/hooks/useBookingForm";
@@ -9,11 +10,12 @@ import ServerTrans from "@calcom/lib/components/ServerTrans";
 import { APP_NAME, WEBSITE_PRIVACY_POLICY_URL, WEBSITE_TERMS_URL } from "@calcom/lib/constants";
 import { ErrorCode } from "@calcom/lib/errorCodes";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
-import type { TimeFormat } from "@calcom/lib/timeFormat";
+import { TimeFormat } from "@calcom/lib/timeFormat";
 import { Alert } from "@calcom/ui/components/alert";
 import { Button } from "@calcom/ui/components/button";
 import { EmptyScreen } from "@calcom/ui/components/empty-screen";
 import { Form } from "@calcom/ui/components/form";
+import { BookingFormStyleProvider } from "@calcom/web/modules/form-builder/components/BookingFormStyleContext";
 import type { TFunction } from "i18next";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -22,6 +24,7 @@ import type { IUseBookingErrors, IUseBookingLoadingStates } from "../../hooks/us
 import { BookingFields } from "./BookingFields";
 import { BookingSummary } from "./BookingSummary";
 import { FormSkeleton } from "./Skeleton";
+import { TwoDayBookingSummary } from "./TwoDayBookingSummary";
 
 type BookEventFormProps = {
   onCancel?: () => void;
@@ -48,6 +51,10 @@ type BookEventFormProps = {
   /** Reopens the OnceHub timezone modal from the booking summary's "(Change)" link. */
   onOpenTimezoneModal?: () => void;
   onChangeTimezone?: (iana: string) => void;
+  /** AIM two-day view: the OnceHub flow with the Funnel v3 mockup look (time card, labels
+   * above boxed inputs, full-width green "Confirm <date> at <time>" button). Implies
+   * oncehubStyle. */
+  twoDayStyle?: boolean;
 };
 
 export const BookEventForm = ({
@@ -70,6 +77,7 @@ export const BookEventForm = ({
   oncehubStyle = false,
   onOpenTimezoneModal,
   onChangeTimezone,
+  twoDayStyle = false,
 }: Omit<BookEventFormProps, "event"> & {
   eventQuery: {
     isError: boolean;
@@ -129,171 +137,202 @@ export const BookEventForm = ({
   }
 
   const watchedCfToken = bookingForm.watch("cfToken");
+  const duration = selectedDuration || eventType.length;
+  const timezoneLocked = eventType.lockTimeZoneToggleOnBookingPage;
+
+  const confirmLabel = (() => {
+    if (rescheduleUid && bookingData) return t("reschedule");
+    if (!renderConfirmNotVerifyEmailButtonCond) return t("verify_email_button");
+    if (isPaidEvent) return t("pay_and_book");
+    if (twoDayStyle) {
+      const start = dayjs.utc(timeslot).tz(timezone);
+      return t("confirm_date_at_time", {
+        date: start.format("ddd, MMM D"),
+        time: start.format(timeFormat === TimeFormat.TWELVE_HOUR ? "h:mm A" : timeFormat),
+      });
+    }
+    // "Done" only replaces the label for the plain confirm case - paid/verify/reschedule
+    // flows keep their accurate label above since the click doesn't actually finish the booking.
+    return oncehubStyle ? t("done") : t("confirm");
+  })();
 
   return (
-    <div className="flex flex-col h-full">
-      <Form
-        className="flex flex-col h-full"
-        onChange={() => {
-          // Form data is saved in store. This way when user navigates back to
-          // still change the timeslot, and comes back to the form, all their values
-          // still exist. This gets cleared when the form is submitted.
-          const values = bookingForm.getValues();
-          setFormValues(values);
-        }}
-        form={bookingForm}
-        handleSubmit={onSubmit}
-        noValidate>
-        {oncehubStyle && onCancel && (
-          <BookingSummary
-            timeslot={timeslot}
-            duration={selectedDuration || eventType.length}
-            onChangeSelection={onCancel}
-            onOpenTimezoneModal={eventType.lockTimeZoneToggleOnBookingPage ? undefined : onOpenTimezoneModal}
-            onChangeTimezone={eventType.lockTimeZoneToggleOnBookingPage ? undefined : onChangeTimezone}
-            requiresConfirmation={eventType.requiresConfirmation}
-          />
-        )}
-        <BookingFields
-          isDynamicGroupBooking={!!(username && username.indexOf("+") > -1)}
-          fields={eventType.bookingFields}
-          locations={eventType.locations}
-          rescheduleUid={rescheduleUid || undefined}
-          bookingData={bookingData}
-          isPaidEvent={isPaidEvent}
-          paymentCurrency={paymentCurrency}
-          oncehubStyle={oncehubStyle}
-        />
-        {errors.hasFormErrors || errors.hasDataErrors ? (
-          <div data-testid="booking-fail">
-            <Alert
-              ref={errorRef}
-              className="my-2"
-              severity="info"
-              title={rescheduleUid ? t("reschedule_fail") : t("booking_fail")}
-              message={getError({
-                globalError: errors.formErrors,
-                dataError: errors.dataErrors,
-                t,
-                responseVercelIdHeader,
-                timeFormat,
-                timezone,
-                language: i18n.language,
-              })}
+    <BookingFormStyleProvider value={twoDayStyle ? "two-day" : "default"}>
+      <div className="flex flex-col h-full">
+        <Form
+          className="flex flex-col h-full"
+          onChange={() => {
+            // Form data is saved in store. This way when user navigates back to
+            // still change the timeslot, and comes back to the form, all their values
+            // still exist. This gets cleared when the form is submitted.
+            const values = bookingForm.getValues();
+            setFormValues(values);
+          }}
+          form={bookingForm}
+          handleSubmit={onSubmit}
+          noValidate>
+          {twoDayStyle && onCancel && (
+            <TwoDayBookingSummary
+              timeslot={timeslot}
+              duration={duration}
+              onChangeSelection={onCancel}
+              onChangeTimezone={timezoneLocked ? undefined : onChangeTimezone}
+              requiresConfirmation={eventType.requiresConfirmation}
             />
-          </div>
-        ) : isTimeslotUnavailable ? (
-          <div data-testid="slot-not-allowed-to-book">
-            <Alert
-              severity="info"
-              title={t("unavailable_timeslot_title")}
-              message={
-                <ServerTrans
-                  t={t}
-                  i18nKey="timeslot_unavailable_book_a_new_time"
-                  components={[
-                    <button
-                      key="please-select-a-new-time-button"
-                      type="button"
-                      className="underline"
-                      onClick={onCancel}>
-                      Please select a new time
-                    </button>,
-                  ]}
-                />
+          )}
+          {oncehubStyle && !twoDayStyle && onCancel && (
+            <BookingSummary
+              timeslot={timeslot}
+              duration={duration}
+              onChangeSelection={onCancel}
+              onOpenTimezoneModal={
+                eventType.lockTimeZoneToggleOnBookingPage ? undefined : onOpenTimezoneModal
               }
+              onChangeTimezone={eventType.lockTimeZoneToggleOnBookingPage ? undefined : onChangeTimezone}
+              requiresConfirmation={eventType.requiresConfirmation}
             />
-          </div>
-        ) : null}
+          )}
+          <BookingFields
+            isDynamicGroupBooking={!!(username && username.indexOf("+") > -1)}
+            fields={eventType.bookingFields}
+            locations={eventType.locations}
+            rescheduleUid={rescheduleUid || undefined}
+            bookingData={bookingData}
+            isPaidEvent={isPaidEvent}
+            paymentCurrency={paymentCurrency}
+            oncehubStyle={oncehubStyle}
+          />
+          {errors.hasFormErrors || errors.hasDataErrors ? (
+            <div data-testid="booking-fail">
+              <Alert
+                ref={errorRef}
+                className="my-2"
+                severity="info"
+                title={rescheduleUid ? t("reschedule_fail") : t("booking_fail")}
+                message={getError({
+                  globalError: errors.formErrors,
+                  dataError: errors.dataErrors,
+                  t,
+                  responseVercelIdHeader,
+                  timeFormat,
+                  timezone,
+                  language: i18n.language,
+                })}
+              />
+            </div>
+          ) : isTimeslotUnavailable ? (
+            <div data-testid="slot-not-allowed-to-book">
+              <Alert
+                severity="info"
+                title={t("unavailable_timeslot_title")}
+                message={
+                  <ServerTrans
+                    t={t}
+                    i18nKey="timeslot_unavailable_book_a_new_time"
+                    components={[
+                      <button
+                        key="please-select-a-new-time-button"
+                        type="button"
+                        className="underline"
+                        onClick={onCancel}>
+                        Please select a new time
+                      </button>,
+                    ]}
+                  />
+                }
+              />
+            </div>
+          ) : null}
 
-        {!isPlatform && !oncehubStyle && (
-          <div className="my-3 w-full text-xs text-subtle">
-            <ServerTrans
-              t={t}
-              i18nKey="signing_up_terms"
-              values={{ appName: APP_NAME }}
-              components={[
-                <Link
-                  className="text-emphasis hover:underline"
-                  key="terms"
-                  href={`${WEBSITE_TERMS_URL}`}
-                  target="_blank">
-                  Terms
-                </Link>,
-                <Link
-                  className="text-emphasis hover:underline"
-                  key="privacy"
-                  href={`${WEBSITE_PRIVACY_POLICY_URL}`}
-                  target="_blank">
-                  Privacy Policy.
-                </Link>,
-              ]}
-            />
-          </div>
-        )}
-
-        {isPlatformBookerEmbed && (
-          <div className="my-3 w-full text-xs text-subtle">
-            {t("proceeding_agreement")}{" "}
-            <Link
-              className="text-emphasis hover:underline"
-              key="terms"
-              href={`${WEBSITE_TERMS_URL}`}
-              target="_blank">
-              {t("terms")}
-            </Link>{" "}
-            {t("and")}{" "}
-            <Link
-              className="text-emphasis hover:underline"
-              key="privacy"
-              href={`${WEBSITE_PRIVACY_POLICY_URL}`}
-              target="_blank">
-              {t("privacy_policy")}
-            </Link>
-            .
-          </div>
-        )}
-        <div className="flex justify-end mt-auto space-x-2 modalsticky rtl:space-x-reverse">
-          {!oncehubStyle && !!onCancel && (
-            <Button
-              color="minimal"
-              type="button"
-              onClick={onCancel}
-              data-testid="back"
-              className={classNames?.backButton}>
-              {t("back")}
-            </Button>
+          {!isPlatform && !oncehubStyle && (
+            <div className="my-3 w-full text-xs text-subtle">
+              <ServerTrans
+                t={t}
+                i18nKey="signing_up_terms"
+                values={{ appName: APP_NAME }}
+                components={[
+                  <Link
+                    className="text-emphasis hover:underline"
+                    key="terms"
+                    href={`${WEBSITE_TERMS_URL}`}
+                    target="_blank">
+                    Terms
+                  </Link>,
+                  <Link
+                    className="text-emphasis hover:underline"
+                    key="privacy"
+                    href={`${WEBSITE_PRIVACY_POLICY_URL}`}
+                    target="_blank">
+                    Privacy Policy.
+                  </Link>,
+                ]}
+              />
+            </div>
           )}
 
-          <Button
-            type="submit"
-            color="primary"
-            disabled={
-              (!!shouldRenderCaptcha && !watchedCfToken) || isTimeslotUnavailable || confirmButtonDisabled
-            }
-            loading={
-              loadingStates.creatingBooking ||
-              loadingStates.creatingRecurringBooking ||
-              isVerificationCodeSending
-            }
-            className={`${
-              oncehubStyle
-                ? "rounded-none! border-0! bg-[var(--cal-brand)]! px-8! py-2.5! text-white! hover:bg-[var(--cal-brand-emphasis)]!"
-                : ""
-            } ${classNames?.confirmButton || ""}`}
-            data-testid={rescheduleUid && bookingData ? "confirm-reschedule-button" : "confirm-book-button"}>
-            {(() => {
-              if (rescheduleUid && bookingData) return t("reschedule");
-              if (!renderConfirmNotVerifyEmailButtonCond) return t("verify_email_button");
-              if (isPaidEvent) return t("pay_and_book");
-              // "Done" only replaces the label for the plain confirm case - paid/verify/reschedule
-              // flows keep their accurate label above since the click doesn't actually finish the booking.
-              return oncehubStyle ? t("done") : t("confirm");
-            })()}
-          </Button>
-        </div>
-      </Form>
-    </div>
+          {isPlatformBookerEmbed && (
+            <div className="my-3 w-full text-xs text-subtle">
+              {t("proceeding_agreement")}{" "}
+              <Link
+                className="text-emphasis hover:underline"
+                key="terms"
+                href={`${WEBSITE_TERMS_URL}`}
+                target="_blank">
+                {t("terms")}
+              </Link>{" "}
+              {t("and")}{" "}
+              <Link
+                className="text-emphasis hover:underline"
+                key="privacy"
+                href={`${WEBSITE_PRIVACY_POLICY_URL}`}
+                target="_blank">
+                {t("privacy_policy")}
+              </Link>
+              .
+            </div>
+          )}
+          <div
+            className={
+              twoDayStyle ? "mt-4 flex" : "flex justify-end mt-auto space-x-2 modalsticky rtl:space-x-reverse"
+            }>
+            {!oncehubStyle && !!onCancel && (
+              <Button
+                color="minimal"
+                type="button"
+                onClick={onCancel}
+                data-testid="back"
+                className={classNames?.backButton}>
+                {t("back")}
+              </Button>
+            )}
+
+            <Button
+              type="submit"
+              color="primary"
+              disabled={
+                (!!shouldRenderCaptcha && !watchedCfToken) || isTimeslotUnavailable || confirmButtonDisabled
+              }
+              loading={
+                loadingStates.creatingBooking ||
+                loadingStates.creatingRecurringBooking ||
+                isVerificationCodeSending
+              }
+              className={`${
+                twoDayStyle
+                  ? "h-auto! w-full justify-center rounded-xl! border-0! bg-(--td-fill)! px-4! py-4! font-bold! text-lg! text-white! hover:bg-(--td-fill-hover)! [&_*]:text-lg!"
+                  : oncehubStyle
+                    ? "rounded-none! border-0! bg-[var(--cal-brand)]! px-8! py-2.5! text-white! hover:bg-[var(--cal-brand-emphasis)]!"
+                    : ""
+              } ${classNames?.confirmButton || ""}`}
+              data-testid={
+                rescheduleUid && bookingData ? "confirm-reschedule-button" : "confirm-book-button"
+              }>
+              {confirmLabel}
+            </Button>
+          </div>
+        </Form>
+      </div>
+    </BookingFormStyleProvider>
   );
 };
 

@@ -358,6 +358,7 @@ const BookerComponent = ({
         oncehubStyle={useOnceHubForm}
         onOpenTimezoneModal={() => setIsTimezoneModalOpen(true)}
         onChangeTimezone={isTwoDayView ? handleTimezoneConfirm : undefined}
+        twoDayStyle={isTwoDayView}
       />
     );
   }, [
@@ -458,12 +459,13 @@ const BookerComponent = ({
             <BookingHeader
               event={event.data}
               hideTimezone
+              twoDayStyle
               onOpenTimezoneModal={() => setIsTimezoneModalOpen(true)}
               onChangeSelection={bookerState === "booking" ? handleChangeSelection : undefined}
             />
           </div>
           {bookerState === "booking" ? (
-            <div className="-ml-px p-6">{EventBooker}</div>
+            <div>{EventBooker}</div>
           ) : (
             <TwoDayPicker
               slots={schedule?.data?.slots}

@@ -5,6 +5,7 @@ import { ChevronDownIcon } from "@coss/ui/icons";
 import type { CountryCode } from "libphonenumber-js";
 import { getCountries, getCountryCallingCode, parsePhoneNumberFromString } from "libphonenumber-js";
 import { useEffect, useMemo, useState } from "react";
+import { TWO_DAY_INPUT_CLASS, useBookingFormStyle } from "./BookingFormStyleContext";
 
 type OnceHubPhoneInputProps = {
   name?: string;
@@ -44,6 +45,7 @@ export const OnceHubPhoneInput = ({
   onChange,
 }: OnceHubPhoneInputProps) => {
   const { t, i18n } = useLocale();
+  const formStyle = useBookingFormStyle();
   const [country, setCountry] = useState<CountryCode>(
     () => countryFromValue(value) ?? detectDefaultCountry()
   );
@@ -98,6 +100,51 @@ export const OnceHubPhoneInput = ({
     // prefix - e.g. GB "07911123456" is stored as "+447911123456", not "+4407911123456".
     onChange(parsePhoneNumberFromString(candidate)?.number ?? candidate);
   };
+
+  if (formStyle === "two-day") {
+    return (
+      <div className="flex gap-[10px]">
+        <div className="relative w-[32%] shrink-0">
+          {/* The full "Country (+code)" names only fit in the open list; the closed select
+              shows "US +1" through this overlay, with the select's own text transparent. */}
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-(--td-ink) text-lg">
+            {country} +{dialCode}
+          </span>
+          <select
+            aria-label={t("country")}
+            className={`${TWO_DAY_INPUT_CLASS} appearance-none pr-9 text-transparent! [&>option]:text-(--td-ink) [&>option]:bg-(--td-surface)`}
+            value={country}
+            disabled={readOnly}
+            onChange={(e) => {
+              const next = e.target.value as CountryCode;
+              setCountry(next);
+              emit(next, nationalDigits);
+            }}>
+            {countries.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+          <ChevronDownIcon className="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-(--td-olive)" />
+        </div>
+        <input
+          id={name}
+          name={name}
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel-national"
+          className={TWO_DAY_INPUT_CLASS}
+          placeholder={placeholder || "(555) 555-5555"}
+          readOnly={readOnly}
+          value={nationalDigits}
+          onChange={(e) => emit(country, e.target.value)}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-end gap-4">
