@@ -1,25 +1,25 @@
-import { useEffect } from "react";
-import type { z } from "zod";
-
+import { propsTypes } from "@calcom/features/form-builder/propsTypes";
+import { preprocessNameFieldDataWithVariant } from "@calcom/features/form-builder/utils";
 import type {
   SelectLikeComponentProps,
   TextLikeComponentProps,
 } from "@calcom/features/form-builder/widget-types";
 import Widgets from "@calcom/features/form-builder/widgets";
-import PhoneInput from "@calcom/web/components/phone-input";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
-import type { fieldSchema, variantsConfigSchema, FieldType } from "@calcom/prisma/zod-utils";
+import type { FieldType, fieldSchema, variantsConfigSchema } from "@calcom/prisma/zod-utils";
 import { AddressInput } from "@calcom/ui/components/address";
 import { InfoBadge } from "@calcom/ui/components/badge";
 import { Button } from "@calcom/ui/components/button";
-import { Label, CheckboxField, EmailField, InputField, Checkbox } from "@calcom/ui/components/form";
-import { RadioGroup, RadioField } from "@calcom/ui/components/radio";
+import { Checkbox, CheckboxField, EmailField, InputField, Label } from "@calcom/ui/components/form";
+import { RadioField, RadioGroup } from "@calcom/ui/components/radio";
 import { Tooltip } from "@calcom/ui/components/tooltip";
+import PhoneInput from "@calcom/web/components/phone-input";
 import { XIcon } from "@coss/ui/icons";
-
+import { useEffect } from "react";
+import type { z } from "zod";
+import { useBookingFormStyle } from "./BookingFormStyleContext";
 import { ComponentForField } from "./FormBuilderField";
-import { propsTypes } from "@calcom/features/form-builder/propsTypes";
-import { preprocessNameFieldDataWithVariant } from "@calcom/features/form-builder/utils";
+import { OnceHubPhoneInput } from "./OnceHubPhoneInput";
 
 export const isValidValueProp: Record<Component["propsType"], (val: unknown) => boolean> = {
   boolean: (val) => typeof val === "boolean",
@@ -34,7 +34,9 @@ export const isValidValueProp: Record<Component["propsType"], (val: unknown) => 
 type Component =
   | {
       propsType: "text";
-      factory: <TProps extends TextLikeComponentProps>(props: TProps) => JSX.Element;
+      factory: <TProps extends TextLikeComponentProps & { oncehubStyle?: boolean }>(
+        props: TProps
+      ) => JSX.Element;
     }
   | {
       propsType: "textList";
@@ -79,6 +81,7 @@ type Component =
           variants: z.infer<typeof variantsConfigSchema>["variants"];
           value: Record<string, string> | string | undefined;
           setValue: (value: string | Record<string, string>) => void;
+          oncehubStyle?: boolean;
         },
       >(
         props: TProps
@@ -106,6 +109,7 @@ export const Components: Record<FieldType, Component> = {
     propsType: propsTypes.name,
     // Keep special "name" type field and later build split(FirstName and LastName) variant of it.
     factory: (props) => {
+      const formStyle = useBookingFormStyle();
       const { variant: variantName = "fullName" } = props;
       const onChange = (name: string, value: string) => {
         let currentValue = props.value;
@@ -134,6 +138,41 @@ export const Components: Record<FieldType, Component> = {
         }
         const variant = props.variants[variantName];
         const variantField = variant.fields[0];
+        if (props.oncehubStyle) {
+          const isTwoDay = formStyle === "two-day";
+          return (
+            <div
+              className={
+                isTwoDay ? "flex flex-col gap-2" : "grid grid-cols-[2fr_3fr] items-start gap-x-4 gap-y-1"
+              }>
+              <Label
+                className={
+                  isTwoDay ? "mb-0! flex items-center" : "mb-0! flex items-center pt-2 leading-relaxed!"
+                }
+                htmlFor="name">
+                <span>{variantField.label}</span>
+                <span className="text-emphasis -mb-1 ml-1 text-sm font-medium leading-none">
+                  {!props.readOnly && variantField.required ? "*" : ""}
+                </span>
+              </Label>
+              <InputField
+                name="name"
+                labelSrOnly={true}
+                placeholder={variantField.placeholder}
+                label={variantField.label}
+                containerClassName="w-full"
+                readOnly={props.readOnly}
+                value={value}
+                required={variantField.required}
+                type="text"
+                autoComplete="name"
+                onChange={(e) => {
+                  props.setValue(e.target.value);
+                }}
+              />
+            </div>
+          );
+        }
         return (
           <InputField
             name="name"
@@ -191,9 +230,23 @@ export const Components: Record<FieldType, Component> = {
   },
   phone: {
     propsType: propsTypes.phone,
-    factory: ({ setValue, readOnly, ...props }) => {
+    factory: ({ setValue, readOnly, oncehubStyle, ...props }) => {
       if (!props) {
         return <div />;
+      }
+
+      if (oncehubStyle) {
+        return (
+          <OnceHubPhoneInput
+            name={props.name}
+            value={props.value}
+            placeholder={props.placeholder}
+            readOnly={readOnly}
+            onChange={(val: string) => {
+              setValue(val);
+            }}
+          />
+        );
       }
 
       return (

@@ -1,5 +1,6 @@
 "use client";
 
+import dayjs from "@calcom/dayjs";
 import { sdkActionManager, useIsEmbed } from "@calcom/embed-core/embed-iframe";
 import { useBookerEmbedEvents } from "@calcom/embed-core/src/embed-iframe/react-hooks";
 import type { BookerProps } from "@calcom/features/bookings/Booker";
@@ -9,8 +10,13 @@ import {
   useInitializeBookerStoreContext,
 } from "@calcom/features/bookings/Booker/BookerStoreProvider";
 import { useBookerLayout } from "@calcom/features/bookings/Booker/hooks/useBookerLayout";
+import { useBookerTime } from "@calcom/features/bookings/Booker/hooks/useBookerTime";
 import { useBookingForm } from "@calcom/features/bookings/Booker/hooks/useBookingForm";
 import { useInitializeBookerStore } from "@calcom/features/bookings/Booker/store";
+import {
+  isTwoDayViewEvent,
+  TWO_DAY_VIEW_LOOKAHEAD_DAYS,
+} from "@calcom/features/bookings/Booker/utils/twoDayView";
 import { useBrandColors } from "@calcom/features/bookings/Booker/utils/use-brand-colors";
 import type { getPublicEvent } from "@calcom/features/eventtypes/lib/getPublicEvent";
 import { DEFAULT_DARK_BRAND_COLOR, DEFAULT_LIGHT_BRAND_COLOR, WEBAPP_URL } from "@calcom/lib/constants";
@@ -136,19 +142,29 @@ const BookerWebWrapperComponent = (props: BookerWebWrapperAtomProps): JSX.Elemen
    * Prioritize dateSchedule load
    * Component will render but use data already fetched from here, and no duplicate requests will be made
    * */
+  // The two-day view needs the next days with slots counted from today, whichever day or month
+  // is selected or in the URL, so it fetches a fixed window that starts today.
+  const isTwoDayView = isTwoDayViewEvent(event.data);
+  // Midnight in the booker's timezone (cal.tz or the browser's), as an instant: a date-only
+  // string would be read as browser-local midnight and shift the window when they differ.
+  const { timezone: bookerTimezone } = useBookerTime();
+  const twoDayWindowStart = dayjs().tz(bookerTimezone).startOf("day").toISOString();
   const schedule = useScheduleForEvent({
     eventId: props.entity.eventTypeId ?? event.data?.id,
     username: props.username,
-    dayCount,
+    dayCount: isTwoDayView ? TWO_DAY_VIEW_LOOKAHEAD_DAYS : dayCount,
     eventSlug: props.eventSlug,
     month: props.month,
     duration: props.duration,
-    selectedDate,
+    selectedDate: isTwoDayView ? twoDayWindowStart : selectedDate,
     teamMemberEmail: props.teamMemberEmail,
     fromRedirectOfNonOrgLink: props.entity.fromRedirectOfNonOrgLink,
     isTeamEvent: props.isTeamEvent ?? !!event.data?.team,
     useApiV2: props.useApiV2,
     bookerLayout,
+    // Without server-provided event data, wait for the event so a two-day event doesn't
+    // first fetch the month window and then the two-day window.
+    enabled: !!props.eventData || !event.isPending,
     ...(props.entity.orgSlug ? { orgSlug: props.entity.orgSlug } : {}),
   });
   const bookings = useBookings({

@@ -184,6 +184,8 @@ const _eventTypeMetaDataSchemaWithoutApps = z.object({
     })
     .optional(),
   bookerLayouts: bookerLayouts.optional(),
+  // AIM: replaces the calendar with the next two days that have slots (no layout switcher).
+  bookerTwoDayView: z.boolean().optional(),
 });
 
 export const eventTypeMetaDataSchemaWithUntypedApps = _eventTypeMetaDataSchemaWithoutApps.merge(
