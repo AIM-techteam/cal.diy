@@ -15,9 +15,9 @@ import { shallow } from "zustand/shallow";
 import { formatShortTimezoneLabel } from "../lib/timezone-map";
 import { BookingTimezoneSelect } from "./BookingTimezoneSelect";
 
-// Colors from the Funnel v3 mockup (funnel-v3.html, #s_cal).
+// Colors are the --td-* variables from ../lib/two-day-theme (light and dark).
 const tileClassName =
-  "rounded-xl border-2 border-[#ddd8c8] bg-white text-[#2f2e24] transition-colors hover:border-[#2f5a28] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2f5a28] focus-visible:ring-offset-2";
+  "rounded-xl border-2 border-(--td-line) bg-(--td-surface) text-(--td-ink) transition-colors hover:border-(--td-accent) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--td-accent) focus-visible:ring-offset-2 focus-visible:ring-offset-transparent";
 
 type TwoDayPickerProps = {
   slots?: Slots;
@@ -99,15 +99,15 @@ export const TwoDayPicker = ({
 
   const timezoneLine = (
     <>
-      <p className="mt-2 mb-1 text-base text-[#5c5b4e]" data-testid="two-day-timezone">
+      <p className="mt-2 mb-1 text-base text-(--td-mute)" data-testid="two-day-timezone">
         <span aria-hidden="true">🕓</span> {t("times_shown_in")}{" "}
-        <b className="text-[#2f2e24]">{formatShortTimezoneLabel(timezone)}</b>
+        <b className="text-(--td-ink)">{formatShortTimezoneLabel(timezone)}</b>
         {onChangeTimezone && (
           <>
             {" "}
             <button
               type="button"
-              className="font-bold text-[#2f5a28] underline"
+              className="font-bold text-(--td-accent) underline"
               aria-expanded={isTimezoneSelectOpen}
               onClick={() => setIsTimezoneSelectOpen(true)}
               data-testid="two-day-change-timezone">
@@ -145,14 +145,14 @@ export const TwoDayPicker = ({
   if (!activeDay) {
     return (
       <div className="w-full" data-testid="two-day-picker-empty">
-        <p className="text-base text-[#5c5b4e]">{t("no_upcoming_availability")}</p>
+        <p className="text-base text-(--td-mute)">{t("no_upcoming_availability")}</p>
         {timezoneLine}
       </div>
     );
   }
 
   return (
-    <div className="w-full text-[#2f2e24]" data-testid="two-day-picker">
+    <div className="w-full text-(--td-ink)" data-testid="two-day-picker">
       <div className="mb-2 grid grid-cols-2 gap-[10px]" role="group">
         {days.map((day) => {
           const isSelected = day.date === activeDay.date;
@@ -169,10 +169,10 @@ export const TwoDayPicker = ({
               className={classNames(
                 tileClassName,
                 "px-1 py-[10px] text-center",
-                isSelected && "border-[#2f5a28]! bg-[#e6ede3]!"
+                isSelected && "border-(--td-accent)! bg-(--td-accent-soft)!"
               )}>
               <b className="block text-lg leading-[1.3]">{dayTitle(day.date)}</b>
-              <small className="block text-[15px] text-[#5c5b4e]">{daySubtitle(day.date)}</small>
+              <small className="block text-[15px] text-(--td-mute)">{daySubtitle(day.date)}</small>
             </button>
           );
         })}
@@ -183,7 +183,7 @@ export const TwoDayPicker = ({
       {groups.map((group) =>
         group.times.length === 0 ? null : (
           <div key={group.key} data-testid={`two-day-${group.key}`}>
-            <h3 className="mt-4 mb-2 font-bold text-[#46432f] text-sm uppercase tracking-[.05em]">
+            <h3 className="mt-4 mb-2 font-bold text-(--td-olive) text-sm uppercase tracking-[.05em]">
               {group.title}
             </h3>
             <div className="grid grid-cols-2 gap-[10px] md:grid-cols-3">
@@ -199,7 +199,7 @@ export const TwoDayPicker = ({
                   className={classNames(
                     tileClassName,
                     "px-[6px] py-[14px] font-semibold text-lg disabled:opacity-60",
-                    time.time === pendingTime && "border-[#2f5a28]! bg-[#2f5a28]! text-white!"
+                    time.time === pendingTime && "border-(--td-fill)! bg-(--td-fill)! text-white!"
                   )}>
                   {time.label}
                 </button>
@@ -212,7 +212,7 @@ export const TwoDayPicker = ({
       {skipConfirmStep && pendingTimeLabel && pendingTime && (
         <div className="mt-5" data-testid="two-day-confirm">
           <Button
-            className="w-full justify-center rounded-xl! border-0! bg-[#2f5a28]! py-4! font-semibold! text-lg! text-white! hover:bg-[#244820]!"
+            className="w-full justify-center rounded-xl! border-0! bg-(--td-fill)! py-4! font-semibold! text-lg! text-white! hover:bg-(--td-fill-hover)!"
             loading={isBooking}
             onClick={() => {
               onSelectTime(pendingTime);

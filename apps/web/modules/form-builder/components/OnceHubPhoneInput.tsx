@@ -104,7 +104,7 @@ export const OnceHubPhoneInput = ({
       <div className="relative w-2/5 shrink-0">
         <select
           aria-label={t("country")}
-          className="w-full appearance-none border-0 border-b border-[#D1D5DB] bg-transparent py-1.5 pr-6 text-sm text-[#1A1A1A] focus:border-[var(--cal-brand)] focus:outline-none disabled:opacity-60"
+          className="w-full appearance-none border-0 border-b border-[#D1D5DB] bg-transparent py-1.5 pr-6 text-sm text-[#1A1A1A] dark:border-[#3f3c33] dark:text-[#ece9df] dark:[&>option]:bg-[#1c1b17] focus:border-[var(--cal-brand)] focus:outline-none disabled:opacity-60"
           value={country}
           disabled={readOnly}
           onChange={(e) => {
@@ -118,7 +118,7 @@ export const OnceHubPhoneInput = ({
             </option>
           ))}
         </select>
-        <ChevronDownIcon className="pointer-events-none absolute right-1 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6B7280]" />
+        <ChevronDownIcon className="pointer-events-none absolute right-1 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6B7280] dark:text-[#b3af9e]" />
       </div>
       <input
         id={name}
@@ -126,7 +126,7 @@ export const OnceHubPhoneInput = ({
         type="tel"
         inputMode="tel"
         autoComplete="tel-national"
-        className="w-full border-0 border-b border-[#D1D5DB] bg-transparent py-1.5 text-sm text-[#1A1A1A] placeholder:text-[#9CA3AF] focus:border-[var(--cal-brand)] focus:outline-none disabled:opacity-60"
+        className="w-full border-0 border-b border-[#D1D5DB] bg-transparent py-1.5 text-sm text-[#1A1A1A] placeholder:text-[#9CA3AF] dark:border-[#3f3c33] dark:text-[#ece9df] dark:placeholder:text-[#7d7a6c] focus:border-[var(--cal-brand)] focus:outline-none disabled:opacity-60"
         placeholder={placeholder}
         readOnly={readOnly}
         value={nationalDigits}

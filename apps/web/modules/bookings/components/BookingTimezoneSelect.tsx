@@ -2,10 +2,8 @@
 
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import classNames from "@calcom/ui/classNames";
+import { Icon } from "@calcom/ui/components/icon";
 import { formatShortTimezoneLabel, SHORT_US_TIMEZONE_LABELS } from "../lib/timezone-map";
-
-const SELECT_CHEVRON =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%2346432f' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E";
 
 type BookingTimezoneSelectProps = {
   timezone: string;
@@ -36,24 +34,29 @@ export const BookingTimezoneSelect = ({
   }
 
   return (
-    <select
-      // biome-ignore lint/a11y/noAutofocus: opened by the "Change" click, focus follows the user's action
-      autoFocus
-      aria-label={t("timezone")}
-      value={timezone}
-      onChange={(event) => onChange(event.target.value)}
-      data-testid={testId}
-      style={{ background: `#fff url("${SELECT_CHEVRON}") no-repeat right 18px center` }}
-      className={classNames(
-        "w-full appearance-none rounded-xl border-[1.5px] border-[#ddd8c8] bg-white pr-12 pl-4 text-[#2f2e24] focus:border-[#2f5a28] focus:outline-[3px] focus:outline-[rgba(47,90,40,.35)] focus:outline-offset-1 focus:outline-solid",
-        compact ? "py-[10px] text-base" : "py-[14px] text-xl",
-        className
-      )}>
-      {options.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
+    <div className={classNames("relative", className)}>
+      <select
+        // biome-ignore lint/a11y/noAutofocus: opened by the "Change" click, focus follows the user's action
+        autoFocus
+        aria-label={t("timezone")}
+        value={timezone}
+        onChange={(event) => onChange(event.target.value)}
+        data-testid={testId}
+        className={classNames(
+          "w-full appearance-none rounded-xl border-[1.5px] border-(--td-line) bg-(--td-surface) pr-12 pl-4 text-(--td-ink) focus:border-(--td-accent) focus:outline-[3px] focus:outline-(--td-focus) focus:outline-offset-1 focus:outline-solid",
+          compact ? "py-[10px] text-base" : "py-[14px] text-xl"
+        )}>
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+      <Icon
+        name="chevron-down"
+        aria-hidden="true"
+        className="pointer-events-none absolute top-1/2 right-[18px] h-5 w-5 -translate-y-1/2 text-(--td-olive)"
+      />
+    </div>
   );
 };

@@ -43,10 +43,10 @@ export const BookingHeader = ({
         // BookerSection) so the title's left edge lines up exactly with the field labels below.
         className="-ml-px flex w-full items-center justify-between px-6"
         data-testid="booking-header">
-        <h1 className="text-2xl font-bold text-[#333333]">{t("provide_information")}</h1>
+        <h1 className="text-2xl font-bold text-[#333333] dark:text-[#ece9df]">{t("provide_information")}</h1>
         <button
           type="button"
-          className="text-sm text-[#2563EB] hover:underline"
+          className="text-sm text-[#2563EB] hover:underline dark:text-[#7aa7ff]"
           onClick={onChangeSelection}
           data-testid="booking-header-change-selection">
           {t("change_selection")} ▾
@@ -57,18 +57,18 @@ export const BookingHeader = ({
 
   return (
     <div className="w-full text-left" data-testid="booking-header">
-      <h1 className="text-2xl font-bold text-[#333333]">{t("pick_a_date_and_time")}</h1>
-      <p className="mt-2 text-sm text-[#333333]">
+      <h1 className="text-2xl font-bold text-[#333333] dark:text-[#ece9df]">{t("pick_a_date_and_time")}</h1>
+      <p className="mt-2 text-sm text-[#333333] dark:text-[#ece9df]">
         <strong>{t("duration")}:</strong> {t("minute", { count: selectedDuration || event?.length })}
       </p>
-      <p className="mt-1 text-sm text-[#333333]">{t("virtual_meeting_details_notice")}</p>
+      <p className="mt-1 text-sm text-[#333333] dark:text-[#ece9df]">{t("virtual_meeting_details_notice")}</p>
       {!hideTimezone && (
-        <p className="mt-1 text-sm text-[#333333]">
+        <p className="mt-1 text-sm text-[#333333] dark:text-[#ece9df]">
           <strong>{t("your_time_zone")}:</strong> {formatTimezoneLabel(timezone)}{" "}
           {!event?.lockTimeZoneToggleOnBookingPage && (
             <button
               type="button"
-              className="text-[#6B7280] underline hover:text-[var(--cal-brand)]"
+              className="text-[#6B7280] underline dark:text-[#b3af9e] hover:text-[var(--cal-brand)]"
               onClick={onOpenTimezoneModal}
               data-testid="booking-header-change-timezone">
               ({t("change")})

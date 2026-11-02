@@ -41,6 +41,7 @@ import StickyBox from "react-sticky-box";
 import { Toaster } from "sonner";
 import { shallow } from "zustand/shallow";
 import { useIsQuickAvailabilityCheckFeatureEnabled } from "../hooks/useIsQuickAvailabilityCheckFeatureEnabled";
+import { TWO_DAY_THEME_CLASS } from "../lib/two-day-theme";
 import type { WrappedBookerProps } from "../types";
 import { AvailableTimeSlots } from "./AvailableTimeSlots";
 import { BookEventForm } from "./BookEventForm";
@@ -448,6 +449,7 @@ const BookerComponent = ({
           // "main": in a popup embed, a click outside the main element closes the embed.
           className={classNames(
             "main text-default mx-auto flex min-h-full w-full max-w-[640px] flex-col px-4",
+            TWO_DAY_THEME_CLASS,
             isEmbed ? "py-6" : "py-10 md:py-20",
             customClassNames?.bookerWrapper
           )}
