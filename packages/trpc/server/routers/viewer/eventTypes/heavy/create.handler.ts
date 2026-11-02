@@ -1,5 +1,6 @@
 import { getDefaultLocations } from "@calcom/app-store/_utils/getDefaultLocations";
 import { DailyLocationType } from "@calcom/app-store/constants";
+import { withAimEventTypeDefaults } from "@calcom/features/eventtypes/lib/aimEventTypeDefaults";
 import { EventTypeRepository } from "@calcom/features/eventtypes/repositories/eventTypeRepository";
 import type { PrismaClient } from "@calcom/prisma";
 import { Prisma } from "@calcom/prisma/client";
@@ -151,7 +152,7 @@ export const createHandler = async ({ ctx, input }: CreateOptions) => {
   try {
     const eventTypeRepo = new EventTypeRepository(ctx.prisma);
     const eventType = await eventTypeRepo.create({
-      ...data,
+      ...withAimEventTypeDefaults(data),
       profileId: profile.id,
     });
     return { eventType };
