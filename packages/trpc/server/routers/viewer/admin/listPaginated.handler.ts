@@ -14,10 +14,14 @@ type GetOptions = {
 const listPaginatedHandler = async ({ input }: GetOptions) => {
   const { cursor, limit, searchTerm } = input;
 
-  const getTotalUsers = await prisma.user.count();
 
   let searchFilters: Prisma.UserWhereInput = {};
   const bothLockedAndUnlockedWhere = { OR: [{ locked: false }, { locked: true }] };
+  // The count must use the same locked/unlocked bypass as the list below. A bare
+  // prisma.user.count() goes through excludeLockedUsersExtension and skips locked users,
+  // so with N locked users the table stops paginating N rows early (it fetches until
+  // totalFetched >= totalRowCount) and the last N users by id never appear.
+  const getTotalUsers = await prisma.user.count({ where: bothLockedAndUnlockedWhere });
 
   if (searchTerm) {
     searchFilters = {
