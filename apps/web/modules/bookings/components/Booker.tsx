@@ -465,7 +465,7 @@ const BookerComponent = ({
               slots={schedule?.data?.slots}
               isLoading={schedule.isPending}
               onSelectTime={onAvailableTimeSlotSelect}
-              onOpenTimezoneModal={canChangeTimezone ? () => setIsTimezoneModalOpen(true) : undefined}
+              onChangeTimezone={canChangeTimezone ? handleTimezoneConfirm : undefined}
               skipConfirmStep={skipConfirmStep}
               onConfirm={onSubmit}
               isBooking={

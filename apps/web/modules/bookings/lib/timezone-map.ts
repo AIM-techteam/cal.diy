@@ -192,7 +192,7 @@ export const formatTimezoneLabel = (iana: string): string => {
 
 // Labels from the Funnel v3 mockup. Arizona gets its own name because it skips daylight
 // saving, so "Mountain Time" would be wrong half the year.
-const SHORT_US_TIMEZONE_LABELS: Record<string, string> = {
+export const SHORT_US_TIMEZONE_LABELS: Record<string, string> = {
   "America/New_York": "Eastern Time",
   "America/Chicago": "Central Time",
   "America/Denver": "Mountain Time",

@@ -12,7 +12,10 @@ import { Button } from "@calcom/ui/components/button";
 import { SkeletonText } from "@calcom/ui/components/skeleton";
 import { useEffect, useMemo, useState } from "react";
 import { shallow } from "zustand/shallow";
-import { formatShortTimezoneLabel } from "../lib/timezone-map";
+import { formatShortTimezoneLabel, SHORT_US_TIMEZONE_LABELS } from "../lib/timezone-map";
+
+const SELECT_CHEVRON =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%2346432f' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E";
 
 // Colors from the Funnel v3 mockup (funnel-v3.html, #s_cal).
 const tileClassName =
@@ -28,7 +31,7 @@ type TwoDayPickerProps = {
   onConfirm?: (time: string) => void;
   isBooking?: boolean;
   /** Omit to hide the timezone "Change" link, e.g. when the event locks the timezone. */
-  onOpenTimezoneModal?: () => void;
+  onChangeTimezone?: (iana: string) => void;
 };
 
 /**
@@ -40,7 +43,7 @@ export const TwoDayPicker = ({
   slots,
   isLoading,
   onSelectTime,
-  onOpenTimezoneModal,
+  onChangeTimezone,
   skipConfirmStep = false,
   onConfirm,
   isBooking = false,
@@ -53,6 +56,7 @@ export const TwoDayPicker = ({
   );
 
   const [pendingTime, setPendingTime] = useState<string | null>(null);
+  const [isTimezoneSelectOpen, setIsTimezoneSelectOpen] = useState(false);
   const days = useMemo(() => getTwoDayViewDays(slots), [slots]);
   const activeDay = days.find((day) => day.date === selectedDate) ?? days[0];
 
@@ -78,8 +82,9 @@ export const TwoDayPicker = ({
     return formatDate(date, { weekday: "long" });
   };
 
+  // As in the mockup: the weekday is only added under "Tomorrow", the one title that lacks it.
   const daySubtitle = (date: string) =>
-    date === today || date === tomorrow
+    date === tomorrow
       ? formatDate(date, { weekday: "short", month: "short", day: "numeric" })
       : formatDate(date, { month: "short", day: "numeric" });
 
@@ -94,23 +99,57 @@ export const TwoDayPicker = ({
     { key: "afternoon", title: t("afternoon"), times: times.filter((time) => !time.isMorning) },
   ];
 
+  // The mockup offers the seven US zones. A visitor elsewhere keeps their own zone as the
+  // first option so the select still shows what the times are in.
+  const timezoneOptions = Object.entries(SHORT_US_TIMEZONE_LABELS).map(([value, label]) => ({
+    value,
+    label,
+  }));
+  if (!SHORT_US_TIMEZONE_LABELS[timezone]) {
+    timezoneOptions.unshift({ value: timezone, label: formatShortTimezoneLabel(timezone) });
+  }
+
   const timezoneLine = (
-    <p className="mt-2 mb-1 text-base text-[#5c5b4e]" data-testid="two-day-timezone">
-      <span aria-hidden="true">🕓</span> {t("times_shown_in")}{" "}
-      <b className="text-[#2f2e24]">{formatShortTimezoneLabel(timezone)}</b>
-      {onOpenTimezoneModal && (
-        <>
-          {" "}
-          <button
-            type="button"
-            className="font-bold text-[#2f5a28] underline"
-            onClick={onOpenTimezoneModal}
-            data-testid="two-day-change-timezone">
-            {t("change")}
-          </button>
-        </>
+    <>
+      <p className="mt-2 mb-1 text-base text-[#5c5b4e]" data-testid="two-day-timezone">
+        <span aria-hidden="true">🕓</span> {t("times_shown_in")}{" "}
+        <b className="text-[#2f2e24]">{formatShortTimezoneLabel(timezone)}</b>
+        {onChangeTimezone && (
+          <>
+            {" "}
+            <button
+              type="button"
+              className="font-bold text-[#2f5a28] underline"
+              aria-expanded={isTimezoneSelectOpen}
+              onClick={() => setIsTimezoneSelectOpen(true)}
+              data-testid="two-day-change-timezone">
+              {t("change")}
+            </button>
+          </>
+        )}
+      </p>
+      {onChangeTimezone && isTimezoneSelectOpen && (
+        <select
+          // biome-ignore lint/a11y/noAutofocus: opened by the "Change" click, focus follows the user's action
+          autoFocus
+          aria-label={t("timezone")}
+          value={timezone}
+          onChange={(event) => {
+            setPendingTime(null);
+            setIsTimezoneSelectOpen(false);
+            onChangeTimezone(event.target.value);
+          }}
+          data-testid="two-day-timezone-select"
+          style={{ background: `#fff url("${SELECT_CHEVRON}") no-repeat right 18px center` }}
+          className="mt-[6px] mb-1 w-full appearance-none rounded-xl border-[1.5px] border-[#ddd8c8] bg-white py-[14px] pr-12 pl-4 text-[#2f2e24] text-xl focus:border-[#2f5a28] focus:outline-[3px] focus:outline-[rgba(47,90,40,.35)] focus:outline-offset-1 focus:outline-solid">
+          {timezoneOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
       )}
-    </p>
+    </>
   );
 
   if (isLoading && days.length === 0) {
