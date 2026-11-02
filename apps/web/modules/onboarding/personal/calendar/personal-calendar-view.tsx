@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { useLocale } from "@calcom/lib/hooks/useLocale";
@@ -19,7 +18,6 @@ type PersonalCalendarViewProps = {
 };
 
 export const PersonalCalendarView = ({ userEmail }: PersonalCalendarViewProps) => {
-  const router = useRouter();
   const { t } = useLocale();
   const { installingAppSlug, setInstallingAppSlug, createInstallHandlers } = useAppInstallation();
   const { submitPersonalOnboarding, isSubmitting } = useSubmitPersonalOnboarding();
@@ -91,12 +89,9 @@ export const PersonalCalendarView = ({ userEmail }: PersonalCalendarViewProps) =
     submitPersonalOnboarding();
   };
 
-  const handleBack = () => {
-    router.push("/onboarding/personal/settings");
-  };
 
   return (
-    <OnboardingLayout userEmail={userEmail} currentStep={2} totalSteps={2}>
+    <OnboardingLayout userEmail={userEmail}>
       {/* Left column - Main content */}
       <OnboardingCard
         title={t("connect_your_calendar")}
@@ -104,10 +99,8 @@ export const PersonalCalendarView = ({ userEmail }: PersonalCalendarViewProps) =
         isLoading={queryIntegrations.isPending}
         floatingFooter={true}
         footer={
-          <div className="flex w-full items-center justify-between gap-4">
-            <Button color="minimal" className="rounded-[10px]" onClick={handleBack} disabled={isSubmitting}>
-              {t("back")}
-            </Button>
+          <div className="flex w-full items-center justify-end gap-4">
+            {/* AIM: calendar is the only onboarding step, so there is nothing to go back to. */}
             <div className="flex items-center gap-2">
               <Button
                 color="minimal"
