@@ -12,7 +12,7 @@ import { Button } from "@calcom/ui/components/button";
 import { SkeletonText } from "@calcom/ui/components/skeleton";
 import { useEffect, useMemo, useState } from "react";
 import { shallow } from "zustand/shallow";
-import { formatTimezoneLabel } from "../lib/timezone-map";
+import { formatShortTimezoneLabel } from "../lib/timezone-map";
 
 // Colors from the Funnel v3 mockup (funnel-v3.html, #s_cal).
 const tileClassName =
@@ -97,7 +97,7 @@ export const TwoDayPicker = ({
   const timezoneLine = (
     <p className="mt-2 mb-1 text-base text-[#5c5b4e]" data-testid="two-day-timezone">
       <span aria-hidden="true">🕓</span> {t("times_shown_in")}{" "}
-      <b className="text-[#2f2e24]">{formatTimezoneLabel(timezone)}</b>
+      <b className="text-[#2f2e24]">{formatShortTimezoneLabel(timezone)}</b>
       {onOpenTimezoneModal && (
         <>
           {" "}
