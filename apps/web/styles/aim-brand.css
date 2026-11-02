@@ -52,10 +52,14 @@ body.aim-brand {
   --cal-text-subtle: #4b5848;
   --cal-text-muted: #5a6655;
 
-  /* coss-ui components (login page buttons) read these instead of --cal-brand. */
+  /* coss-ui components (login page) read these instead of the --cal-* tokens. */
   --primary: #2b7a24;
   --primary-foreground: #ffffff;
   --ring: #42a635;
+  --border: #dfe7db;
+  --input: #9fae99;
+  --muted-foreground: #5a6655;
+  --foreground: #1d2419;
 
   accent-color: #2b7a24;
   caret-color: #2b7a24;
@@ -70,6 +74,16 @@ body.aim-brand :focus-visible {
   outline-color: #42a635;
 }
 
+/* Stock cal markup hard-codes Tailwind grays (e.g. the "Hidden" label, 2.6:1 on white). */
+body.aim-brand :is(.text-gray-400, .text-zinc-400) {
+  color: var(--cal-text-muted);
+}
+
+/* An off switch must not carry the brand tint, or a hidden event type reads half-on. */
+body.aim-brand button[role="switch"][data-state="unchecked"] {
+  background-color: #9fae99;
+}
+
 /* The sidebar is the funnel's olive: the one place the brand carries a whole region. */
 body.aim-brand .aim-rail {
   --cal-bg-muted: #1f3d1b;
@@ -82,6 +96,13 @@ body.aim-brand .aim-rail {
   --cal-text-subtle: #bdd3b6;
   --cal-text-muted: #a3bc9b;
   scrollbar-color: #3d6a37 transparent;
+}
+
+/* Credits line (licence attribution, kept): cal renders it at 8px and 50% opacity, unreadable on olive. */
+body.aim-brand .aim-rail small {
+  font-size: 0.625rem;
+  opacity: 1;
+  color: var(--cal-text-subtle);
 }
 
 /* Dark theme keeps cal's dark neutrals; only brand color and type follow the funnel. */

@@ -44,8 +44,8 @@ export const OnboardingLayout = ({ userEmail, currentStep, totalSteps, children 
       </div>
 
       {/* Footer with progress dots and sign out */}
-      <div className="flex w-full flex-col items-center justify-center gap-4 px-10 py-8">
-        <div className="flex min-h-[6px] items-center gap-1">
+      <div className="flex w-full flex-col items-center justify-center gap-4 px-10 py-6">
+        <div className="flex items-center gap-1 empty:hidden">
           {totalSteps && totalSteps > 0 ? (
             Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => {
               const isCurrent = step === currentStep;
@@ -64,9 +64,7 @@ export const OnboardingLayout = ({ userEmail, currentStep, totalSteps, children 
                 />
               );
             })
-          ) : (
-            <div className="h-[6px]" aria-hidden="true" />
-          )}
+          ) : null}
         </div>
         <Button onClick={handleSignOut} color="minimal" className="text-subtle h-7">
           {t("sign_out")}

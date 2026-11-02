@@ -17,8 +17,8 @@ OWN-WORLD: funnel 4.0 palette — button green #2b7a24 for every primary action,
 
 STORY: advisor signs in with Google, sees their own brand, connects the calendar, then Zoom, then lands in a familiar app.
 
-FIRST VIEWPORT: login — wordmark on top, serif heading, Google as the primary action in brand green. In-app: olive rail on the left with the wordmark at its head, standard nav, content on a sage-tinted ground.
+FIRST VIEWPORT: login — wordmark on top, serif heading, Google as the primary action in brand green. In-app: olive rail on the left with the wordmark at its head, standard nav, content on white (the funnel's own --bg:#fff); sage grounds on login and onboarding only.
 
-FORM: pinned by the owner (funnel 4.0 brand), position 1; signature move = the olive brand rail. seed: none (brief-pinned world, no roll)
+FORM: pinned by the owner (funnel 4.0 brand), position 1; signature move = the olive brand rail. seed: none (roll skipped on purpose: the owner pinned the world to the funnel 4.0 brand on 2026-11-02)
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
