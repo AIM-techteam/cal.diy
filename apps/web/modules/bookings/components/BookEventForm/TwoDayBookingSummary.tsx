@@ -3,16 +3,14 @@
 import dayjs from "@calcom/dayjs";
 import { useBookerTime } from "@calcom/features/bookings/Booker/hooks/useBookerTime";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
-import { TimeFormat } from "@calcom/lib/timeFormat";
-import { useState } from "react";
-import { formatShortTimezoneLabel } from "../../lib/timezone-map";
-import { BookingTimezoneSelect } from "../BookingTimezoneSelect";
+import { formatShortTimezoneLabel, getSlotDisplayFormat } from "../../lib/timezone-map";
+import { useTimezoneChange } from "../BookingTimezoneSelect";
 
 type TwoDayBookingSummaryProps = {
   timeslot: string;
   duration: number;
   onChangeSelection: () => void;
-  /** Omit when the event locks the timezone. */
+  /** Omit when the timezone can't change (locked by the event, or inside an embed). */
   onChangeTimezone?: (iana: string) => void;
   requiresConfirmation?: boolean;
 };
@@ -30,9 +28,16 @@ export const TwoDayBookingSummary = ({
 }: TwoDayBookingSummaryProps) => {
   const { t } = useLocale();
   const { timezone, timeFormat } = useBookerTime();
-  const [isTimezoneSelectOpen, setIsTimezoneSelectOpen] = useState(false);
+  const timezoneChange = useTimezoneChange({
+    timezone,
+    onChangeTimezone,
+    compact: true,
+    selectClassName: "mt-2",
+    triggerTestId: "booking-summary-change-timezone",
+    selectTestId: "booking-summary-timezone-select",
+  });
 
-  const slotFormat = timeFormat === TimeFormat.TWELVE_HOUR ? "h:mm A" : timeFormat;
+  const slotFormat = getSlotDisplayFormat(timeFormat);
   const start = dayjs.utc(timeslot).tz(timezone);
   const end = start.add(duration, "minute");
 
@@ -45,7 +50,7 @@ export const TwoDayBookingSummary = ({
           <span className="block bg-(--td-fill) px-[2px] py-[2px] font-bold text-[13px] text-white uppercase">
             {start.format("MMM")}
           </span>
-          <b className="block py-[2px] text-[26px] text-(--td-ink)">{start.format("D")}</b>
+          <b className="block py-[2px] text-(--td-ink) text-[26px]">{start.format("D")}</b>
         </div>
         <div className="min-w-0 text-(--td-ink)">
           <strong className="block text-lg">
@@ -56,34 +61,11 @@ export const TwoDayBookingSummary = ({
           </span>
           <span className="block text-(--td-mute) text-[15px]">
             {formatShortTimezoneLabel(timezone)}
-            {onChangeTimezone && (
-              <>
-                {" · "}
-                <button
-                  type="button"
-                  className="font-bold text-(--td-accent) underline"
-                  aria-expanded={isTimezoneSelectOpen}
-                  onClick={() => setIsTimezoneSelectOpen(true)}
-                  data-testid="booking-summary-change-timezone">
-                  {t("change")}
-                </button>
-              </>
-            )}
+            {timezoneChange.trigger && <> · {timezoneChange.trigger}</>}
           </span>
         </div>
       </div>
-      {onChangeTimezone && isTimezoneSelectOpen && (
-        <BookingTimezoneSelect
-          timezone={timezone}
-          compact
-          className="mt-2"
-          data-testid="booking-summary-timezone-select"
-          onChange={(iana) => {
-            setIsTimezoneSelectOpen(false);
-            onChangeTimezone(iana);
-          }}
-        />
-      )}
+      {timezoneChange.select}
       <button
         type="button"
         className="mt-2 font-bold text-(--td-accent) underline"

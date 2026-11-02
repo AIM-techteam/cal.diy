@@ -1,3 +1,4 @@
+import { TimeFormat } from "@calcom/lib/timeFormat";
 /**
  * Static IANA timezone -> country/region lookup for the OnceHub-style timezone
  * picker on the public booking page. Deliberately not exhaustive: this is a
@@ -219,3 +220,7 @@ export const formatShortTimezoneLabel = (iana: string): string => {
     return iana;
   }
 };
+
+/** Day.js format for a slot time: "9:00 AM" for 12-hour, the user's format otherwise. */
+export const getSlotDisplayFormat = (timeFormat: string): string =>
+  timeFormat === TimeFormat.TWELVE_HOUR ? "h:mm A" : timeFormat;

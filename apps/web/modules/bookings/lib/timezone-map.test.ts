@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatShortTimezoneLabel } from "./timezone-map";
+import { formatShortTimezoneLabel, getSlotDisplayFormat } from "./timezone-map";
 
 describe("formatShortTimezoneLabel", () => {
   it("uses the mockup labels for US zones", () => {
@@ -15,5 +15,12 @@ describe("formatShortTimezoneLabel", () => {
 
   it("returns the input for an unknown zone", () => {
     expect(formatShortTimezoneLabel("Not/AZone")).toBe("Not/AZone");
+  });
+});
+
+describe("getSlotDisplayFormat", () => {
+  it("uses h:mm A for the 12-hour format and keeps other formats", () => {
+    expect(getSlotDisplayFormat("h:mma")).toBe("h:mm A");
+    expect(getSlotDisplayFormat("HH:mm")).toBe("HH:mm");
   });
 });

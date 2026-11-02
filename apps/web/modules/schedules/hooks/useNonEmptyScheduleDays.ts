@@ -1,3 +1,4 @@
+import { isSlotShownInBooker } from "@calcom/features/bookings/Booker/utils/twoDayView";
 import { useMemo } from "react";
 
 import type { Slots } from "../lib/types";
@@ -8,11 +9,7 @@ const getNonEmptyScheduleDays = (slots?: Slots) => {
   const nonEmptyDays: string[] = [];
 
   Object.keys(slots).forEach((date) => {
-    if (
-      slots[date].some(
-        (slot) => !(slot?.away && !slot.toUser && !slot.showNotePublicly) && slots[date].length > 0
-      )
-    ) {
+    if (slots[date].some((slot) => slot && isSlotShownInBooker(slot))) {
       nonEmptyDays.push(date);
     }
   });

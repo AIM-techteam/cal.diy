@@ -187,6 +187,8 @@ const BookerComponent = ({
   // AIM two-day view: replaces every layout (mobile included) with TwoDayPicker, then reuses
   // the OnceHub confirmation form.
   const isTwoDayView = !isPlatform && isTwoDayViewEvent(event.data);
+  // Embeds never change the timezone (the month view's modal is gated the same way).
+  const canChangeTimezone = !isEmbed && !event.data?.lockTimeZoneToggleOnBookingPage;
   const useOnceHubForm = isOnceHubMonthView || isTwoDayView;
 
   // Deselects the current timeslot to go back to the calendar/slots step. Shared by the
@@ -357,7 +359,7 @@ const BookerComponent = ({
         isPlatform={isPlatform}
         oncehubStyle={useOnceHubForm}
         onOpenTimezoneModal={() => setIsTimezoneModalOpen(true)}
-        onChangeTimezone={isTwoDayView ? handleTimezoneConfirm : undefined}
+        onChangeTimezone={isTwoDayView && canChangeTimezone ? handleTimezoneConfirm : undefined}
         twoDayStyle={isTwoDayView}
       />
     );
@@ -383,6 +385,7 @@ const BookerComponent = ({
     unavailableTimeSlots,
     useOnceHubForm,
     isTwoDayView,
+    canChangeTimezone,
     handleChangeSelection,
     setIsTimezoneModalOpen,
   ]);
@@ -406,7 +409,6 @@ const BookerComponent = ({
     return null;
   }
 
-  const canChangeTimezone = !isEmbed && !event.data?.lockTimeZoneToggleOnBookingPage;
   const timezoneModal = isOnceHubMonthView && canChangeTimezone && (
     <TimezoneModal
       open={isTimezoneModalOpen}
@@ -470,6 +472,8 @@ const BookerComponent = ({
             <TwoDayPicker
               slots={schedule?.data?.slots}
               isLoading={schedule.isPending}
+              isError={schedule.isError}
+              onRetry={() => schedule.invalidate()}
               onSelectTime={onAvailableTimeSlotSelect}
               onChangeTimezone={canChangeTimezone ? handleTimezoneConfirm : undefined}
               skipConfirmStep={skipConfirmStep}

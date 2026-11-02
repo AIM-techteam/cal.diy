@@ -10,7 +10,7 @@ import ServerTrans from "@calcom/lib/components/ServerTrans";
 import { APP_NAME, WEBSITE_PRIVACY_POLICY_URL, WEBSITE_TERMS_URL } from "@calcom/lib/constants";
 import { ErrorCode } from "@calcom/lib/errorCodes";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
-import { TimeFormat } from "@calcom/lib/timeFormat";
+import type { TimeFormat } from "@calcom/lib/timeFormat";
 import { Alert } from "@calcom/ui/components/alert";
 import { Button } from "@calcom/ui/components/button";
 import { EmptyScreen } from "@calcom/ui/components/empty-screen";
@@ -22,6 +22,7 @@ import { useMemo, useState } from "react";
 import type { FieldError } from "react-hook-form";
 import type { IUseBookingErrors, IUseBookingLoadingStates } from "../../hooks/useBookings";
 import { BookingFields } from "./BookingFields";
+import { getSlotDisplayFormat } from "../../lib/timezone-map";
 import { BookingSummary } from "./BookingSummary";
 import { FormSkeleton } from "./Skeleton";
 import { TwoDayBookingSummary } from "./TwoDayBookingSummary";
@@ -148,7 +149,7 @@ export const BookEventForm = ({
       const start = dayjs.utc(timeslot).tz(timezone);
       return t("confirm_date_at_time", {
         date: start.format("ddd, MMM D"),
-        time: start.format(timeFormat === TimeFormat.TWELVE_HOUR ? "h:mm A" : timeFormat),
+        time: start.format(getSlotDisplayFormat(timeFormat)),
       });
     }
     // "Done" only replaces the label for the plain confirm case - paid/verify/reschedule
@@ -188,7 +189,6 @@ export const BookEventForm = ({
               onOpenTimezoneModal={
                 eventType.lockTimeZoneToggleOnBookingPage ? undefined : onOpenTimezoneModal
               }
-              onChangeTimezone={eventType.lockTimeZoneToggleOnBookingPage ? undefined : onChangeTimezone}
               requiresConfirmation={eventType.requiresConfirmation}
             />
           )}

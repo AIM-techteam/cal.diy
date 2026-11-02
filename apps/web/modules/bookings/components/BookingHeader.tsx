@@ -5,9 +5,13 @@ import { useBookerTime } from "@calcom/features/bookings/Booker/hooks/useBookerT
 import type { BookerEvent } from "@calcom/features/bookings/types";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { formatTimezoneLabel } from "../lib/timezone-map";
+import { EventDuration } from "./event-meta/Duration";
+
+const hasDurationChoice = (event: Pick<BookerEvent, "metadata" | "isDynamic">) =>
+  (event.metadata?.multipleDuration?.length ?? 0) > 1 || !!event.isDynamic;
 
 type BookingHeaderProps = {
-  event?: Pick<BookerEvent, "length" | "lockTimeZoneToggleOnBookingPage"> | null;
+  event?: Pick<BookerEvent, "length" | "lockTimeZoneToggleOnBookingPage" | "metadata" | "isDynamic"> | null;
   onOpenTimezoneModal: () => void;
   /** Shown as a "Change selection" link top-right, next to the h1, when a timeslot is
    * already picked (i.e. the booker is on the confirmation-form step). Omit to hide it. */
@@ -70,9 +74,17 @@ export const BookingHeader = ({
   return (
     <div className="w-full text-left" data-testid="booking-header">
       <h1 className="text-2xl font-bold text-[#333333] dark:text-[#ece9df]">{t("pick_a_date_and_time")}</h1>
-      <p className="mt-2 text-sm text-[#333333] dark:text-[#ece9df]">
-        <strong>{t("duration")}:</strong> {t("minute", { count: selectedDuration || event?.length })}
-      </p>
+      {twoDayStyle && event && hasDurationChoice(event) ? (
+        // The two-day view has no EventMeta sidebar, so offer the duration choice here.
+        <div className="mt-2 flex items-center gap-2 text-sm text-[#333333] dark:text-[#ece9df]">
+          <strong>{t("duration")}:</strong>
+          <EventDuration event={event} />
+        </div>
+      ) : (
+        <p className="mt-2 text-sm text-[#333333] dark:text-[#ece9df]">
+          <strong>{t("duration")}:</strong> {t("minute", { count: selectedDuration || event?.length })}
+        </p>
+      )}
       <p className="mt-1 text-sm text-[#333333] dark:text-[#ece9df]">{t("virtual_meeting_details_notice")}</p>
       {!hideTimezone && (
         <p className="mt-1 text-sm text-[#333333] dark:text-[#ece9df]">

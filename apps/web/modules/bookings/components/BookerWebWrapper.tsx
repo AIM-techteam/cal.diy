@@ -1,5 +1,6 @@
 "use client";
 
+import dayjs from "@calcom/dayjs";
 import { sdkActionManager, useIsEmbed } from "@calcom/embed-core/embed-iframe";
 import { useBookerEmbedEvents } from "@calcom/embed-core/src/embed-iframe/react-hooks";
 import type { BookerProps } from "@calcom/features/bookings/Booker";
@@ -140,9 +141,10 @@ const BookerWebWrapperComponent = (props: BookerWebWrapperAtomProps): JSX.Elemen
    * Prioritize dateSchedule load
    * Component will render but use data already fetched from here, and no duplicate requests will be made
    * */
-  // The two-day view needs the next days with slots counted from today, whichever day is
-  // selected, so it fetches a fixed window instead of the month around selectedDate.
+  // The two-day view needs the next days with slots counted from today, whichever day or month
+  // is selected or in the URL, so it fetches a fixed window that starts today.
   const isTwoDayView = isTwoDayViewEvent(event.data);
+  const twoDayWindowStart = dayjs().format("YYYY-MM-DD");
   const schedule = useScheduleForEvent({
     eventId: props.entity.eventTypeId ?? event.data?.id,
     username: props.username,
@@ -150,12 +152,15 @@ const BookerWebWrapperComponent = (props: BookerWebWrapperAtomProps): JSX.Elemen
     eventSlug: props.eventSlug,
     month: props.month,
     duration: props.duration,
-    selectedDate: isTwoDayView ? null : selectedDate,
+    selectedDate: isTwoDayView ? twoDayWindowStart : selectedDate,
     teamMemberEmail: props.teamMemberEmail,
     fromRedirectOfNonOrgLink: props.entity.fromRedirectOfNonOrgLink,
     isTeamEvent: props.isTeamEvent ?? !!event.data?.team,
     useApiV2: props.useApiV2,
     bookerLayout,
+    // Without server-provided event data, wait for the event so a two-day event doesn't
+    // first fetch the month window and then the two-day window.
+    enabled: !!props.eventData || !event.isPending,
     ...(props.entity.orgSlug ? { orgSlug: props.entity.orgSlug } : {}),
   });
   const bookings = useBookings({

@@ -71,6 +71,7 @@ export const useScheduleForEvent = ({
   isTeamEvent,
   useApiV2 = true,
   bookerLayout,
+  enabled = true,
 }: {
   username?: string | null;
   eventSlug?: string | null;
@@ -92,6 +93,7 @@ export const useScheduleForEvent = ({
     extraDays: number;
     columnViewExtraDays: { current: number };
   };
+  enabled?: boolean;
 }) => {
   const { timezone } = useBookerTime();
   const [usernameFromStore, eventSlugFromStore, monthFromStore, durationFromStore] = useBookerStoreContext(
@@ -117,6 +119,7 @@ export const useScheduleForEvent = ({
     teamMemberEmail,
     useApiV2: useApiV2,
     bookerLayout,
+    enabled,
   });
 
   return {

@@ -6,14 +6,14 @@ import { useBookerTime } from "@calcom/features/bookings/Booker/hooks/useBookerT
 import { getTwoDayViewDays } from "@calcom/features/bookings/Booker/utils/twoDayView";
 import type { Slots } from "@calcom/features/calendars/lib/types";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
-import { TimeFormat } from "@calcom/lib/timeFormat";
 import classNames from "@calcom/ui/classNames";
 import { Button } from "@calcom/ui/components/button";
 import { SkeletonText } from "@calcom/ui/components/skeleton";
 import { useEffect, useMemo, useState } from "react";
 import { shallow } from "zustand/shallow";
-import { formatShortTimezoneLabel } from "../lib/timezone-map";
-import { BookingTimezoneSelect } from "./BookingTimezoneSelect";
+import { formatShortTimezoneLabel, getSlotDisplayFormat } from "../lib/timezone-map";
+import { useTimezoneChange } from "./BookingTimezoneSelect";
+import { OutOfOfficeInSlots } from "./OutOfOfficeInSlots";
 
 // Colors are the --td-* variables from ../lib/two-day-theme (light and dark).
 const tileClassName =
@@ -22,24 +22,29 @@ const tileClassName =
 type TwoDayPickerProps = {
   slots?: Slots;
   isLoading: boolean;
+  /** The slots request failed: show an error with a retry instead of "no availability". */
+  isError?: boolean;
+  onRetry?: () => void;
   onSelectTime: (time: string) => void;
   /** When the form can be skipped (all booking fields prefilled), a picked time shows a
    * confirm button that books it directly, like the month view does. */
   skipConfirmStep?: boolean;
   onConfirm?: (time: string) => void;
   isBooking?: boolean;
-  /** Omit to hide the timezone "Change" link, e.g. when the event locks the timezone. */
+  /** Omit to hide the timezone "Change" link (timezone locked by the event, or an embed). */
   onChangeTimezone?: (iana: string) => void;
 };
 
 /**
- * The next two days that have slots, as two tiles, with the selected day's times split into
- * Morning and Afternoon. Empty days never show up, and there is no way to switch to another
- * layout or browse further days.
+ * The next two days the booker would show, as two tiles, with the selected day's times split
+ * into Morning and Afternoon (and its out-of-office notice, if any). Empty days never show up,
+ * and there is no way to switch to another layout or browse further days.
  */
 export const TwoDayPicker = ({
   slots,
   isLoading,
+  isError = false,
+  onRetry,
   onSelectTime,
   onChangeTimezone,
   skipConfirmStep = false,
@@ -54,7 +59,14 @@ export const TwoDayPicker = ({
   );
 
   const [pendingTime, setPendingTime] = useState<string | null>(null);
-  const [isTimezoneSelectOpen, setIsTimezoneSelectOpen] = useState(false);
+  const timezoneChange = useTimezoneChange({
+    timezone,
+    onChangeTimezone,
+    onPicked: () => setPendingTime(null),
+    selectClassName: "mt-[6px] mb-1",
+    triggerTestId: "two-day-change-timezone",
+    selectTestId: "two-day-timezone-select",
+  });
   const days = useMemo(() => getTwoDayViewDays(slots), [slots]);
   const activeDay = days.find((day) => day.date === selectedDate) ?? days[0];
 
@@ -86,7 +98,7 @@ export const TwoDayPicker = ({
       ? formatDate(date, { weekday: "short", month: "short", day: "numeric" })
       : formatDate(date, { month: "short", day: "numeric" });
 
-  const slotFormat = timeFormat === TimeFormat.TWELVE_HOUR ? "h:mm A" : timeFormat;
+  const slotFormat = getSlotDisplayFormat(timeFormat);
   const times = (activeDay?.slots ?? []).map((slot) => {
     const start = dayjs.utc(slot.time).tz(timezone);
     return { time: slot.time, label: start.format(slotFormat), isMorning: start.hour() < 12 };
@@ -99,35 +111,12 @@ export const TwoDayPicker = ({
 
   const timezoneLine = (
     <>
-      <p className="mt-2 mb-1 text-base text-(--td-mute)" data-testid="two-day-timezone">
+      <p className="mt-2 mb-1 text-(--td-mute) text-base" data-testid="two-day-timezone">
         <span aria-hidden="true">🕓</span> {t("times_shown_in")}{" "}
         <b className="text-(--td-ink)">{formatShortTimezoneLabel(timezone)}</b>
-        {onChangeTimezone && (
-          <>
-            {" "}
-            <button
-              type="button"
-              className="font-bold text-(--td-accent) underline"
-              aria-expanded={isTimezoneSelectOpen}
-              onClick={() => setIsTimezoneSelectOpen(true)}
-              data-testid="two-day-change-timezone">
-              {t("change")}
-            </button>
-          </>
-        )}
+        {timezoneChange.trigger && <> {timezoneChange.trigger}</>}
       </p>
-      {onChangeTimezone && isTimezoneSelectOpen && (
-        <BookingTimezoneSelect
-          timezone={timezone}
-          className="mt-[6px] mb-1"
-          data-testid="two-day-timezone-select"
-          onChange={(iana) => {
-            setPendingTime(null);
-            setIsTimezoneSelectOpen(false);
-            onChangeTimezone(iana);
-          }}
-        />
-      )}
+      {timezoneChange.select}
     </>
   );
 
@@ -142,10 +131,27 @@ export const TwoDayPicker = ({
     );
   }
 
+  if (isError && days.length === 0) {
+    return (
+      <div className="w-full" data-testid="two-day-picker-error" role="alert">
+        <p className="text-(--td-ink) text-base">{t("slots_load_error")}</p>
+        {onRetry && (
+          <button
+            type="button"
+            className="mt-2 font-bold text-(--td-accent) underline"
+            onClick={onRetry}
+            data-testid="two-day-retry">
+            {t("try_again")}
+          </button>
+        )}
+      </div>
+    );
+  }
+
   if (!activeDay) {
     return (
       <div className="w-full" data-testid="two-day-picker-empty">
-        <p className="text-base text-(--td-mute)">{t("no_upcoming_availability")}</p>
+        <p className="text-(--td-mute) text-base">{t("no_upcoming_availability")}</p>
         {timezoneLine}
       </div>
     );
@@ -172,13 +178,26 @@ export const TwoDayPicker = ({
                 isSelected && "border-(--td-accent)! bg-(--td-accent-soft)!"
               )}>
               <b className="block text-lg leading-[1.3]">{dayTitle(day.date)}</b>
-              <small className="block text-[15px] text-(--td-mute)">{daySubtitle(day.date)}</small>
+              <small className="block text-(--td-mute) text-[15px]">{daySubtitle(day.date)}</small>
             </button>
           );
         })}
       </div>
 
       {timezoneLine}
+
+      {activeDay.outOfOffice && (
+        <OutOfOfficeInSlots
+          date={activeDay.date}
+          fromUser={activeDay.outOfOffice.fromUser}
+          toUser={activeDay.outOfOffice.toUser}
+          reason={activeDay.outOfOffice.reason}
+          emoji={activeDay.outOfOffice.emoji}
+          showNotePublicly={activeDay.outOfOffice.showNotePublicly}
+          borderDashed
+          className="mt-4"
+        />
+      )}
 
       {groups.map((group) =>
         group.times.length === 0 ? null : (
