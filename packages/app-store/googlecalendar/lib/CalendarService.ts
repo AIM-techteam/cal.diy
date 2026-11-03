@@ -743,7 +743,8 @@ class GoogleCalendarService implements Calendar {
       if (!cals.items) return [];
 
       // Filter out Google system calendars (holidays, birthdays) as they don't return proper free/busy information
-      const filteredCalendars = cals.items.filter((cal) => !isGoogleSystemCalendar(cal.id));
+      const systemFiltered = cals.items.filter((cal) => !isGoogleSystemCalendar(cal.id));
+      const filteredCalendars = await this.aimOwnCalendarsOnly(calendar, systemFiltered);
 
       return filteredCalendars.map(
         (cal) =>
@@ -760,6 +761,49 @@ class GoogleCalendarService implements Calendar {
       this.log.error("There was an error getting calendars: ", safeStringify(error));
       throw error;
     }
+  }
+
+  /**
+   * AIM (2026-11-03): a user only ever sees their OWN calendars in cal.
+   *
+   * Why: every AIM cal user's Google connection is a copy of ONE ops credential
+   * (`AIM_SHARED_GOOGLE_ACCOUNT`, default gator@annuitygator.com, "Option C" in cal-aim). That
+   * account's calendar list holds ~250 calendars named after other people ("Transferred from
+   * <email>"), so Settings → Calendars showed everyone's names and emails, and onboarding
+   * picked the ops account's own calendar as the booking destination. The user's real
+   * calendar is not in that list at all: it is reached by ACL, by its id (= the user's email).
+   *
+   * Kept: the calendar whose id is the user's own email, and the primary calendar of the
+   * connected account unless that account is the shared ops one (a user who connects their
+   * personal Gmail still sees that Gmail calendar). On the shared account the user's own
+   * calendar is fetched by id and shown as the primary one. Anything else is hidden.
+   */
+  private async aimOwnCalendarsOnly(
+    calendar: calendar_v3.Calendar,
+    items: calendar_v3.Schema$CalendarListEntry[]
+  ): Promise<calendar_v3.Schema$CalendarListEntry[]> {
+    const ownEmail = (this.credential.user?.email ?? "").toLowerCase();
+    const sharedAccount = (process.env.AIM_SHARED_GOOGLE_ACCOUNT || "gator@annuitygator.com").toLowerCase();
+    const primaryId = (items.find((cal) => cal.primary)?.id ?? "").toLowerCase();
+    const isSharedAccount = primaryId === sharedAccount;
+
+    const kept = items.filter((cal) => {
+      const id = (cal.id ?? "").toLowerCase();
+      if (ownEmail && id === ownEmail) return true;
+      return Boolean(cal.primary) && !isSharedAccount;
+    });
+
+    if (isSharedAccount && ownEmail && !kept.some((cal) => (cal.id ?? "").toLowerCase() === ownEmail)) {
+      try {
+        const own = await calendar.calendars.get({ calendarId: ownEmail });
+        kept.push({ id: own.data.id ?? ownEmail, summary: own.data.summary ?? ownEmail, primary: true, accessRole: "writer" });
+      } catch (error) {
+        // No access to the user's own calendar through the shared account: show nothing rather
+        // than other people's calendars.
+        this.log.warn("AIM: own calendar not reachable through the shared account", safeStringify({ ownEmail }));
+      }
+    }
+    return kept;
   }
 
   async testDelegationCredentialSetup(): Promise<void> {

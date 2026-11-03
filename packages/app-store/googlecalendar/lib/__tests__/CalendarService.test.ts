@@ -1137,7 +1137,7 @@ describe("listCalendars", () => {
     expect(calendars[0].externalId).toBe("user@example.com");
   });
 
-  test("should filter out all Google system calendars while keeping regular calendars", async () => {
+  test("AIM: shows only the user's own calendar and the account primary, never other people's", async () => {
     const calendarService = BuildCalendarService(mockCredential);
     setFullMockOAuthManagerRequest();
 
@@ -1182,13 +1182,51 @@ describe("listCalendars", () => {
 
     const calendars = await calendarService.listCalendars();
 
-    expect(calendars).toHaveLength(3);
+    // AIM (aimOwnCalendarsOnly): secondary and shared calendars are hidden; system ones too.
     const calendarIds = calendars.map((cal) => cal.externalId);
-    expect(calendarIds).toContain("user@example.com");
-    expect(calendarIds).toContain("work@example.com");
-    expect(calendarIds).toContain("shared@example.com");
-    expect(calendarIds).not.toContain("en.usa#holiday@group.v.calendar.google.com");
-    expect(calendarIds).not.toContain("addressbook#contacts@group.v.calendar.google.com");
+    expect(calendarIds).toEqual(["user@example.com"]);
+  });
+
+  test("AIM: on the shared ops account, lists only the user's own calendar, fetched by id", async () => {
+    const calendarService = BuildCalendarService(mockCredential);
+    setFullMockOAuthManagerRequest();
+
+    calendarListMock.mockImplementation(() => ({
+      data: {
+        items: [
+          { id: "gator@annuitygator.com", summary: "gator@annuitygator.com", primary: true, accessRole: "owner" },
+          { id: "c_1@group.calendar.google.com", summary: "Transferred from someone@annuitygator.com", primary: false, accessRole: "owner" },
+          { id: "other@annuitygator.com", summary: "Other Person", primary: false, accessRole: "reader" },
+        ],
+      },
+    }));
+    const getMock = vi.fn().mockResolvedValue({ data: { id: "user@example.com", summary: "User Example" } });
+    calendarMock.calendar_v3.Calendar().calendars.get = getMock;
+
+    const calendars = await calendarService.listCalendars();
+
+    expect(getMock).toHaveBeenCalledWith({ calendarId: "user@example.com" });
+    expect(calendars.map((cal) => cal.externalId)).toEqual(["user@example.com"]);
+    expect(calendars[0].primary).toBe(true);
+    expect(calendars[0].readOnly).toBe(false);
+  });
+
+  test("AIM: a personal account the user connected keeps its primary calendar only", async () => {
+    const calendarService = BuildCalendarService(mockCredential);
+    setFullMockOAuthManagerRequest();
+
+    calendarListMock.mockImplementation(() => ({
+      data: {
+        items: [
+          { id: "someone.personal@gmail.com", summary: "Personal", primary: true, accessRole: "owner" },
+          { id: "coworker@annuitygator.com", summary: "Coworker", primary: false, accessRole: "reader" },
+        ],
+      },
+    }));
+
+    const calendars = await calendarService.listCalendars();
+
+    expect(calendars.map((cal) => cal.externalId)).toEqual(["someone.personal@gmail.com"]);
   });
 
   test("should return empty array when all calendars are system calendars", async () => {
