@@ -81,7 +81,14 @@ body.aim-brand :is(.text-gray-400, .text-zinc-400) {
 
 /* An off switch must not carry the brand tint, or a hidden event type reads half-on. */
 body.aim-brand button[role="switch"][data-state="unchecked"] {
-  background-color: #9fae99;
+  background-color: #7f8f79; /* 3.4:1 on white: a control boundary must reach 3:1 */
+}
+
+/* DM Serif Display ships one weight. Stock cal pairs font-cal with font-semibold/bold, which
+   makes the browser fake a bold; keep the serif at its real weight. */
+body.aim-brand .font-cal {
+  font-weight: 400;
+  font-synthesis: none;
 }
 
 /* The sidebar is the funnel's olive: the one place the brand carries a whole region. */
