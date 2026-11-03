@@ -1,9 +1,6 @@
-import { useEffect } from "react";
-import { shallow } from "zustand/shallow";
-
 import type { Dayjs } from "@calcom/dayjs";
 import dayjs from "@calcom/dayjs";
-import { useEmbedStyles } from "@calcom/embed-core/embed-iframe";
+import { useEmbedStyles, useSlotsViewOnSmallScreen } from "@calcom/embed-core/embed-iframe";
 import { useBookerStoreContext } from "@calcom/features/bookings/Booker/BookerStoreProvider";
 import { getAvailableDatesInMonth } from "@calcom/features/calendars/lib/getAvailableDatesInMonth";
 import type { Slots } from "@calcom/features/calendars/lib/types";
@@ -15,9 +12,9 @@ import classNames from "@calcom/ui/classNames";
 import { Button } from "@calcom/ui/components/button";
 import { SkeletonText } from "@calcom/ui/components/skeleton";
 import { Tooltip } from "@calcom/ui/components/tooltip";
-
+import { useEffect } from "react";
+import { shallow } from "zustand/shallow";
 import NoAvailabilityDialog from "./NoAvailabilityDialog";
-import { useSlotsViewOnSmallScreen } from "@calcom/embed-core/embed-iframe";
 
 export type DatePickerProps = {
   /** which day of the week to render the calendar. Usually Sunday (=0) or Monday (=1) - default: Sunday */
@@ -51,6 +48,8 @@ export type DatePickerProps = {
   isCompact?: boolean;
   // Whether to show the no availability dialog
   showNoAvailabilityDialog?: boolean;
+  /** Rendered below the day grid, e.g. OnceHub-style prev/next month text links. */
+  footer?: React.ReactNode;
 };
 
 const Day = ({
@@ -62,6 +61,7 @@ const Day = ({
   customClassName,
   showMonthTooltip,
   isFirstDayOfNextMonth,
+  oncehubStyle = false,
   ...props
 }: JSX.IntrinsicElements["button"] & {
   active: boolean;
@@ -71,9 +71,12 @@ const Day = ({
   customClassName?: {
     dayContainer?: string;
     dayActive?: string;
+    dayDisabled?: string;
   };
   showMonthTooltip?: boolean;
   isFirstDayOfNextMonth?: boolean;
+  /** OnceHub-style circular cell (border-radius 50%) instead of the rounded rectangle. */
+  oncehubStyle?: boolean;
 }) => {
   const { t } = useLocale();
   const enabledDateButtonEmbedStyles = useEmbedStyles("enabledDateButton");
@@ -84,7 +87,12 @@ const Day = ({
       type="button"
       style={disabled ? { ...disabledDateButtonEmbedStyles } : { ...enabledDateButtonEmbedStyles }}
       className={classNames(
-        "disabled:text-bookinglighter absolute bottom-0 left-0 right-0 top-0 mx-auto w-full cursor-pointer rounded-md border-2 border-transparent text-center text-sm font-medium transition disabled:cursor-default disabled:border-transparent disabled:font-light ",
+        oncehubStyle
+          ? // Centered fixed-size circular hit target (not a cell-filling square): the
+            // selected day shows as a ~40px orange circle and available days as bold text
+            // with no background, matching the OnceHub reference.
+            "relative mx-auto flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border-2 border-transparent text-center text-sm transition disabled:cursor-default disabled:border-transparent"
+          : "disabled:text-bookinglighter absolute bottom-0 left-0 right-0 top-0 mx-auto w-full cursor-pointer rounded-md border-2 border-transparent text-center text-sm font-medium transition disabled:cursor-default disabled:border-transparent disabled:font-light ",
         active
           ? "bg-brand-default text-brand"
           : !disabled
@@ -93,7 +101,7 @@ const Day = ({
                   ? "hover:border-brand-default text-emphasis bg-emphasis"
                   : `hover:border-brand-default ${customClassName.dayActive}`
               }`
-            : `${customClassName ? "" : " text-mute"}`
+            : `${customClassName?.dayDisabled ?? (customClassName ? "" : " text-mute")}`
       )}
       data-testid="day"
       data-disabled={disabled}
@@ -157,6 +165,7 @@ const Days = ({
   periodData,
   isCompact,
   showNoAvailabilityDialog = true,
+  oncehubStyle = false,
   ...props
 }: Omit<DatePickerProps, "locale" | "className" | "weekStart"> & {
   DayComponent?: React.FC<React.ComponentProps<typeof Day>>;
@@ -167,11 +176,14 @@ const Days = ({
   customClassName?: {
     datePickerDate?: string;
     datePickerDateActive?: string;
+    datePickerDateDisabled?: string;
   };
   scrollToTimeSlots?: () => void;
   isBookingInPast: boolean;
   periodData: PeriodData;
   isCompact?: boolean;
+  /** OnceHub-style circular day cells. Web month view only. */
+  oncehubStyle?: boolean;
 }) => {
   const slotsViewOnSmallScreen = useSlotsViewOnSmallScreen();
   const layout = useBookerStoreContext((state) => state.layout);
@@ -331,7 +343,14 @@ const Days = ({
   return (
     <>
       {daysToRender.map(({ day, disabled, away, emoji, isFirstDayOfNextMonth }, idx) => (
-        <div key={day === null ? `e-${idx}` : `day-${day.format()}`} className="relative w-full pt-[100%]">
+        <div
+          key={day === null ? `e-${idx}` : `day-${day.format()}`}
+          className={classNames(
+            "relative w-full",
+            // OnceHub: short rows (48px) with a thin divider line under each week, instead
+            // of the tall square (pt-[100%]) cells.
+            oncehubStyle ? "flex h-12 items-center justify-center border-b border-[#EBEBEB]" : "pt-[100%]"
+          )}>
           {day === null ? (
             <div key={`e-${idx}`} />
           ) : props.isLoading ? (
@@ -346,6 +365,7 @@ const Days = ({
               customClassName={{
                 dayContainer: customClassName?.datePickerDate,
                 dayActive: customClassName?.datePickerDateActive,
+                dayDisabled: customClassName?.datePickerDateDisabled,
               }}
               date={day}
               onClick={() => {
@@ -358,6 +378,7 @@ const Days = ({
               emoji={emoji}
               showMonthTooltip={showNextMonthDays && !disabled && day.month() !== browsingDate.month()}
               isFirstDayOfNextMonth={isFirstDayOfNextMonth}
+              oncehubStyle={oncehubStyle}
             />
           )}
         </div>
@@ -396,6 +417,8 @@ const DatePicker = ({
   },
   isCompact,
   showNoAvailabilityDialog,
+  footer,
+  oncehubStyle = false,
   ...passThroughProps
 }: DatePickerProps &
   Partial<React.ComponentProps<typeof Days>> & {
@@ -404,9 +427,12 @@ const DatePicker = ({
       datePickerDays?: string;
       datePickersDates?: string;
       datePickerDatesActive?: string;
+      datePickerDatesDisabled?: string;
       datePickerToggle?: string;
     };
     scrollToTimeSlots?: () => void;
+    /** OnceHub-style month title centered between the prev/next arrows. Web month view only. */
+    oncehubStyle?: boolean;
   }) => {
   const minDate = passThroughProps.minDate;
   const rawBrowsingDate = passThroughProps.browsingDate || dayjs().startOf("month");
@@ -427,62 +453,92 @@ const DatePicker = ({
       )
     : null;
 
+  const monthTitle = browsingDate ? (
+    <time dateTime={browsingDate.format("YYYY-MM")} data-testid="selected-month-label">
+      <strong className={classNames(`text-emphasis font-semibold`, customClassNames?.datePickerTitle)}>
+        {month}
+      </strong>{" "}
+      <span className={classNames(`text-subtle font-medium`, customClassNames?.datePickerTitle)}>
+        {browsingDate.format("YYYY")}
+      </span>
+    </time>
+  ) : (
+    <SkeletonText className={classNames("h-8 w-24", oncehubStyle && "mx-auto")} />
+  );
+
+  const prevMonthButton = (
+    <Button
+      className={classNames(
+        `group p-1 opacity-70 transition hover:opacity-100 rtl:rotate-180`,
+        !browsingDate.isAfter(dayjs()) && `disabled:text-bookinglighter hover:bg-background hover:opacity-70`,
+        customClassNames?.datePickerToggle
+      )}
+      onClick={() => changeMonth(-1)}
+      disabled={!browsingDate.isAfter(dayjs())}
+      data-testid="decrementMonth"
+      color="minimal"
+      variant="icon"
+      StartIcon="chevron-left"
+      aria-label={t("view_previous_month")}
+    />
+  );
+
+  const nextMonthButton = (
+    <Button
+      className={classNames(
+        `group p-1 opacity-70 transition hover:opacity-100 rtl:rotate-180`,
+        `${customClassNames?.datePickerToggle}`
+      )}
+      onClick={() => changeMonth(+1)}
+      data-testid="incrementMonth"
+      color="minimal"
+      variant="icon"
+      StartIcon="chevron-right"
+      aria-label={t("view_next_month")}
+    />
+  );
+
   return (
     <div className={className}>
-      <div className="mb-1 flex items-center justify-between text-xl">
-        <span className="text-default w-1/2 text-base">
-          {browsingDate ? (
-            <time dateTime={browsingDate.format("YYYY-MM")} data-testid="selected-month-label">
-              <strong
-                className={classNames(`text-emphasis font-semibold`, customClassNames?.datePickerTitle)}>
-                {month}
-              </strong>{" "}
-              <span className={classNames(`text-subtle font-medium`, customClassNames?.datePickerTitle)}>
-                {browsingDate.format("YYYY")}
-              </span>
-            </time>
-          ) : (
-            <SkeletonText className="h-8 w-24" />
-          )}
-        </span>
-        <div className="text-emphasis">
-          <div className="flex">
-            <Button
-              className={classNames(
-                `group p-1 opacity-70 transition hover:opacity-100 rtl:rotate-180`,
-                !browsingDate.isAfter(dayjs()) &&
-                  `disabled:text-bookinglighter hover:bg-background hover:opacity-70`,
-                customClassNames?.datePickerToggle
-              )}
-              onClick={() => changeMonth(-1)}
-              disabled={!browsingDate.isAfter(dayjs())}
-              data-testid="decrementMonth"
-              color="minimal"
-              variant="icon"
-              StartIcon="chevron-left"
-              aria-label={t("view_previous_month")}
-            />
-            <Button
-              className={classNames(
-                `group p-1 opacity-70 transition hover:opacity-100 rtl:rotate-180`,
-                `${customClassNames?.datePickerToggle}`
-              )}
-              onClick={() => changeMonth(+1)}
-              data-testid="incrementMonth"
-              color="minimal"
-              variant="icon"
-              StartIcon="chevron-right"
-              aria-label={t("view_next_month")}
-            />
+      {oncehubStyle ? (
+        // Month title centered exactly between the two arrows: the title is the only
+        // flex-1 sibling, so it fills (and is centered within) whatever space is left
+        // over once both fixed-width arrow buttons are laid out - not just centered
+        // within its own half of the row.
+        // Title absolutely centered over the grid; both arrows grouped at the right with a
+        // thin vertical divider between them, matching the OnceHub reference.
+        <div className="relative mb-1 flex w-full items-center justify-center text-base">
+          <span className="text-default">{monthTitle}</span>
+          <div className="absolute right-0 flex items-center">
+            {prevMonthButton}
+            <span className="mx-1 h-4 w-px bg-[#D1D5DB]" />
+            {nextMonthButton}
           </div>
         </div>
-      </div>
-      <div className="border-subtle mb-2 grid grid-cols-7 gap-4 border-b border-t text-center md:mb-0 md:border-0">
+      ) : (
+        <div className="mb-1 flex items-center justify-between text-xl">
+          <span className="text-default w-1/2 text-base">{monthTitle}</span>
+          <div className="text-emphasis">
+            <div className="flex">
+              {prevMonthButton}
+              {nextMonthButton}
+            </div>
+          </div>
+        </div>
+      )}
+      <div
+        className={classNames(
+          oncehubStyle
+            ? "mb-0 grid grid-cols-7 border-b border-[#EBEBEB] text-center"
+            : "border-subtle mb-2 grid grid-cols-7 gap-4 border-b border-t text-center md:mb-0 md:border-0"
+        )}>
         {weekdayNames(locale, weekStart, "short").map((weekDay) => (
           <div
             key={weekDay}
             className={classNames(
-              `text-emphasis my-4 text-xs font-medium uppercase tracking-widest`,
+              oncehubStyle
+                ? `py-3 text-xs font-normal text-[#6B7280]`
+                : `text-emphasis my-4 text-xs font-medium uppercase tracking-widest`,
               customClassNames?.datePickerDays
             )}>
             {weekDay}
@@ -491,21 +547,27 @@ const DatePicker = ({
       </div>
       <div
         className={classNames(
-          "relative grid grid-cols-7 gap-1 text-center",
+          "relative grid grid-cols-7 text-center",
+          oncehubStyle ? "" : "gap-1",
           // AIM: OnceHub-style variant (?amPm=1) shows only the weeks with availability,
           // so use auto rows instead of a fixed 6-row grid — otherwise the reserved empty
           // rows leave a big blank gap under the compact calendar.
-          !(typeof window !== "undefined" && new URLSearchParams(window.location.search).get("amPm") === "1") &&
+          !oncehubStyle &&
+            !(
+              typeof window !== "undefined" && new URLSearchParams(window.location.search).get("amPm") === "1"
+            ) &&
             "grid-rows-6"
         )}>
         <Days
           customClassName={{
             datePickerDate: customClassNames?.datePickersDates,
             datePickerDateActive: customClassNames?.datePickerDatesActive,
+            datePickerDateDisabled: customClassNames?.datePickerDatesDisabled,
           }}
           weekStart={weekStart}
           selected={selected}
           {...passThroughProps}
+          oncehubStyle={oncehubStyle}
           browsingDate={browsingDate}
           month={month}
           nextMonthButton={() => changeMonth(+1)}
@@ -517,6 +579,7 @@ const DatePicker = ({
           showNoAvailabilityDialog={showNoAvailabilityDialog}
         />
       </div>
+      {footer}
     </div>
   );
 };

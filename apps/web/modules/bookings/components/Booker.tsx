@@ -11,12 +11,15 @@ import {
   useBookerResizeAnimation,
 } from "@calcom/features/bookings/Booker/config";
 import framerFeatures from "@calcom/features/bookings/Booker/framer-features";
+import { useBookerTime } from "@calcom/features/bookings/Booker/hooks/useBookerTime";
 import type { BookerProps } from "@calcom/features/bookings/Booker/types";
 import { isBookingDryRun } from "@calcom/features/bookings/Booker/utils/isBookingDryRun";
 import { isTimeSlotAvailable } from "@calcom/features/bookings/Booker/utils/isTimeslotAvailable";
-import { getQueryParam } from "@calcom/features/bookings/Booker/utils/query-param";
+import { getQueryParam, updateQueryParam } from "@calcom/features/bookings/Booker/utils/query-param";
+import { isTwoDayViewEvent } from "@calcom/features/bookings/Booker/utils/twoDayView";
 import { Header } from "@calcom/features/bookings/components/Header";
 import { BookerSection } from "@calcom/features/bookings/components/Section";
+import { useTimePreferences } from "@calcom/features/bookings/lib/timePreferences";
 import { Dialog } from "@calcom/features/components/controlled-dialog";
 import { scrollIntoViewSmooth } from "@calcom/lib/browser/browser.utils";
 import {
@@ -33,15 +36,17 @@ import TurnstileCaptcha from "@calcom/web/modules/auth/components/Turnstile";
 import { useSkipConfirmStep } from "@calcom/web/modules/bookings/hooks/useSkipConfirmStep";
 import { useNonEmptyScheduleDays } from "@calcom/web/modules/schedules/hooks/useNonEmptyScheduleDays";
 import { AnimatePresence, LazyMotion, m } from "framer-motion";
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import StickyBox from "react-sticky-box";
 import { Toaster } from "sonner";
 import { shallow } from "zustand/shallow";
 import { useIsQuickAvailabilityCheckFeatureEnabled } from "../hooks/useIsQuickAvailabilityCheckFeatureEnabled";
+import { TWO_DAY_THEME_CLASS } from "../lib/two-day-theme";
 import type { WrappedBookerProps } from "../types";
 import { AvailableTimeSlots } from "./AvailableTimeSlots";
 import { BookEventForm } from "./BookEventForm";
 import { BookFormAsModal } from "./BookEventForm/BookFormAsModal";
+import { BookingHeader } from "./BookingHeader";
 import { DatePicker } from "./DatePicker";
 import { DryRunMessage } from "./DryRunMessage";
 import { EventMeta } from "./EventMeta";
@@ -49,6 +54,8 @@ import { HavingTroubleFindingTime } from "./HavingTroubleFindingTime";
 import { LargeCalendar } from "./LargeCalendar";
 import { OverlayCalendar } from "./OverlayCalendar/OverlayCalendar";
 import { SlotSelectionModalHeader } from "./SlotSelectionModalHeader";
+import { TimezoneModal } from "./TimezoneModal";
+import { TwoDayPicker } from "./TwoDayPicker";
 import { NotFound } from "./Unavailable";
 import { VerifyCodeDialog } from "./VerifyCodeDialog";
 
@@ -94,6 +101,31 @@ const BookerComponent = ({
     (state) => [state.state, state.setState],
     shallow
   );
+
+  // OnceHub-style timezone modal: shown on load for the web booker when the
+  // shared link doesn't already pin a timezone via the cal.tz query param.
+  // Skipped for platform/embed consumers, who own their own booking UX.
+  const { timezone: effectiveTimezone } = useBookerTime();
+  const [setTimePreferencesTimezone] = useTimePreferences((state) => [state.setTimezone], shallow);
+  const [setBookerStoreContextTimezone] = useBookerStoreContext((state) => [state.setTimezone], shallow);
+  // Opened via the effect below once the event has loaded, rather than eagerly on mount:
+  // eager opening flashed the modal open then closed for timezone-locked events (whose
+  // lock flag isn't known until event.data resolves).
+  const [isTimezoneModalOpen, setIsTimezoneModalOpen] = useState(false);
+  const hasAutoOpenedTimezoneModalRef = useRef(false);
+
+  const handleTimezoneConfirm = (iana: string) => {
+    // Defense in depth: the modal is already gated off for timezone-locked events (see
+    // the TimezoneModal render below), but guard here too in case this handler is ever
+    // wired to another entry point.
+    if (event.data?.lockTimeZoneToggleOnBookingPage) return;
+    // Mirrors EventMeta's own timezone change handler: both stores must be
+    // set together (see EventMeta.tsx globe/timezone block).
+    setTimePreferencesTimezone(iana);
+    setBookerStoreContextTimezone(iana);
+    updateQueryParam("cal.tz", iana);
+    setIsTimezoneModalOpen(false);
+  };
 
   const selectedDate = useBookerStoreContext((state) => state.selectedDate);
 
@@ -146,7 +178,67 @@ const BookerComponent = ({
   const nextSlots =
     Math.abs(dayjs(selectedDate).diff(availableSlots[availableSlots.length - 1], "day")) + addonDays;
 
-  const animationScope = useBookerResizeAnimation(layout, bookerState);
+  // OnceHub-style month view: no meta sidebar, plain-text header above the grid instead.
+  // Web (non-platform) only - platform/atoms keep the classic meta-sidebar month view.
+  const isOnceHubMonthView = !isPlatform && layout === BookerLayouts.MONTH_VIEW;
+  // The white/bordered card look is kept for the calendar+slots step, but dropped for
+  // the OnceHub confirmation-form step, which is meant to sit flat on the page.
+  const showCard = !(isOnceHubMonthView && bookerState === "booking");
+  // AIM two-day view: replaces every layout (mobile included) with TwoDayPicker, then reuses
+  // the OnceHub confirmation form.
+  const isTwoDayView = !isPlatform && isTwoDayViewEvent(event.data);
+  // Embeds never change the timezone (the month view's modal is gated the same way).
+  const canChangeTimezone = !isEmbed && !event.data?.lockTimeZoneToggleOnBookingPage;
+  const useOnceHubForm = isOnceHubMonthView || isTwoDayView;
+
+  // Deselects the current timeslot to go back to the calendar/slots step. Shared by the
+  // confirmation form's own onCancel and the OnceHub "Change selection"/"(Change)" links,
+  // which all need to do exactly the same thing.
+  // `schedule` is a fresh object literal every render (useScheduleForEvent returns a new
+  // object), so keep it in a ref rather than a useCallback dep - otherwise
+  // handleChangeSelection (and the EventBooker memo that depends on it) would be
+  // recreated on every render, defeating the memo.
+  const scheduleRef = useRef(schedule);
+  scheduleRef.current = schedule;
+
+  const handleChangeSelection = useCallback(() => {
+    setSelectedTimeslot(null);
+    // Temporarily allow disabling it, till we are sure that it doesn't cause any significant load on the system
+    if (PUBLIC_INVALIDATE_AVAILABLE_SLOTS_ON_BOOKING_FORM) {
+      // Ensures that user has latest available slots when they want to re-choose from the slots
+      scheduleRef.current?.invalidate();
+    }
+    if (seatedEventData.bookingUid) {
+      setSeatedEventData({
+        ...seatedEventData,
+        bookingUid: undefined,
+        attendees: undefined,
+      });
+    }
+  }, [setSelectedTimeslot, seatedEventData, setSeatedEventData]);
+
+  // EventMeta applies an event's locked timezone, but the OnceHub month view and the two-day
+  // view don't render EventMeta, so apply it here for them (same rule as EventMeta).
+  const rendersEventMeta = !isOnceHubMonthView && !isTwoDayView;
+  useEffect(() => {
+    if (rendersEventMeta || !event.data?.lockTimeZoneToggleOnBookingPage) return;
+    const lockedTimezone = event.data.lockedTimeZone || event.data.schedule?.timeZone;
+    if (lockedTimezone) setTimePreferencesTimezone(lockedTimezone);
+  }, [rendersEventMeta, event.data, setTimePreferencesTimezone]);
+
+  // Auto-open the timezone modal once - only after the event has loaded, so we know
+  // whether the timezone is locked, and skip embeds/pre-pinned cal.tz links.
+  useEffect(() => {
+    if (hasAutoOpenedTimezoneModalRef.current) return;
+    // The two-day view shows the timezone inline with its own "Change" link instead.
+    if (!isOnceHubMonthView || isTwoDayView || isEmbed) return;
+    if (searchParams?.get("cal.tz")) return;
+    if (!event.data) return;
+    hasAutoOpenedTimezoneModalRef.current = true;
+    if (!event.data.lockTimeZoneToggleOnBookingPage) setIsTimezoneModalOpen(true);
+  }, [event.data, isOnceHubMonthView, isTwoDayView, isEmbed, searchParams]);
+
+  const animationScope = useBookerResizeAnimation(layout, bookerState, isOnceHubMonthView);
 
   const timeslotsRef = useRef<HTMLDivElement>(null);
   const isQuickAvailabilityCheckFeatureEnabled = useIsQuickAvailabilityCheckFeatureEnabled();
@@ -257,21 +349,7 @@ const BookerComponent = ({
         key={key}
         timeslot={selectedTimeslot}
         shouldRenderCaptcha={shouldRenderCaptcha}
-        onCancel={() => {
-          setSelectedTimeslot(null);
-          // Temporarily allow disabling it, till we are sure that it doesn't cause any significant load on the system
-          if (PUBLIC_INVALIDATE_AVAILABLE_SLOTS_ON_BOOKING_FORM) {
-            // Ensures that user has latest available slots when they want to re-choose from the slots
-            schedule?.invalidate();
-          }
-          if (seatedEventData.bookingUid) {
-            setSeatedEventData({
-              ...seatedEventData,
-              bookingUid: undefined,
-              attendees: undefined,
-            });
-          }
-        }}
+        onCancel={handleChangeSelection}
         onSubmit={() => (renderConfirmNotVerifyEmailButtonCond ? handleBookEvent() : handleVerifyEmail())}
         errorRef={bookerFormErrorRef}
         errors={{ ...formErrors, ...errors }}
@@ -288,6 +366,10 @@ const BookerComponent = ({
           backButton: customClassNames?.confirmStep?.backButton,
         }}
         isPlatform={isPlatform}
+        oncehubStyle={useOnceHubForm}
+        onOpenTimezoneModal={() => setIsTimezoneModalOpen(true)}
+        onChangeTimezone={isTwoDayView && canChangeTimezone ? handleTimezoneConfirm : undefined}
+        twoDayStyle={isTwoDayView}
       />
     );
   }, [
@@ -310,6 +392,11 @@ const BookerComponent = ({
     shouldRenderCaptcha,
     isVerificationCodeSending,
     unavailableTimeSlots,
+    useOnceHubForm,
+    isTwoDayView,
+    canChangeTimezone,
+    handleChangeSelection,
+    setIsTimezoneModalOpen,
   ]);
 
   /**
@@ -331,6 +418,91 @@ const BookerComponent = ({
     return null;
   }
 
+  const timezoneModal = isOnceHubMonthView && canChangeTimezone && (
+    <TimezoneModal
+      open={isTimezoneModalOpen}
+      currentTimezone={effectiveTimezone}
+      onConfirm={handleTimezoneConfirm}
+      onDismiss={() => handleTimezoneConfirm(effectiveTimezone)}
+    />
+  );
+  const captcha = shouldRenderCaptcha && (
+    <div className="mb-6 mt-auto pt-6">
+      <TurnstileCaptcha
+        appearance="interaction-only"
+        onVerify={(token) => {
+          bookingForm.setValue("cfToken", token);
+        }}
+      />
+    </div>
+  );
+  const verifyCodeDialog =
+    verifyCode && formEmail ? (
+      <VerifyCodeDialog
+        isOpenDialog={isEmailVerificationModalVisible}
+        setIsOpenDialog={setEmailVerificationModalVisible}
+        email={formEmail}
+        isUserSessionRequiredToVerify={false}
+        verifyCodeWithSessionNotRequired={verifyCode.verifyCodeWithSessionNotRequired}
+        verifyCodeWithSessionRequired={verifyCode.verifyCodeWithSessionRequired}
+        error={verifyCode.error}
+        resetErrors={verifyCode.resetErrors}
+        isPending={verifyCode.isPending}
+        setIsPending={verifyCode.setIsPending}
+      />
+    ) : null;
+
+  if (isTwoDayView) {
+    return (
+      <>
+        {event.data ? <BookingPageTagManager eventType={event.data} /> : null}
+        {(isBookingDryRunProp || isBookingDryRun(searchParams)) && <DryRunMessage isEmbed={isEmbed} />}
+        <div
+          // "main": in a popup embed, a click outside the main element closes the embed.
+          className={classNames(
+            "main text-default mx-auto flex min-h-full w-full max-w-[640px] flex-col px-4",
+            TWO_DAY_THEME_CLASS,
+            isEmbed ? "py-6" : "py-10 md:py-20",
+            customClassNames?.bookerWrapper
+          )}
+          data-testid="booker-container">
+          <div className="mb-6">
+            <BookingHeader
+              event={event.data}
+              hideTimezone
+              twoDayStyle
+              onOpenTimezoneModal={() => setIsTimezoneModalOpen(true)}
+              onChangeSelection={bookerState === "booking" ? handleChangeSelection : undefined}
+            />
+          </div>
+          {bookerState === "booking" ? (
+            <div>{EventBooker}</div>
+          ) : (
+            <TwoDayPicker
+              slots={schedule?.data?.slots}
+              isLoading={schedule.isPending}
+              isError={schedule.isError}
+              onRetry={() => schedule.invalidate()}
+              onSelectTime={onAvailableTimeSlotSelect}
+              onChangeTimezone={canChangeTimezone ? handleTimezoneConfirm : undefined}
+              skipConfirmStep={skipConfirmStep}
+              onConfirm={onSubmit}
+              isBooking={
+                !!loadingStates?.creatingBooking ||
+                !!loadingStates?.creatingRecurringBooking ||
+                isVerificationCodeSending ||
+                (skipConfirmStep && shouldRenderCaptcha && !watchedCfToken)
+              }
+            />
+          )}
+          {captcha}
+        </div>
+        {verifyCodeDialog}
+        <Toaster position="bottom-right" />
+      </>
+    );
+  }
+
   return (
     <>
       {event.data && !isPlatform ? <BookingPageTagManager eventType={event.data} /> : <></>}
@@ -344,17 +516,42 @@ const BookerComponent = ({
           layout === BookerLayouts.MONTH_VIEW ? "overflow-visible" : "overflow-clip",
           `${customClassNames?.bookerWrapper}`
         )}>
+        {isOnceHubMonthView && (
+          <div
+            className={classNames(
+              ...getBookerSizeClassNames(layout, bookerState, hideEventTypeDetails, isOnceHubMonthView),
+              "mb-6 w-full",
+              // Match the grid card's own current width (it's wider once the timeslots
+              // column is showing) so both boxes are centered identically and their left
+              // edges line up, instead of drifting apart whenever the card's width changes.
+              bookerState === "selecting_time"
+                ? "max-w-[calc(var(--booker-main-width)+var(--booker-timeslots-width))]"
+                : "max-w-(--booker-main-width)"
+            )}>
+            <BookingHeader
+              event={event.data}
+              onOpenTimezoneModal={() => setIsTimezoneModalOpen(true)}
+              onChangeSelection={bookerState === "booking" ? handleChangeSelection : undefined}
+            />
+          </div>
+        )}
         <div
           ref={animationScope}
           data-testid="booker-container"
           className={classNames(
-            ...getBookerSizeClassNames(layout, bookerState, hideEventTypeDetails),
-            `bg-default dark:bg-cal-muted grid max-w-full items-start dark:scheme-dark sm:transition-[width] sm:duration-300 sm:motion-reduce:transition-none md:flex-row`,
+            ...getBookerSizeClassNames(layout, bookerState, hideEventTypeDetails, isOnceHubMonthView),
+            "grid max-w-full items-start dark:scheme-dark sm:transition-[width] sm:duration-300 sm:motion-reduce:transition-none md:flex-row",
+            // OnceHub confirmation-form step: flat page, no card - same background as the
+            // page instead of the white/bordered card the calendar+slots step uses.
+            showCard ? "bg-default dark:bg-cal-muted" : "bg-transparent",
             // We remove border only when the content covers entire viewport. Because in embed, it can almost never be the case that it covers entire viewport, we show the border there
-            (layout === BookerLayouts.MONTH_VIEW || isEmbed) && "border-subtle rounded-md",
+            showCard &&
+              (layout === BookerLayouts.MONTH_VIEW || isEmbed) &&
+              // OnceHub reference uses square card corners.
+              (isOnceHubMonthView ? "border-subtle" : "border-subtle rounded-md"),
             !isEmbed && "sm:transition-[width] sm:duration-300",
             isEmbed && layout === BookerLayouts.MONTH_VIEW && "border-booker sm:border-booker-width",
-            !isEmbed && layout === BookerLayouts.MONTH_VIEW && `border-subtle border`,
+            showCard && !isEmbed && layout === BookerLayouts.MONTH_VIEW && `border-subtle border`,
             `${customClassNames?.bookerContainer}`
           )}>
           <AnimatePresence>
@@ -365,7 +562,7 @@ const BookerComponent = ({
                 (layout === BookerLayouts.COLUMN_VIEW || layout === BookerLayouts.WEEK_VIEW) &&
                   "bg-default dark:bg-cal-muted sticky top-0 z-10"
               )}>
-              {isPlatform && layout === BookerLayouts.MONTH_VIEW ? (
+              {(isPlatform && layout === BookerLayouts.MONTH_VIEW) || isOnceHubMonthView ? (
                 <></>
               ) : (
                 <Header
@@ -395,64 +592,69 @@ const BookerComponent = ({
                 />
               )}
             </BookerSection>
-            <StickyOnDesktop key="meta" className={classNames("relative z-10 flex [grid-area:meta]")}>
-              <BookerSection
-                area="meta"
-                className="max-w-screen flex w-full flex-col md:w-(--booker-meta-width)">
-                {!hideEventTypeDetails && orgBannerUrl && (
-                  <img
-                    loading="eager"
-                    className="-mb-9 h-auto w-full object-contain object-top ltr:rounded-tl-md rtl:rounded-tr-md sm:h-16 sm:object-cover"
-                    alt="org banner"
-                    src={orgBannerUrl}
-                  />
-                )}
-                {!hideEventTypeDetails && (
-                  <EventMeta
-                    selectedTimeslot={selectedTimeslot}
-                    classNames={{
-                      eventMetaContainer: customClassNames?.eventMetaCustomClassNames?.eventMetaContainer,
-                      eventMetaTitle: customClassNames?.eventMetaCustomClassNames?.eventMetaTitle,
-                      eventMetaTimezoneSelect:
-                        customClassNames?.eventMetaCustomClassNames?.eventMetaTimezoneSelect,
-                    }}
-                    event={event.data}
-                    isPending={event.isPending}
-                    isPlatform={isPlatform}
-                    isPrivateLink={!!hashedLink}
-                    locale={userLocale}
-                    timeZones={timeZones}
-                    roundRobinHideOrgAndTeam={roundRobinHideOrgAndTeam}
-                    hideOrgTeamAvatar={hideOrgTeamAvatar}
-                    hideEventTypeDetails={hideEventTypeDetails}>
-                    {eventMetaChildren}
-                  </EventMeta>
-                )}
-                {layout !== BookerLayouts.MONTH_VIEW &&
-                  !(layout === "mobile" && bookerState === "booking") && (
-                    <div className="mt-auto px-5 py-3">
-                      <DatePicker
-                        classNames={customClassNames?.datePickerCustomClassNames}
-                        event={event}
-                        slots={schedule?.data?.slots}
-                        isLoading={schedule.isPending}
-                        scrollToTimeSlots={scrollToTimeSlots}
-                        showNoAvailabilityDialog={showNoAvailabilityDialog}
-                        onDateChange={() => {
-                          if (slotsViewOnSmallScreen) {
-                            setIsSlotSelectionModalVisible(true);
-                          }
-                        }}
-                      />
-                    </div>
+            {!isOnceHubMonthView && (
+              <StickyOnDesktop key="meta" className={classNames("relative z-10 flex [grid-area:meta]")}>
+                <BookerSection
+                  area="meta"
+                  className="max-w-screen flex w-full flex-col md:w-(--booker-meta-width)">
+                  {!hideEventTypeDetails && orgBannerUrl && (
+                    <img
+                      loading="eager"
+                      className="-mb-9 h-auto w-full object-contain object-top ltr:rounded-tl-md rtl:rounded-tr-md sm:h-16 sm:object-cover"
+                      alt="org banner"
+                      src={orgBannerUrl}
+                    />
                   )}
-              </BookerSection>
-            </StickyOnDesktop>
+                  {!hideEventTypeDetails && (
+                    <EventMeta
+                      selectedTimeslot={selectedTimeslot}
+                      classNames={{
+                        eventMetaContainer: customClassNames?.eventMetaCustomClassNames?.eventMetaContainer,
+                        eventMetaTitle: customClassNames?.eventMetaCustomClassNames?.eventMetaTitle,
+                        eventMetaTimezoneSelect:
+                          customClassNames?.eventMetaCustomClassNames?.eventMetaTimezoneSelect,
+                      }}
+                      event={event.data}
+                      isPending={event.isPending}
+                      isPlatform={isPlatform}
+                      isPrivateLink={!!hashedLink}
+                      locale={userLocale}
+                      timeZones={timeZones}
+                      roundRobinHideOrgAndTeam={roundRobinHideOrgAndTeam}
+                      hideOrgTeamAvatar={hideOrgTeamAvatar}
+                      hideEventTypeDetails={hideEventTypeDetails}>
+                      {eventMetaChildren}
+                    </EventMeta>
+                  )}
+                  {layout !== BookerLayouts.MONTH_VIEW &&
+                    !(layout === "mobile" && bookerState === "booking") && (
+                      <div className="mt-auto px-5 py-3">
+                        <DatePicker
+                          classNames={customClassNames?.datePickerCustomClassNames}
+                          event={event}
+                          slots={schedule?.data?.slots}
+                          isLoading={schedule.isPending}
+                          scrollToTimeSlots={scrollToTimeSlots}
+                          showNoAvailabilityDialog={showNoAvailabilityDialog}
+                          onDateChange={() => {
+                            if (slotsViewOnSmallScreen) {
+                              setIsSlotSelectionModalVisible(true);
+                            }
+                          }}
+                        />
+                      </div>
+                    )}
+                </BookerSection>
+              </StickyOnDesktop>
+            )}
 
             <BookerSection
               key="book-event-form"
               area="main"
-              className="sticky top-0 -ml-px h-full p-6 md:w-(--booker-main-width) md:border-l"
+              className={classNames(
+                "sticky top-0 -ml-px h-full p-6 md:w-(--booker-main-width)",
+                !isOnceHubMonthView && "md:border-l"
+              )}
               {...fadeInLeft}
               visible={bookerState === "booking" && !shouldShowFormInDialog}>
               {EventBooker}
@@ -466,7 +668,7 @@ const BookerComponent = ({
               initial="visible"
               className={classNames(
                 "md:border-subtle -ml-px h-full shrink px-5 py-3  lg:w-(--booker-main-width)",
-                hideEventTypeDetails ? "" : "md:border-l"
+                hideEventTypeDetails || isOnceHubMonthView ? "" : "md:border-l"
               )}>
               <DatePicker
                 classNames={customClassNames?.datePickerCustomClassNames}
@@ -475,6 +677,7 @@ const BookerComponent = ({
                 isLoading={schedule.isPending}
                 scrollToTimeSlots={scrollToTimeSlots}
                 showNoAvailabilityDialog={showNoAvailabilityDialog}
+                oncehubStyle={isOnceHubMonthView}
               />
             </BookerSection>
 
@@ -528,6 +731,7 @@ const BookerComponent = ({
                 watchedCfToken={watchedCfToken}
                 confirmButtonDisabled={confirmButtonDisabled}
                 confirmStepClassNames={customClassNames?.confirmStep}
+                oncehubStyle={isOnceHubMonthView}
               />
             </BookerSection>
           </AnimatePresence>
@@ -541,16 +745,7 @@ const BookerComponent = ({
           }}
         />
 
-        {shouldRenderCaptcha && (
-          <div className="mb-6 mt-auto pt-6">
-            <TurnstileCaptcha
-              appearance="interaction-only"
-              onVerify={(token) => {
-                bookingForm.setValue("cfToken", token);
-              }}
-            />
-          </div>
-        )}
+        {captcha}
 
         {!hideBranding && (!isPlatform || isPlatformBookerEmbed) && !shouldRenderCaptcha && (
           <m.span
@@ -564,24 +759,7 @@ const BookerComponent = ({
           </m.span>
         )}
       </div>
-      <>
-        {verifyCode && formEmail ? (
-          <VerifyCodeDialog
-            isOpenDialog={isEmailVerificationModalVisible}
-            setIsOpenDialog={setEmailVerificationModalVisible}
-            email={formEmail}
-            isUserSessionRequiredToVerify={false}
-            verifyCodeWithSessionNotRequired={verifyCode.verifyCodeWithSessionNotRequired}
-            verifyCodeWithSessionRequired={verifyCode.verifyCodeWithSessionRequired}
-            error={verifyCode.error}
-            resetErrors={verifyCode.resetErrors}
-            isPending={verifyCode.isPending}
-            setIsPending={verifyCode.setIsPending}
-          />
-        ) : (
-          <></>
-        )}
-      </>
+      {verifyCodeDialog}
       <BookFormAsModal
         onCancel={() => setSelectedTimeslot(null)}
         visible={bookerState === "booking" && shouldShowFormInDialog}>
@@ -623,6 +801,7 @@ const BookerComponent = ({
           />
         </DialogContent>
       </Dialog>
+      {timezoneModal}
       <Toaster position="bottom-right" />
     </>
   );

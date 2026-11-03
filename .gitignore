@@ -117,3 +117,8 @@ agents/devin-knowledge.json
 
 # pagefind
 _pagefind/
+
+.nvmrc
+# Personal Claude Code instructions (private)
+CLAUDE.local.md
+.atl

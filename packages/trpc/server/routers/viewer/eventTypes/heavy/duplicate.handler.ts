@@ -1,3 +1,4 @@
+import { withAimEventTypeDefaults } from "@calcom/features/eventtypes/lib/aimEventTypeDefaults";
 import { EventTypeRepository } from "@calcom/features/eventtypes/repositories/eventTypeRepository";
 import { generateHashedLink } from "@calcom/lib/generateHashedLink";
 import { CalVideoSettingsRepository } from "@calcom/features/calVideoSettings/repositories/CalVideoSettingsRepository";
@@ -162,7 +163,9 @@ export const duplicateHandler = async ({ ctx, input }: DuplicateOptions) => {
     }
 
     const eventTypeRepo = new EventTypeRepository(prisma);
-    const newEventType = await eventTypeRepo.create(data);
+    const newEventType = await eventTypeRepo.create(
+      withAimEventTypeDefaults({ ...data, metadata: metadata ?? undefined })
+    );
 
     // Create custom inputs
     if (customInputs) {

@@ -49,6 +49,8 @@ export type AvailableTimesProps = {
   // It is called when a slot is selected, but it is not a confirmation and a confirm button will be shown besides it.
   onTentativeTimeSelect?: TOnTentativeTimeSelect;
   unavailableTimeSlots?: string[];
+  /** OnceHub-style AM/PM two-column layout with plain bordered slot buttons. Web month view only. */
+  oncehubStyle?: boolean;
 } & Omit<SlotItemProps, "slot">;
 
 type SlotItemProps = {
@@ -74,6 +76,8 @@ type SlotItemProps = {
   unavailableTimeSlots?: string[];
   confirmButtonDisabled?: boolean;
   handleSlotClick?: (slot: Slot, isOverlapping: boolean) => void;
+  /** OnceHub-style plain bordered button, no overlay/seats dots. See AvailableTimesProps. */
+  oncehubStyle?: boolean;
 };
 
 const SlotItem = ({
@@ -95,6 +99,7 @@ const SlotItem = ({
   unavailableTimeSlots = [],
   confirmButtonDisabled,
   confirmStepClassNames,
+  oncehubStyle = false,
 }: SlotItemProps) => {
   const { t } = useLocale();
 
@@ -166,13 +171,15 @@ const SlotItem = ({
           data-time={slot.time}
           onClick={onButtonClick}
           className={classNames(
-            `hover:border-brand-default min-h-9 mb-2 flex h-auto w-full grow flex-col justify-center py-2`,
-            selectedSlots?.includes(slot.time) && "border-brand-default",
+            oncehubStyle
+              ? "mb-2 flex h-auto w-full grow flex-col items-center justify-center rounded-none! border! border-[#CCCCCC]! bg-[#F2F2F2]! px-4! py-2! text-center! text-sm! text-[#333333]! hover:border-[#333333]! hover:bg-white! hover:text-[#333333]! hover:underline!"
+              : "hover:border-brand-default min-h-9 mb-2 flex h-auto w-full grow flex-col justify-center py-2",
+            !oncehubStyle && selectedSlots?.includes(slot.time) && "border-brand-default",
             `${customClassNames}`
           )}
           color="secondary">
           <div className="flex items-center gap-2">
-            {!hasTimeSlots && overlayCalendarToggled && (
+            {!oncehubStyle && !hasTimeSlots && overlayCalendarToggled && (
               <span
                 className={classNames(
                   "inline-block h-2 w-2 rounded-full",
@@ -180,15 +187,19 @@ const SlotItem = ({
                 )}
               />
             )}
-            {computedDateWithUsersTimezone.format(getQueryParam("amPm") === "1" ? "h:mma" : timeFormat)}
+            {computedDateWithUsersTimezone.format(
+              oncehubStyle ? "h:mm A" : getQueryParam("amPm") === "1" ? "h:mma" : timeFormat
+            )}
           </div>
           {bookingFull && <p className="text-sm">{t("booking_full")}</p>}
           {hasTimeSlots && !bookingFull && (
             <p className="flex items-center text-sm">
-              <span
-                className={classNames(colorClass, "mr-1 inline-block h-2 w-2 rounded-full")}
-                aria-hidden
-              />
+              {!oncehubStyle && (
+                <span
+                  className={classNames(colorClass, "mr-1 inline-block h-2 w-2 rounded-full")}
+                  aria-hidden
+                />
+              )}
               <SeatsAvailabilityText
                 showExact={!!showAvailableSeatsCount}
                 totalSeats={seatsPerTimeSlot}
@@ -255,10 +266,54 @@ const SlotItem = ({
   );
 };
 
+/**
+ * OnceHub-style two-column AM/PM slot layout. Splits on the booker's effective
+ * local hour for each slot (same computation SlotItem itself uses to display time).
+ */
+const OnceHubSlotColumns = ({ slots, ...slotItemProps }: { slots: Slot[] } & Omit<SlotItemProps, "slot">) => {
+  const { t } = useLocale();
+  const { timezone } = useBookerTime();
+
+  // Partition once per slots/timezone change rather than re-running the timezone-mode
+  // dayjs conversion for every slot on every render (hover, store updates, etc.).
+  const { amSlots, pmSlots } = useMemo(() => {
+    const am: Slot[] = [];
+    const pm: Slot[] = [];
+    for (const slot of slots) {
+      if (slot.away) continue;
+      const hour = dayjs.utc(slot.time).tz(timezone).hour();
+      (hour < 12 ? am : pm).push(slot);
+    }
+    return { amSlots: am, pmSlots: pm };
+  }, [slots, timezone]);
+
+  return (
+    <div className="grid grid-cols-2 gap-4">
+      <div>
+        <p className="mb-2 text-center text-sm uppercase text-[#6B7280]">{t("am")}</p>
+        {amSlots.length === 0 ? (
+          <p className="text-center text-sm text-[#9CA3AF]">{t("no_am_times")}</p>
+        ) : (
+          amSlots.map((slot) => <SlotItem key={slot.time} slot={slot} oncehubStyle {...slotItemProps} />)
+        )}
+      </div>
+      <div>
+        <p className="mb-2 text-center text-sm uppercase text-[#6B7280]">{t("pm")}</p>
+        {pmSlots.length === 0 ? (
+          <p className="text-center text-sm text-[#9CA3AF]">{t("no_pm_times")}</p>
+        ) : (
+          pmSlots.map((slot) => <SlotItem key={slot.time} slot={slot} oncehubStyle {...slotItemProps} />)
+        )}
+      </div>
+    </div>
+  );
+};
+
 export const AvailableTimes = ({
   slots,
   showTimeFormatToggle = true,
   className,
+  oncehubStyle = false,
   ...props
 }: AvailableTimesProps) => {
   const { t } = useLocale();
@@ -329,10 +384,14 @@ export const AvailableTimes = ({
           </div>
         )}
         {oooBeforeSlots && !oooAfterSlots && <OOOSlot {...slots[0]} />}
-        {slots.map((slot) => {
-          if (slot.away) return null;
-          return <SlotItem key={slot.time} slot={slot} {...props} />;
-        })}
+        {oncehubStyle ? (
+          <OnceHubSlotColumns slots={slots} {...props} />
+        ) : (
+          slots.map((slot) => {
+            if (slot.away) return null;
+            return <SlotItem key={slot.time} slot={slot} {...props} />;
+          })
+        )}
         {oooAfterSlots && !oooBeforeSlots && <OOOSlot {...slots[slots.length - 1]} className="pb-0" />}
       </div>
     </div>
