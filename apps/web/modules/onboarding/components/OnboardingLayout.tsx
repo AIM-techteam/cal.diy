@@ -29,9 +29,9 @@ export const OnboardingLayout = ({ userEmail, currentStep, totalSteps, children 
   const column2 = childrenArray[1];
 
   return (
-    <div className="bg-cal-muted flex min-h-screen w-full flex-col items-center justify-between overflow-clip rounded-[12px] px-4 py-2 md:px-6">
+    <div className="bg-cal-muted flex min-h-screen w-full flex-col items-center justify-center gap-6 overflow-clip rounded-[12px] px-4 py-2 md:px-6">
       {/* Logo and container - centered */}
-      <div className="flex w-full flex-1 flex-col items-center justify-center gap-6">
+      <div className="flex w-full flex-col items-center justify-center gap-6">
         <AimLogo className="mt-4 h-6 w-auto shrink-0" />
         <div className="border-subtle bg-default grid max-h-[690px] min-h-0 w-full max-w-[532px] flex-1 grid-cols-1 gap-12 overflow-auto rounded-2xl border px-4 py-2 sm:px-12 sm:py-10 xl:h-[690px] xl:max-w-[1130px] xl:grid-cols-[40%_1fr] xl:pl-10 xl:pr-0">
           {/* Column 1 - Always visible, 40% on xl+ */}
@@ -44,7 +44,7 @@ export const OnboardingLayout = ({ userEmail, currentStep, totalSteps, children 
       </div>
 
       {/* Footer with progress dots and sign out */}
-      <div className="flex w-full flex-col items-center justify-center gap-4 px-10 py-6">
+      <div className="flex w-full flex-col items-center justify-center gap-4 px-10 pb-6">
         <div className="flex items-center gap-1 empty:hidden">
           {totalSteps && totalSteps > 0 ? (
             Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => {
