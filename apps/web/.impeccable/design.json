@@ -1,0 +1,458 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-03T00:00:00Z",
+  "title": "Design System: Annuity Gator Advisor App",
+  "extensions": {
+    "colorMeta": {
+      "brand-green": {
+        "role": "primary",
+        "displayName": "Button Green",
+        "canonical": "#2b7a24",
+        "tonalRamp": [
+          "#0d250b",
+          "#163d12",
+          "#1e5519",
+          "#266b20",
+          "#6ba266",
+          "#a0c39c",
+          "#cadec8",
+          "#eaf2e9"
+        ]
+      },
+      "brand-green-deep": {
+        "role": "primary",
+        "displayName": "Deep Button Green",
+        "canonical": "#22631c",
+        "tonalRamp": [
+          "#0a1e08",
+          "#11320e",
+          "#184514",
+          "#1e5719",
+          "#649260",
+          "#9cb999",
+          "#c8d8c6",
+          "#e9efe8"
+        ]
+      },
+      "focus-green": {
+        "role": "primary",
+        "displayName": "Focus Green",
+        "canonical": "#42a635",
+        "tonalRamp": [
+          "#143210",
+          "#21531a",
+          "#2e7425",
+          "#3a922f",
+          "#7bc172",
+          "#aad7a4",
+          "#d0e9cc",
+          "#ecf6eb"
+        ]
+      },
+      "selection-green": {
+        "role": "primary",
+        "displayName": "Selection Green",
+        "canonical": "#cfe8c6",
+        "tonalRamp": [
+          "#3e463b",
+          "#687463",
+          "#91a28b",
+          "#b6ccae",
+          "#ddefd7",
+          "#e9f5e5",
+          "#f3f9f1",
+          "#fafdf9"
+        ]
+      },
+      "olive-rail": {
+        "role": "secondary",
+        "displayName": "Olive Rail",
+        "canonical": "#1f3d1b",
+        "tonalRamp": [
+          "#091208",
+          "#101e0e",
+          "#162b13",
+          "#1b3618",
+          "#62775f",
+          "#9aa898",
+          "#c7cec6",
+          "#e9ece8"
+        ]
+      },
+      "olive-hairline": {
+        "role": "secondary",
+        "displayName": "Olive Hairline",
+        "canonical": "#2c5227",
+        "tonalRamp": [
+          "#0d190c",
+          "#162914",
+          "#1f391b",
+          "#274822",
+          "#6b8668",
+          "#a0b19e",
+          "#cad4c9",
+          "#eaeee9"
+        ]
+      },
+      "rail-text": {
+        "role": "secondary",
+        "displayName": "Rail Cream",
+        "canonical": "#e2f2dc",
+        "tonalRamp": [
+          "#444942",
+          "#71796e",
+          "#9ea99a",
+          "#c7d5c2",
+          "#ebf6e6",
+          "#f2f9ef",
+          "#f8fcf6",
+          "#fcfefc"
+        ]
+      },
+      "rail-text-subtle": {
+        "role": "secondary",
+        "displayName": "Rail Cream Subtle",
+        "canonical": "#bdd3b6",
+        "tonalRamp": [
+          "#393f37",
+          "#5e6a5b",
+          "#84947f",
+          "#a6baa0",
+          "#d1e0cc",
+          "#e1ebde",
+          "#eef4ed",
+          "#f8fbf8"
+        ]
+      },
+      "rail-text-muted": {
+        "role": "secondary",
+        "displayName": "Rail Cream Muted",
+        "canonical": "#a3bc9b",
+        "tonalRamp": [
+          "#31382f",
+          "#525e4e",
+          "#72846c",
+          "#8fa588",
+          "#bfd0b9",
+          "#d6e1d2",
+          "#e8eee6",
+          "#f6f8f5"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#1d2419",
+        "tonalRamp": [
+          "#090b08",
+          "#0e120c",
+          "#141912",
+          "#1a2016",
+          "#61665e",
+          "#999c98",
+          "#c6c8c6",
+          "#e8e9e8"
+        ]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Text",
+        "canonical": "#2f3a2c",
+        "tonalRamp": [
+          "#0e110d",
+          "#181d16",
+          "#21291f",
+          "#293327",
+          "#6d756b",
+          "#a1a6a0",
+          "#cbceca",
+          "#eaebea"
+        ]
+      },
+      "text-subtle": {
+        "role": "neutral",
+        "displayName": "Subtle Text",
+        "canonical": "#4b5848",
+        "tonalRamp": [
+          "#171a16",
+          "#262c24",
+          "#343e32",
+          "#424d3f",
+          "#818a7f",
+          "#aeb4ad",
+          "#d2d5d1",
+          "#edeeed"
+        ]
+      },
+      "text-muted": {
+        "role": "neutral",
+        "displayName": "Muted Sage Text",
+        "canonical": "#5a6655",
+        "tonalRamp": [
+          "#1b1f1a",
+          "#2d332a",
+          "#3f473b",
+          "#4f5a4b",
+          "#8c9488",
+          "#b5bab2",
+          "#d6d9d4",
+          "#eef0ee"
+        ]
+      },
+      "content-white": {
+        "role": "neutral",
+        "displayName": "Content White",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#4d4d4d",
+          "#808080",
+          "#b2b2b2",
+          "#e0e0e0",
+          "#ffffff",
+          "#ffffff",
+          "#ffffff",
+          "#ffffff"
+        ]
+      },
+      "sage-emphasis": {
+        "role": "neutral",
+        "displayName": "Sage Emphasis",
+        "canonical": "#e2f2dc",
+        "tonalRamp": [
+          "#444942",
+          "#71796e",
+          "#9ea99a",
+          "#c7d5c2",
+          "#ebf6e6",
+          "#f2f9ef",
+          "#f8fcf6",
+          "#fcfefc"
+        ]
+      },
+      "sage-ground": {
+        "role": "neutral",
+        "displayName": "Sage Ground",
+        "canonical": "#f1f6ee",
+        "tonalRamp": [
+          "#484a47",
+          "#787b77",
+          "#a9aca7",
+          "#d4d8d1",
+          "#f5f9f3",
+          "#f9fbf7",
+          "#fcfdfb",
+          "#fefefd"
+        ]
+      },
+      "sage-wash": {
+        "role": "neutral",
+        "displayName": "Sage Wash",
+        "canonical": "#f7faf5",
+        "tonalRamp": [
+          "#4a4b4a",
+          "#7c7d7a",
+          "#adafac",
+          "#d9dcd8",
+          "#f9fcf8",
+          "#fbfdfa",
+          "#fdfefc",
+          "#fefefe"
+        ]
+      },
+      "sage-stroke": {
+        "role": "neutral",
+        "displayName": "Sage Stroke",
+        "canonical": "#9fae99",
+        "tonalRamp": [
+          "#30342e",
+          "#50574c",
+          "#6f7a6b",
+          "#8c9987",
+          "#bcc6b8",
+          "#d4dbd1",
+          "#e7ebe6",
+          "#f5f7f5"
+        ]
+      },
+      "sage-hairline": {
+        "role": "neutral",
+        "displayName": "Sage Hairline",
+        "canonical": "#dfe7db",
+        "tonalRamp": [
+          "#434542",
+          "#70746e",
+          "#9ca299",
+          "#c4cbc1",
+          "#e9eee6",
+          "#f1f4ef",
+          "#f7f9f6",
+          "#fcfdfb"
+        ]
+      },
+      "sage-hairline-faint": {
+        "role": "neutral",
+        "displayName": "Sage Hairline Faint",
+        "canonical": "#eaf0e7",
+        "tonalRamp": [
+          "#464845",
+          "#757874",
+          "#a4a8a2",
+          "#ced3cb",
+          "#f0f4ee",
+          "#f6f8f4",
+          "#fafbf9",
+          "#fdfefd"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Auth page headings, DM Serif Display 400 only."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "App page titles and onboarding card titles, DM Serif Display 400 only."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Inter for all copy, data and numbers."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Inter 500 for labels, nav items, buttons."
+      }
+    },
+    "shadows": [
+      {
+        "name": "card-sm",
+        "value": "0 1px 2px rgba(0,0,0,0.05)",
+        "purpose": "cal's stock small shadow on the login card; the theme adds no shadows."
+      }
+    ],
+    "scope": {
+      "selector": "body.aim-brand",
+      "source": "apps/web/styles/aim-brand.css",
+      "toggle": "apps/web/components/aim/AimBrandScope.tsx",
+      "purpose": "All brand tokens live under this selector so public booking pages keep cal's look."
+    },
+    "breakpoints": [
+      {
+        "name": "md",
+        "value": "768px",
+        "purpose": "rail appears (56px icon-only); mobile top bar hidden"
+      },
+      {
+        "name": "lg",
+        "value": "1024px",
+        "purpose": "rail widens to 224px with labels and wordmark"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Every primary action: Sign in with Google, New, Continue.",
+      "html": "<button class=\"ds-btn-primary\">Sign in with Google</button>",
+      "css": ".ds-btn-primary { background: #2b7a24; color: #ffffff; font: 500 14px/20px Inter, system-ui, sans-serif; padding: 6px 16px; border: 1px solid #2b7a24; border-radius: 8px; cursor: pointer; transition: background .15s; } .ds-btn-primary:hover { background: #22631c; } .ds-btn-primary:focus-visible { outline: 2px solid #42a635; outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Outline action on white: Connect, password Continue.",
+      "html": "<button class=\"ds-btn-secondary\">Connect</button>",
+      "css": ".ds-btn-secondary { background: #ffffff; color: #1d2419; font: 500 14px/20px Inter, system-ui, sans-serif; padding: 6px 16px; border: 1px solid #9fae99; border-radius: 8px; cursor: pointer; } .ds-btn-secondary:hover { background: #f1f6ee; } .ds-btn-secondary:focus-visible { outline: 2px solid #42a635; outline-offset: 2px; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Form field on white with sage stroke and brand caret.",
+      "html": "<label class=\"ds-field\"><span>Email</span><input class=\"ds-input\" type=\"email\"></label>",
+      "css": ".ds-field { display: grid; gap: 6px; font: 500 14px/20px Inter, system-ui, sans-serif; color: #1d2419; } .ds-input { background: #ffffff; color: #1d2419; caret-color: #2b7a24; font: 400 14px/20px Inter, system-ui, sans-serif; padding: 6px 10px; border: 1px solid #9fae99; border-radius: 8px; } .ds-input:focus-visible { outline: 2px solid #42a635; outline-offset: 1px; }"
+    },
+    {
+      "name": "Olive Rail",
+      "kind": "nav",
+      "refersTo": "nav-rail",
+      "description": "The signature sidebar: olive ground, cream Inter labels, light wordmark at its head.",
+      "html": "<nav class=\"ds-rail\"><a class=\"ds-rail-item ds-active\" href=\"#\">Event types</a><a class=\"ds-rail-item\" href=\"#\">Bookings</a><a class=\"ds-rail-item\" href=\"#\">Availability</a><small class=\"ds-rail-credit\">© Cal.com, Inc.</small></nav>",
+      "css": ".ds-rail { background: #1f3d1b; width: 224px; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; font: 500 14px/20px Inter, system-ui, sans-serif; } .ds-rail-item { color: #e2f2dc; text-decoration: none; padding: 6px 8px; border-radius: 6px; } .ds-rail-item:hover { background: rgba(226,242,220,0.1); color: #ffffff; } .ds-rail-item.ds-active { background: rgba(226,242,220,0.18); color: #ffffff; } .ds-rail-item:focus-visible { outline: 2px solid #42a635; } .ds-rail-credit { margin-top: 24px; font-size: 10px; color: #bdd3b6; }"
+    },
+    {
+      "name": "Switch",
+      "kind": "custom",
+      "refersTo": "switch-off",
+      "description": "On is brand green; off is sage stroke, never a brand tint.",
+      "html": "<span class=\"ds-switch\" role=\"switch\" aria-checked=\"false\"></span> <span class=\"ds-switch ds-on\" role=\"switch\" aria-checked=\"true\"></span>",
+      "css": ".ds-switch { display: inline-block; position: relative; width: 44px; height: 24px; border-radius: 999px; background: #7f8f79; vertical-align: middle; } .ds-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #ffffff; transition: left .15s; } .ds-switch.ds-on { background: #2b7a24; } .ds-switch.ds-on::after { left: 23px; }"
+    },
+    {
+      "name": "Login Card",
+      "kind": "card",
+      "refersTo": "card-login",
+      "description": "White card on sage ground with serif heading.",
+      "html": "<div class=\"ds-ground\"><div class=\"ds-card\"><h1 class=\"ds-h\">Advisor sign-in</h1><p class=\"ds-sub\">Welcome back! Sign in to continue</p></div></div>",
+      "css": ".ds-ground { background: #f1f6ee; padding: 32px; } .ds-card { background: #ffffff; border: 1px solid #dfe7db; border-radius: 12px; padding: 40px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); text-align: center; } .ds-h { font: 400 30px/36px \"DM Serif Display\", Georgia, serif; color: #1d2419; margin: 0 0 4px; } .ds-sub { font: 400 14px/20px Inter, system-ui, sans-serif; color: #4b5848; margin: 0; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Funnel's Back Office",
+    "overview": "cal's screens, kept exactly as advisors know them, re-dressed in the Annuity Gator funnel identity they already trust. Layout, components and density are stock cal.diy; what changes is palette, heading face, wordmark, and one signature region: the olive sidebar rail. The neutral blue-gray SaaS look is refused; nothing else about cal's structure is reinvented.\n\nThe whole theme is a token override. It lives in `apps/web/styles/aim-brand.css` and applies only under `body.aim-brand`, a class `AimBrandScope` (`apps/web/components/aim/AimBrandScope.tsx`) adds while an advisor-facing screen is mounted (app shell, login, auth error, onboarding) and removes on unmount. It sits on `<body>` so portalled menus and dialogs inherit it. Public booking pages (booker, booking confirmation) never mount the scope and are owned by another developer; they must keep cal's own look.",
+    "keyCharacteristics": [
+      "Token remap, not component rewrite: the `--cal-*` tokens and the coss-ui tokens (`--primary`, `--primary-foreground`, `--ring`, `--border`, `--input`, `--muted-foreground`, `--foreground`) are redefined in the same scope.",
+      "Brand green on every primary action, focus ring, selection, caret and native accent.",
+      "Olive rail on the left; content on white; sage grounds only on login and onboarding.",
+      "DM Serif Display for headings only; Inter for everything else.",
+      "The Annuity Gator wordmark and arrow-A mark, used as supplied."
+    ],
+    "rules": [
+      {
+        "name": "The Scope Rule",
+        "body": "Every brand value is declared under `body.aim-brand` and nowhere else. A global `:root` override would repaint the public booking pages, which are out of bounds.",
+        "section": "colors"
+      },
+      {
+        "name": "The Muted Floor Rule",
+        "body": "No text on a light ground goes below text-muted. Stock cal markup that hard-codes `text-gray-400` / `text-zinc-400` (2.6:1 on white) is remapped to `--cal-text-muted` inside the scope.",
+        "section": "colors"
+      },
+      {
+        "name": "The Honest Off Rule",
+        "body": "An unchecked switch uses sage-stroke, never a brand tint, so a hidden event type cannot read as half-on.",
+        "section": "colors"
+      },
+      {
+        "name": "The Neutral Dark Rule",
+        "body": "Dark theme keeps cal's own gray neutrals; only the brand green and the type follow the funnel.",
+        "section": "colors"
+      },
+      {
+        "name": "The Headings-Only Serif Rule",
+        "body": "The serif enters only through `--font-cal` (the `font-cal` utility). Body, labels, data and numbers stay on Inter.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Weight Rule",
+        "body": "DM Serif Display ships a single weight (400). Never pair `font-cal` with a bold or semibold weight; the browser fakes it.",
+        "section": "typography"
+      }
+    ],
+    "dos": [
+      "Do add new brand values only inside `body.aim-brand` in `apps/web/styles/aim-brand.css`, and mount `AimBrandScope` on any new advisor-facing screen.",
+      "Do map both token families (`--cal-*` and coss-ui) when a new token is needed; coss-ui components ignore `--cal-*`.",
+      "Do use brand-green for every primary action and text-muted as the floor for light-ground text.",
+      "Do use the light wordmark on olive and the dark wordmark on white or sage."
+    ],
+    "donts": [
+      "Don't touch the public booking pages or move any brand value to `:root`.",
+      "Don't set a heading in the serif at any weight other than 400.",
+      "Don't give an off switch or disabled control a brand tint.",
+      "Don't recolor, redraw or substitute the Annuity Gator wordmark.",
+      "Don't spread olive beyond the rail; content stays on white, and sage grounds stay on login and onboarding."
+    ]
+  }
+}

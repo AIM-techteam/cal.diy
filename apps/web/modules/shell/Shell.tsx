@@ -7,6 +7,8 @@ import type React from "react";
 import { cloneElement } from "react";
 import { Toaster } from "sonner";
 
+import { AimBrandScope } from "@components/aim/AimBrandScope";
+
 import { useFormbricks } from "@calcom/web/modules/formbricks/hooks/useFormbricks";
 import { useRedirectToLoginIfUnauthenticated } from "@calcom/web/modules/auth/hooks/useRedirectToLoginIfUnauthenticated";
 import { useRedirectToOnboardingIfNeeded } from "@calcom/web/modules/auth/hooks/useRedirectToOnboardingIfNeeded";
@@ -40,6 +42,7 @@ const Layout = (props: LayoutProps) => {
 
       <TimezoneChangeDialog />
       <DynamicModals />
+      <AimBrandScope />
 
       <div className="flex min-h-screen flex-col">
         {banners && <BannerContainer banners={banners} />}

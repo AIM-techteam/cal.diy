@@ -1,0 +1,136 @@
+/*
+ * Annuity Gator brand for the advisor-facing app (AIM fork).
+ *
+ * Why scoped: the public booking pages (booker, booking confirmation) share these same --cal-*
+ * tokens and are owned by another developer, so nothing here may change them. The tokens are
+ * only redefined under `body.aim-brand`, a class that AimBrandScope adds while an advisor-facing
+ * screen (app shell, login, onboarding) is mounted. Putting it on <body> also reaches menus and
+ * dialogs, which render in portals outside the shell.
+ *
+ * Source of the palette and type: the Annuity Evaluation 4.0 funnel
+ * (annuity-evaluation-4/funnel/assets/app.css), the brand advisors already know.
+ */
+
+@font-face {
+  font-family: "AG Serif";
+  src: url("/aim/dm-serif-display-latin-v17.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074,
+    U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "AG Serif";
+  src: url("/aim/dm-serif-display-latin-ext-v17.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+    U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+body.aim-brand {
+  /* Headings only (font-cal); body, labels and data stay on Inter. */
+  --font-cal: "AG Serif", Georgia, serif;
+
+  /* Primary actions, selection and focus: the funnel's button green. */
+  --cal-brand: #2b7a24;
+  --cal-brand-emphasis: #22631c;
+  --cal-brand-text: #ffffff;
+
+  /* Neutrals tinted from the funnel's sage instead of cal's blue-gray. */
+  --cal-bg-emphasis: #e2f2dc;
+  --cal-bg-subtle: #f1f6ee;
+  --cal-bg-muted: #f7faf5;
+  --cal-border: #9fae99;
+  --cal-border-subtle: #dfe7db;
+  --cal-border-muted: #eaf0e7;
+  --cal-text-emphasis: #1d2419;
+  --cal-text: #2f3a2c;
+  --cal-text-subtle: #4b5848;
+  --cal-text-muted: #5a6655;
+
+  /* coss-ui components (login page) read these instead of the --cal-* tokens. */
+  --primary: #2b7a24;
+  --primary-foreground: #ffffff;
+  --ring: #42a635;
+  --border: #dfe7db;
+  --input: #9fae99;
+  --muted-foreground: #5a6655;
+  --foreground: #1d2419;
+
+  accent-color: #2b7a24;
+  caret-color: #2b7a24;
+}
+
+body.aim-brand ::selection {
+  color: #1d2419;
+  background: #cfe8c6;
+}
+
+body.aim-brand :focus-visible {
+  outline-color: #42a635;
+}
+
+/* Stock cal markup hard-codes Tailwind grays (e.g. the "Hidden" label, 2.6:1 on white). */
+body.aim-brand :is(.text-gray-400, .text-zinc-400) {
+  color: var(--cal-text-muted);
+}
+
+/* An off switch must not carry the brand tint, or a hidden event type reads half-on. */
+body.aim-brand button[role="switch"][data-state="unchecked"] {
+  background-color: #7f8f79; /* 3.4:1 on white: a control boundary must reach 3:1 */
+}
+
+/* DM Serif Display ships one weight. Stock cal pairs font-cal with font-semibold/bold, which
+   makes the browser fake a bold; keep the serif at its real weight. */
+body.aim-brand .font-cal {
+  font-weight: 400;
+  font-synthesis: none;
+}
+
+/* The sidebar is the funnel's olive: the one place the brand carries a whole region. */
+body.aim-brand .aim-rail {
+  --cal-bg-muted: #1f3d1b;
+  --cal-bg-subtle: rgba(226, 242, 220, 0.1);
+  --cal-bg-emphasis: rgba(226, 242, 220, 0.18);
+  --cal-border-muted: #2c5227;
+  --cal-border-subtle: #2c5227;
+  --cal-text-emphasis: #ffffff;
+  --cal-text: #e2f2dc;
+  --cal-text-subtle: #bdd3b6;
+  --cal-text-muted: #a3bc9b;
+  scrollbar-color: #3d6a37 transparent;
+}
+
+/* Credits line (licence attribution, kept): cal renders it at 8px and 50% opacity, unreadable on olive. */
+body.aim-brand .aim-rail small {
+  font-size: 0.625rem;
+  opacity: 1;
+  color: var(--cal-text-subtle);
+}
+
+/* Dark theme keeps cal's dark neutrals; only brand color and type follow the funnel. */
+html.dark body.aim-brand {
+  --primary: #42a635;
+  --primary-foreground: #0e1a0c;
+  --cal-brand: #42a635;
+  --cal-brand-emphasis: #5bbd4e;
+  --cal-brand-text: #0e1a0c;
+  --cal-bg-emphasis: hsla(0, 0%, 25%, 1);
+  --cal-bg-subtle: hsla(0, 0%, 15%, 1);
+  --cal-bg-muted: hsla(0, 0%, 9%, 1);
+  --cal-border: hsla(0, 0%, 30%, 1);
+  --cal-border-subtle: hsla(0, 0%, 15%, 1);
+  --cal-border-muted: hsla(0, 0%, 9%, 1);
+  --cal-text-emphasis: hsla(0, 0%, 98%, 1);
+  --cal-text: hsla(0, 0%, 83%, 1);
+  --cal-text-subtle: hsla(0, 0%, 64%, 1);
+  --cal-text-muted: hsla(0, 0%, 64%, 1);
+}
+
+html.dark body.aim-brand .aim-rail {
+  --cal-bg-muted: #142812;
+}

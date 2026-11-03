@@ -7,7 +7,6 @@ import { Avatar } from "@calcom/ui/components/avatar";
 import { Credits } from "@calcom/ui/components/credits";
 import { ButtonOrLink } from "@calcom/ui/components/dropdown";
 import { Icon } from "@calcom/ui/components/icon";
-import { Logo } from "@calcom/ui/components/logo";
 import { SkeletonText } from "@calcom/ui/components/skeleton";
 import { Tooltip } from "@calcom/ui/components/tooltip";
 import { ArrowLeftIcon, ArrowRightIcon } from "@coss/ui/icons";
@@ -19,6 +18,7 @@ import { Navigation } from "./navigation/Navigation";
 import { useBottomNavItems } from "./useBottomNavItems";
 import { ProfileDropdown } from "./user-dropdown/ProfileDropdown";
 import { UserDropdown } from "./user-dropdown/UserDropdown";
+import { AimLogo } from "@components/aim/AimLogo";
 
 export type SideBarContainerProps = {
   bannersHeight: number;
@@ -60,10 +60,13 @@ export function SideBar({ bannersHeight, user }: SideBarProps) {
       <aside
         style={sidebarStylingAttributes}
         className={classNames(
-          "fixed left-0 hidden h-full w-14 flex-col overflow-y-auto overflow-x-hidden border-muted border-r bg-cal-muted md:sticky md:flex lg:w-56 lg:px-3",
+          "aim-rail fixed left-0 hidden h-full w-14 flex-col overflow-y-auto overflow-x-hidden border-muted border-r bg-cal-muted md:sticky md:flex lg:w-56 lg:px-3",
           "max-h-screen"
         )}>
         <div className="flex h-full flex-col justify-between py-3 lg:pt-4">
+          <Link href="/event-types" className="mb-4 hidden px-1.5 lg:block">
+            <AimLogo variant="light" className="h-[22px] w-auto" />
+          </Link>
           <header className="todesktop:-mt-3 todesktop:flex-col-reverse items-center justify-between todesktop:[-webkit-app-region:drag] md:hidden lg:flex">
             {user?.org ? (
               !ENABLE_PROFILE_SWITCHER ? (
@@ -115,7 +118,7 @@ export function SideBar({ bannersHeight, user }: SideBarProps) {
           </header>
           {/* logo icon for tablet */}
           <Link href="/event-types" className="text-center md:inline lg:hidden">
-            <Logo small icon />
+            <AimLogo variant="light" mark className="mx-auto h-7 w-7" />
           </Link>
           <Navigation />
         </div>

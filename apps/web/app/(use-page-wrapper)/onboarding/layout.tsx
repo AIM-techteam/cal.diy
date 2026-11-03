@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { FeaturesRepository } from "@calcom/features/flags/features.repository";
 import { prisma } from "@calcom/prisma";
 
+import { AimBrandScope } from "@components/aim/AimBrandScope";
+
 export default async function OnboardingLayout({ children }: { children: React.ReactNode }) {
   const featuresRepository = new FeaturesRepository(prisma);
   const isOnboardingV3Enabled = await featuresRepository.checkIfFeatureIsEnabledGlobally("onboarding-v3");
@@ -11,5 +13,10 @@ export default async function OnboardingLayout({ children }: { children: React.R
     redirect("/getting-started");
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <AimBrandScope />
+      {children}
+    </>
+  );
 }
