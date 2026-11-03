@@ -129,6 +129,15 @@ html.dark body.aim-brand {
   --cal-text: hsla(0, 0%, 83%, 1);
   --cal-text-subtle: hsla(0, 0%, 64%, 1);
   --cal-text-muted: hsla(0, 0%, 64%, 1);
+
+  /* The light block above pins coss-ui's ink and borders, and body sits below html.dark, so
+     without this the user menu (bg-popover + text-foreground) rendered near-black text on a
+     near-black popup. Values mirror coss-ui's own .dark theme (packages/coss-ui/src/styles/globals.css). */
+  --foreground: var(--color-neutral-100, #f5f5f5);
+  --muted-foreground: color-mix(in srgb, var(--color-neutral-500, #737373) 90%, #ffffff);
+  --border: color-mix(in srgb, #ffffff 6%, transparent);
+  --input: color-mix(in srgb, #ffffff 8%, transparent);
+  --ring: #42a635;
 }
 
 html.dark body.aim-brand .aim-rail {
