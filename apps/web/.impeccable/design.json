@@ -388,7 +388,7 @@
       "refersTo": "switch-off",
       "description": "On is brand green; off is sage stroke, never a brand tint.",
       "html": "<span class=\"ds-switch\" role=\"switch\" aria-checked=\"false\"></span> <span class=\"ds-switch ds-on\" role=\"switch\" aria-checked=\"true\"></span>",
-      "css": ".ds-switch { display: inline-block; position: relative; width: 44px; height: 24px; border-radius: 999px; background: #9fae99; vertical-align: middle; } .ds-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #ffffff; transition: left .15s; } .ds-switch.ds-on { background: #2b7a24; } .ds-switch.ds-on::after { left: 23px; }"
+      "css": ".ds-switch { display: inline-block; position: relative; width: 44px; height: 24px; border-radius: 999px; background: #7f8f79; vertical-align: middle; } .ds-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #ffffff; transition: left .15s; } .ds-switch.ds-on { background: #2b7a24; } .ds-switch.ds-on::after { left: 23px; }"
     },
     {
       "name": "Login Card",
