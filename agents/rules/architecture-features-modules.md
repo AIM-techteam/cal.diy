@@ -1,4 +1,7 @@
 ---
+paths:
+  - "packages/features/**"
+  - "apps/web/modules/**"
 title: packages/features vs apps/web/modules
 impact: HIGH
 impactDescription: Wrong placement causes tight coupling and import issues

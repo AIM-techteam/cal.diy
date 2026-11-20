@@ -1,4 +1,10 @@
 ---
+paths:
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/*.spec.ts"
+  - "**/__tests__/**"
+  - "**/__mocks__/**"
 title: Mock Implementation Patterns
 impact: MEDIUM
 impactDescription: Poor mocks cause flaky tests and false positives

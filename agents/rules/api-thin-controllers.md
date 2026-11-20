@@ -1,4 +1,9 @@
 ---
+paths:
+  - "apps/api/**"
+  - "packages/trpc/**"
+  - "apps/web/app/api/**"
+  - "apps/web/pages/api/**"
 title: Keep Controllers Thin - HTTP Concerns Only
 impact: HIGH
 impactDescription: Enables technology-agnostic business logic

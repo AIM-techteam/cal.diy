@@ -1,4 +1,7 @@
 ---
+paths:
+  - "packages/app-store/**"
+  - "packages/app-store-cli/**"
 title: App Store Integration Patterns
 impact: MEDIUM
 impactDescription: App store integrations require specific patterns for generated files

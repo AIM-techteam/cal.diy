@@ -1,4 +1,8 @@
 ---
+paths:
+  - "**/di/**"
+  - "**/*Service.ts"
+  - "**/*Repository.ts"
 title: Use Dependency Injection for Loose Coupling
 impact: HIGH
 impactDescription: Enables build-time safety, testability, and maintainability

@@ -1,4 +1,7 @@
 ---
+paths:
+  - "**/repositories/**"
+  - "**/*Repository.ts"
 title: Repository Method Naming Conventions
 impact: HIGH
 impactDescription: Improves code discoverability and reusability

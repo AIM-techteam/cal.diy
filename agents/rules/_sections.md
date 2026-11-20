@@ -1,3 +1,8 @@
+---
+paths:
+  - "agents/rules/**"
+---
+
 # Sections
 
 This file defines all sections, their ordering, impact levels, and descriptions.

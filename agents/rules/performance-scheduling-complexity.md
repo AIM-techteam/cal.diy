@@ -1,4 +1,10 @@
 ---
+paths:
+  - "packages/features/bookings/**"
+  - "packages/features/availability/**"
+  - "packages/features/schedules/**"
+  - "packages/features/slots/**"
+  - "packages/trpc/server/routers/viewer/slots/**"
 title: Handle NP-Hard Scheduling Problems Carefully
 impact: HIGH
 impactDescription: Prevents exponential blowup in scheduling operations
