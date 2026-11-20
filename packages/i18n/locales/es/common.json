@@ -381,7 +381,7 @@
   "2fa_code": "Código de Dos Factores",
   "sign_in_account": "Iniciar sesión en tu cuenta",
   "sign_in": "Iniciar Sesión",
-  "go_back_login": "Volver a la página de inicio",
+  "go_back_login": "Volver a iniciar sesión",
   "error_during_login": "Se ha producido un error al iniciar sesión. Vuelve a la pantalla de inicio de sesión e inténtalo de nuevo.",
   "request_password_reset": "Restablecer contraseña",
   "send_invite": "Enviar invitación",
@@ -4647,6 +4647,7 @@
   "aim_login_you_are_here": "Estás aquí",
   "aim_login_staff_divider": "Personal de AIM",
   "aim_login_subtitle": "Inicia sesión para gestionar tus citas.",
+  "aim_logout_rail_heading": "Las citas del funnel siguen llegando a tu calendario.",
   "aim_login_help": "¿Necesitas ayuda? Contacta a tu representante de AIM.",
   "ADD_NEW_STRINGS_ABOVE_THIS_LINE_TO_PREVENT_MERGE_CONFLICTS": "↑↑↑↑↑↑↑↑↑↑↑↑↑ Agregue sus nuevas cadenas arriba ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑"
 }

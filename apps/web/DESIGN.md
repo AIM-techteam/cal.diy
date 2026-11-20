@@ -127,7 +127,7 @@ Runtime brand colors (`useAppTheme` on `<html>`, an advisor's `brandColor`) are 
 **Key Characteristics:**
 - Token remap, not component rewrite: `--cal-*` tokens are global; coss-ui tokens (`--primary`, `--primary-foreground`, `--ring`, `--border`, `--input`, `--muted-foreground`, `--foreground`) point at them inside the advisor scope.
 - Brand green on every primary action, focus ring, selection, caret and native accent.
-- Olive rail on the left (the app sidebar, and the login's route rail); content on white. Sage grounds stay on onboarding and the auth utility pages (error, forgot password, logout).
+- Olive rail on the left (the app sidebar, and the login and logout rail via `AimAuthSplitLayout`); content on white. Sage grounds stay on onboarding and the auth utility pages (error, forgot password).
 - DM Serif Display for headings only; Inter for everything else.
 - The Annuity Gator wordmark and arrow-A mark, used as supplied.
 
@@ -192,7 +192,9 @@ Stock cal layout is preserved unchanged in the app. In-app: a sticky left rail (
 
 **Login (the route in).** No card. From lg (1024px) the page is two columns, 2fr : 3fr: the olive rail takes 40% at full height (56px padding, 64px from xl) with the light wordmark at the top, the serif statement, the vertical three-stop route (40px between stops) and the help line pinned to the foot; the white side centers a 440px column holding the serif heading, subtitle, Google button, "AIM staff" divider, email and password fields (24px apart) and Continue. Below lg the rail collapses to a compact top band (20px side padding, 32px from sm) with the wordmark and a horizontal three-dot route showing stop names only; the statement, descriptions and "You are here" pill are hidden, the help line moves under the form, and the form stays in the first screen.
 
-**Auth utility pages** (error, forgot password, logout) keep `AuthContainer`: the wordmark above one centered card (max-width 28rem) on sage-ground.
+**Logout** shares the login's frame (`apps/web/components/aim/AimAuthSplitLayout.tsx`): olive rail with a serif statement, and on the white side the current-stop check dot, a serif "You've been logged out" and one primary button back to login.
+
+**Auth utility pages** (error, forgot password) keep `AuthContainer`: the wordmark above one centered card (max-width 28rem) on sage-ground.
 
 **Onboarding:** a single calendar step in a centered 16px-radius white panel on sage-wash, wordmark above, sign-out below; no step dots and no Back button, because there is only one step.
 

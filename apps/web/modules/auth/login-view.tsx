@@ -27,9 +27,8 @@ import { signIn } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
-import { AimBrandScope } from "@components/aim/AimBrandScope";
+import { AimAuthSplitLayout } from "@components/aim/AimAuthSplitLayout";
 import { AimLoginRoute } from "@components/aim/AimLoginRoute";
-import { AimLogo } from "@components/aim/AimLogo";
 
 interface LoginValues {
   email: string;
@@ -122,222 +121,209 @@ export default function Login({
   const showSignupLink = false;
 
   return (
-    <div className="bg-default grid min-h-dvh grid-rows-[auto_1fr] lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:grid-rows-1">
-      <AimBrandScope />
+    <>
+      <AimAuthSplitLayout
+        railHeading={t("aim_login_route_heading")}
+        rail={<AimLoginRoute currentIndex={0} />}>
+        <h1 className="font-cal text-emphasis text-4xl leading-[1.05] sm:text-5xl">
+          {t("aim_advisor_sign_in")}
+        </h1>
 
-      <aside className="aim-rail bg-cal-muted flex flex-col gap-6 px-5 pt-6 pb-5 sm:px-8 lg:min-h-dvh lg:gap-0 lg:px-14 lg:py-14 xl:px-16">
-        <AimLogo variant="light" className="h-6 w-auto self-start lg:h-7" />
-        <h2 className="font-cal text-emphasis mt-16 mb-12 hidden max-w-[28rem] text-5xl leading-[1.08] text-balance lg:block">
-          {t("aim_login_route_heading")}
-        </h2>
-        <AimLoginRoute currentIndex={0} />
-        <p className="text-muted mt-auto hidden pt-12 text-sm lg:block">{t("aim_login_help")}</p>
-      </aside>
+        <p className="text-subtle mt-3 mb-8 text-base" data-testid="login-subtitle">
+          {twoFactorRequired ? t("2fa_code") : t("aim_login_subtitle")}
+        </p>
 
-      <main className="flex items-start justify-center px-5 pt-10 pb-12 sm:px-8 sm:pt-14 lg:items-center lg:px-12 lg:py-14">
-        <div className="w-full max-w-[440px]">
-          <h1 className="font-cal text-emphasis text-4xl leading-[1.05] sm:text-5xl">
-            {t("aim_advisor_sign_in")}
-          </h1>
-
-          <p className="text-subtle mt-3 mb-8 text-base" data-testid="login-subtitle">
-            {twoFactorRequired ? t("2fa_code") : t("aim_login_subtitle")}
-          </p>
-
-          <FormProvider {...methods}>
-            {/* Social Login Buttons. The sm: heights below are not duplicates: coss-ui's default
-                Button size shrinks to sm:h-8 from sm up, so the sign-in buttons pin their height
-                at every breakpoint. */}
-            {!twoFactorRequired && showSocialLogin && (
-              <>
-                <div className="flex flex-col gap-2">
-                  {isGoogleLoginEnabled && (
-                    <Button
-                      className="h-12 w-full text-base sm:h-12"
-                      disabled={formState.isSubmitting}
-                      data-testid="google"
-                      onClick={async (e) => {
-                        e.preventDefault();
-                        setLastUsed("google");
-                        await signIn("google", {
-                          callbackUrl,
-                        });
-                      }}>
-                      <GoogleIcon />
-                      <span>{t("signin_with_google")}</span>
-                      {lastUsed === "google" && <LastUsed />}
-                    </Button>
-                  )}
-                  {isOutlookLoginEnabled && (
-                    <Button
-                      variant="outline"
-                      className="w-full py-1"
-                      data-testid="microsoft"
-                      onClick={async (e) => {
-                        e.preventDefault();
-                        setLastUsed("microsoft");
-                        await signIn("azure-ad", {
-                          callbackUrl,
-                        });
-                      }}>
-                      <MicrosoftIcon />
-                      <span>{t("signin_with_microsoft")}</span>
-                      {lastUsed === "microsoft" && <LastUsed />}
-                    </Button>
-                  )}
-                </div>
-
-                {/* Advisors sign in with Google; the email form below is for AIM staff. */}
-                <div className="my-7 flex items-center gap-4">
-                  <Separator className="flex-1" />
-                  <span className="text-muted text-sm">{t("aim_login_staff_divider")}</span>
-                  <Separator className="flex-1" />
-                </div>
-              </>
-            )}
-
-            <form onSubmit={methods.handleSubmit(onSubmit)} noValidate data-testid="login-form">
-              <input defaultValue={csrfToken || undefined} type="hidden" hidden {...register("csrfToken")} />
-
-              {!twoFactorRequired && (
-                <div className="space-y-6">
-                  {/* Email Field */}
-                  <Field>
-                    <FieldLabel>{t("email")}</FieldLabel>
-                    <Input
-                      id="email"
-                      type="email"
-                      defaultValue={totpEmail || (searchParams?.get("email") as string)}
-                      autoComplete="email"
-                      {...register("email")}
-                    />
-                    {formState.errors.email && (
-                      <p data-testid="field-error" className="text-destructive-foreground text-xs">
-                        {formState.errors.email.message}
-                      </p>
-                    )}
-                  </Field>
-
-                  {/* Password Field */}
-                  <Field>
-                    <div className="flex w-full items-center justify-between">
-                      <FieldLabel>{t("password")}</FieldLabel>
-                      <Link href="/auth/forgot-password" className="text-sm text-subtle hover:text-emphasis">
-                        {t("forgot")}
-                      </Link>
-                    </div>
-                    <InputGroup className="overflow-hidden">
-                      <InputGroupInput
-                        id="password"
-                        type={showPassword ? "text" : "password"}
-                        autoComplete="current-password"
-                        {...register("password")}
-                      />
-                      <InputGroupAddon align="inline-end">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-xs"
-                          onClick={() => setShowPassword(!showPassword)}
-                          aria-label={showPassword ? t("hide_password") : t("show_password")}>
-                          {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                        </Button>
-                      </InputGroupAddon>
-                    </InputGroup>
-                    {formState.errors.password && (
-                      <p data-testid="field-error" className="text-destructive-foreground text-xs">
-                        {formState.errors.password.message}
-                      </p>
-                    )}
-                  </Field>
-                </div>
-              )}
-
-              {/* Two Factor */}
-              {twoFactorRequired && (
-                <div className="space-y-4">
-                  {!twoFactorLostAccess ? <TwoFactor center /> : <BackupCode center />}
-                </div>
-              )}
-
-              {/* Error Message */}
-              {errorMessage && <Alert severity="error" title={errorMessage} className="mt-4" />}
-
-              {/* Submit Button */}
-              <Button
-                type="submit"
-                variant={showSocialLogin && !twoFactorRequired ? "outline" : "default"}
-                className="mt-8 h-11 w-full sm:h-11"
-                disabled={formState.isSubmitting}>
-                {twoFactorRequired ? t("submit") : t("continue")}
-              </Button>
-            </form>
-
-            {/* Two Factor Footer */}
-            {twoFactorRequired && (
-              <div className="mt-4 flex justify-center gap-4">
-                {!totpEmail ? (
-                  <>
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        if (twoFactorLostAccess) {
-                          setTwoFactorLostAccess(false);
-                          methods.setValue("backupCode", "");
-                        } else {
-                          setTwoFactorRequired(false);
-                          methods.setValue("totpCode", "");
-                        }
-                        setErrorMessage(null);
-                      }}>
-                      <Icon name="arrow-left" className="mr-2 size-4" />
-                      {t("go_back")}
-                    </Button>
-                    {!twoFactorLostAccess && (
-                      <Button
-                        variant="ghost"
-                        onClick={() => {
-                          setTwoFactorLostAccess(true);
-                          setErrorMessage(null);
-                          methods.setValue("totpCode", "");
-                        }}>
-                        <Icon name="lock" className="mr-2 size-4" />
-                        {t("lost_access")}
-                      </Button>
-                    )}
-                  </>
-                ) : (
+        <FormProvider {...methods}>
+          {/* Social Login Buttons. The sm: heights below are not duplicates: coss-ui's default
+              Button size shrinks to sm:h-8 from sm up, so the sign-in buttons pin their height
+              at every breakpoint. */}
+          {!twoFactorRequired && showSocialLogin && (
+            <>
+              <div className="flex flex-col gap-2">
+                {isGoogleLoginEnabled && (
                   <Button
-                    variant="ghost"
-                    onClick={() => {
-                      window.location.replace("/");
+                    className="h-12 w-full text-base sm:h-12"
+                    disabled={formState.isSubmitting}
+                    data-testid="google"
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      setLastUsed("google");
+                      await signIn("google", {
+                        callbackUrl,
+                      });
                     }}>
-                    {t("cancel")}
+                    <GoogleIcon />
+                    <span>{t("signin_with_google")}</span>
+                    {lastUsed === "google" && <LastUsed />}
+                  </Button>
+                )}
+                {isOutlookLoginEnabled && (
+                  <Button
+                    variant="outline"
+                    className="w-full py-1"
+                    data-testid="microsoft"
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      setLastUsed("microsoft");
+                      await signIn("azure-ad", {
+                        callbackUrl,
+                      });
+                    }}>
+                    <MicrosoftIcon />
+                    <span>{t("signin_with_microsoft")}</span>
+                    {lastUsed === "microsoft" && <LastUsed />}
                   </Button>
                 )}
               </div>
+
+              {/* Advisors sign in with Google; the email form below is for AIM staff. */}
+              <div className="my-7 flex items-center gap-4">
+                <Separator className="flex-1" />
+                <span className="text-muted text-sm">{t("aim_login_staff_divider")}</span>
+                <Separator className="flex-1" />
+              </div>
+            </>
+          )}
+
+          <form onSubmit={methods.handleSubmit(onSubmit)} noValidate data-testid="login-form">
+            <input defaultValue={csrfToken || undefined} type="hidden" hidden {...register("csrfToken")} />
+
+            {!twoFactorRequired && (
+              <div className="space-y-6">
+                {/* Email Field */}
+                <Field>
+                  <FieldLabel>{t("email")}</FieldLabel>
+                  <Input
+                    id="email"
+                    type="email"
+                    defaultValue={totpEmail || (searchParams?.get("email") as string)}
+                    autoComplete="email"
+                    {...register("email")}
+                  />
+                  {formState.errors.email && (
+                    <p data-testid="field-error" className="text-destructive-foreground text-xs">
+                      {formState.errors.email.message}
+                    </p>
+                  )}
+                </Field>
+
+                {/* Password Field */}
+                <Field>
+                  <div className="flex w-full items-center justify-between">
+                    <FieldLabel>{t("password")}</FieldLabel>
+                    <Link href="/auth/forgot-password" className="text-sm text-subtle hover:text-emphasis">
+                      {t("forgot")}
+                    </Link>
+                  </div>
+                  <InputGroup className="overflow-hidden">
+                    <InputGroupInput
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="current-password"
+                      {...register("password")}
+                    />
+                    <InputGroupAddon align="inline-end">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-xs"
+                        onClick={() => setShowPassword(!showPassword)}
+                        aria-label={showPassword ? t("hide_password") : t("show_password")}>
+                        {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                      </Button>
+                    </InputGroupAddon>
+                  </InputGroup>
+                  {formState.errors.password && (
+                    <p data-testid="field-error" className="text-destructive-foreground text-xs">
+                      {formState.errors.password.message}
+                    </p>
+                  )}
+                </Field>
+              </div>
             )}
-          </FormProvider>
 
-          <p className="text-subtle mt-10 text-sm lg:hidden">{t("aim_login_help")}</p>
+            {/* Two Factor */}
+            {twoFactorRequired && (
+              <div className="space-y-4">
+                {!twoFactorLostAccess ? <TwoFactor center /> : <BackupCode center />}
+              </div>
+            )}
 
-          {!twoFactorRequired && showSignupLink && (
-            <div className="mt-6 flex items-center justify-center gap-4 text-center">
-              <Link
-                href={
-                  callbackUrl
-                    ? `${WEBSITE_URL}/signup?redirect=${encodeURIComponent(callbackUrl)}`
-                    : `${WEBSITE_URL}/signup`
-                }
-                className="text-sm font-medium text-emphasis hover:underline">
-                {t("create_account")}
-              </Link>
+            {/* Error Message */}
+            {errorMessage && <Alert severity="error" title={errorMessage} className="mt-4" />}
+
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              variant={showSocialLogin && !twoFactorRequired ? "outline" : "default"}
+              className="mt-8 h-11 w-full sm:h-11"
+              disabled={formState.isSubmitting}>
+              {twoFactorRequired ? t("submit") : t("continue")}
+            </Button>
+          </form>
+
+          {/* Two Factor Footer */}
+          {twoFactorRequired && (
+            <div className="mt-4 flex justify-center gap-4">
+              {!totpEmail ? (
+                <>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      if (twoFactorLostAccess) {
+                        setTwoFactorLostAccess(false);
+                        methods.setValue("backupCode", "");
+                      } else {
+                        setTwoFactorRequired(false);
+                        methods.setValue("totpCode", "");
+                      }
+                      setErrorMessage(null);
+                    }}>
+                    <Icon name="arrow-left" className="mr-2 size-4" />
+                    {t("go_back")}
+                  </Button>
+                  {!twoFactorLostAccess && (
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setTwoFactorLostAccess(true);
+                        setErrorMessage(null);
+                        methods.setValue("totpCode", "");
+                      }}>
+                      <Icon name="lock" className="mr-2 size-4" />
+                      {t("lost_access")}
+                    </Button>
+                  )}
+                </>
+              ) : (
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    window.location.replace("/");
+                  }}>
+                  {t("cancel")}
+                </Button>
+              )}
             </div>
           )}
-        </div>
-      </main>
+        </FormProvider>
+
+        {!twoFactorRequired && showSignupLink && (
+          <div className="mt-6 flex items-center justify-center gap-4 text-center">
+            <Link
+              href={
+                callbackUrl
+                  ? `${WEBSITE_URL}/signup?redirect=${encodeURIComponent(callbackUrl)}`
+                  : `${WEBSITE_URL}/signup`
+              }
+              className="text-sm font-medium text-emphasis hover:underline">
+              {t("create_account")}
+            </Link>
+          </div>
+        )}
+      </AimAuthSplitLayout>
 
       <AddToHomescreen />
-    </div>
+    </>
   );
 }
