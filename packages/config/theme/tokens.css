@@ -239,21 +239,21 @@
   --radius-none: 0px;
 
   /* Background Standard */
-  --cal-bg-emphasis: #d3ddcf;
+  --cal-bg-emphasis: #e2f2dc;
   --cal-bg: #ffffff;
-  --cal-bg-subtle: #e2f2dc;
-  --cal-bg-muted: #eef6ea;
+  --cal-bg-subtle: #f1f6ee;
+  --cal-bg-muted: #f7faf5;
   --cal-bg-inverted: #1f3d1b;
 
   /* Background Primary */
   --cal-bg-primary: #2b7a24;
   --cal-bg-primary-emphasis: #22631c;
-  --cal-bg-primary-muted: #e2f2dc;
+  --cal-bg-primary-muted: #f1f6ee;
 
   /* Background Brand */
   --cal-bg-brand: #2b7a24;
   --cal-bg-brand-emphasis: #22631c;
-  --cal-bg-brand-muted: #e2f2dc;
+  --cal-bg-brand-muted: #f1f6ee;
 
   /* Background Semantic */
   --cal-bg-semantic-info-subtle: hsla(212, 88%, 97%, 1);
@@ -291,9 +291,9 @@
 
   /* Borders */
   --cal-border-emphasis: #9fb09a;
-  --cal-border: #d3ddcf;
-  --cal-border-subtle: #e2eadf;
-  --cal-border-muted: #eef6ea;
+  --cal-border: #82927c;
+  --cal-border-subtle: #dfe7db;
+  --cal-border-muted: #eaf0e7;
   --cal-border-error: hsla(0, 96%, 89%, 1);
   --cal-border-semantic-error: hsla(0, 96%, 89%, 1);
   --cal-border-semantic-attention-subtle: hsla(32, 98%, 83%, 1);
@@ -304,7 +304,7 @@
   --cal-text-emphasis: #1f3d1b;
   --cal-text: #1d2419;
   --cal-text-subtle: #4b5848;
-  --cal-text-muted: #7d8a79;
+  --cal-text-muted: #5a6655;
   --cal-text-inverted: hsla(0, 0%, 100%, 1);
 
   /* Content/Text Semantic */
@@ -333,10 +333,10 @@
   --cal-brand-emphasis: #22631c;
   --cal-brand-text: #ffffff;
 
-  /* Public booking page brand (Annuity Gator), consumed via BOOKING_BRAND_VARS */
-  --booking-brand: #2b7a24;
-  --booking-brand-emphasis: #22631c;
-  --booking-brand-text: #ffffff;
+  /* Annuity Gator brand, pinned over runtime brand colors on the booking page (BOOKING_BRAND_VARS) and the advisor app (aim-brand.css) */
+  --ag-brand: #2b7a24;
+  --ag-brand-emphasis: #22631c;
+  --ag-brand-text: #ffffff;
 
   /* Box Shadows */
   --shadow-dropdown: 0px 5px 20px 0px rgba(0, 0, 0, 0.10), 0px 10px 40px 0px rgba(0, 0, 0, 0.03);
@@ -424,10 +424,10 @@
   --cal-bg-launch-dark: hsla(242, 53%, 10%, 1);
 
   /* Border Standard */
-  --cal-border: #34452f;
+  --cal-border: #5b7055;
   --cal-border-muted: #18221a;
   --cal-border-subtle: #1f2c1d;
-  --cal-border-emphasis: #4d6147;
+  --cal-border-emphasis: #6d8366;
   --cal-border-semantic-error: hsla(0, 63%, 24%, 1);
   --cal-border-semantic-attention-subtle: hsla(15, 75%, 23%, 1);
   --cal-border-semantic-error-subtle: hsla(0, 63%, 24%, 1);
@@ -438,7 +438,7 @@
   --cal-text-emphasis: #f3f8ef;
   --cal-text: #e6eee2;
   --cal-text-subtle: #a4b49f;
-  --cal-text-muted: #8a9985;
+  --cal-text-muted: #94a38f;
   --cal-text-inverted: #0d150b;
 
   /* Content/Text Semantic */
@@ -462,10 +462,10 @@
   --cal-brand-emphasis: #5cc04d;
   --cal-brand-text: #0d150b;
 
-  /* Public booking page brand (Annuity Gator), consumed via BOOKING_BRAND_VARS */
-  --booking-brand: #4cae3e;
-  --booking-brand-emphasis: #5cc04d;
-  --booking-brand-text: #0d150b;
+  /* Annuity Gator brand, pinned over runtime brand colors on the booking page (BOOKING_BRAND_VARS) and the advisor app (aim-brand.css) */
+  --ag-brand: #4cae3e;
+  --ag-brand-emphasis: #5cc04d;
+  --ag-brand-text: #0d150b;
 
   /* Fill Colors */
   --fill-emphasis: var(--cal-text-emphasis);
@@ -480,8 +480,9 @@
   --fill-brand: var(--cal-brand-text);
 }
 
-/* DM Serif Display ships a single 400 weight; block faux-bold so headings that pair
-   font-cal with font-semibold render the real glyphs, as on the Annuity Gator funnel. */
+/* DM Serif Display ships a single 400 weight. Stock cal pairs font-cal with font-semibold/bold,
+   which makes the browser fake a bold; keep the serif at its real weight. */
 .font-cal {
-  font-synthesis-weight: none;
+  font-weight: 400;
+  font-synthesis: none;
 }
