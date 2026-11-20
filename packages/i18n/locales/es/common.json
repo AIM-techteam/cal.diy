@@ -4646,6 +4646,7 @@
   "aim_login_step_meetings_description": "Cada cita tiene su propio enlace de reunión.",
   "aim_login_you_are_here": "Estás aquí",
   "aim_login_staff_divider": "Personal de AIM",
+  "aim_login_subtitle": "Inicia sesión para gestionar tus citas.",
   "aim_login_help": "¿Necesitas ayuda? Contacta a tu representante de AIM.",
   "ADD_NEW_STRINGS_ABOVE_THIS_LINE_TO_PREVENT_MERGE_CONFLICTS": "↑↑↑↑↑↑↑↑↑↑↑↑↑ Agregue sus nuevas cadenas arriba ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑"
 }

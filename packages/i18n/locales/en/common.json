@@ -4807,6 +4807,7 @@
   "aim_login_step_meetings_description": "Every appointment gets its own meeting link.",
   "aim_login_you_are_here": "You are here",
   "aim_login_staff_divider": "AIM staff",
+  "aim_login_subtitle": "Sign in to manage your appointments.",
   "aim_login_help": "Need help? Contact your AIM representative.",
   "ADD_NEW_STRINGS_ABOVE_THIS_LINE_TO_PREVENT_MERGE_CONFLICTS": "↑↑↑↑↑↑↑↑↑↑↑↑↑ Add your new strings above here ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑"
 }

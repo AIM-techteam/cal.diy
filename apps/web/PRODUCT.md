@@ -27,7 +27,7 @@ It must feel like an Annuity Gator tool, not a third-party SaaS: advisors alread
 
 ## Capabilities and Constraints
 
-- Interface language: English.
+- Interface language: follows each user's language preference (English first; Spanish strings kept in sync). Every string goes through i18n, none hard-coded.
 - Public booking pages (booker, booking confirmation) share the global Annuity Gator tokens and fonts since 2026-11-20 (decision of their owner); their layout and flow stay as they are.
 - Each advisor's Zoom is their own account; it cannot be pre-installed. Google Meet is the alternative to Zoom (decided 2026-11-20); the onboarding step still offers only Zoom.
 

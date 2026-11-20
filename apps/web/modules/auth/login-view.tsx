@@ -141,7 +141,7 @@ export default function Login({
           </h1>
 
           <p className="text-subtle mt-3 mb-8 text-base" data-testid="login-subtitle">
-            {twoFactorRequired ? t("2fa_code") : t("welcome_back_sign_in")}
+            {twoFactorRequired ? t("2fa_code") : t("aim_login_subtitle")}
           </p>
 
           <FormProvider {...methods}>
@@ -151,7 +151,7 @@ export default function Login({
                 <div className="flex flex-col gap-2">
                   {isGoogleLoginEnabled && (
                     <Button
-                      className="h-12 w-full text-base"
+                      className="h-12 w-full text-base sm:h-12"
                       disabled={formState.isSubmitting}
                       data-testid="google"
                       onClick={async (e) => {
@@ -265,7 +265,7 @@ export default function Login({
               <Button
                 type="submit"
                 variant={showSocialLogin && !twoFactorRequired ? "outline" : "default"}
-                className="mt-8 h-11 w-full"
+                className="mt-8 h-11 w-full sm:h-11"
                 disabled={formState.isSubmitting}>
                 {twoFactorRequired ? t("submit") : t("continue")}
               </Button>
