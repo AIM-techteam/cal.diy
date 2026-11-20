@@ -28,7 +28,7 @@ It must feel like an Annuity Gator tool, not a third-party SaaS: advisors alread
 ## Capabilities and Constraints
 
 - Interface language: English.
-- Out of scope: the public booking pages (booker, booking confirmation). They are owned by another developer (Miguel Alberto) and must not be touched (instruction from the owner on 2026-11-02).
+- Public booking pages (booker, booking confirmation) share the global Annuity Gator tokens and fonts since 2026-11-20 (decision of their owner); their layout and flow stay as they are.
 - Each advisor's Zoom is their own account; it cannot be pre-installed. Google Meet is the alternative to Zoom (decided 2026-11-20); the onboarding step still offers only Zoom.
 
 ## Brand Commitments

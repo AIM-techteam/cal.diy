@@ -4,11 +4,12 @@ import classNames from "classnames";
 const STOPS = [
   { title: "aim_login_step_sign_in", description: "aim_login_step_sign_in_description" },
   { title: "aim_login_step_calendar", description: "aim_login_step_calendar_description" },
-  { title: "aim_login_step_zoom", description: "aim_login_step_zoom_description" },
+  { title: "aim_login_step_meetings", description: "aim_login_step_meetings_description" },
 ] as const;
 
 /**
- * The route an advisor follows on first login (sign in, calendar, Zoom), drawn on the olive rail.
+ * The route an advisor follows on first login (sign in, calendar, video meetings with Zoom or
+ * Google Meet), drawn on the olive rail.
  * Vertical with descriptions from lg up; a compact horizontal strip on smaller screens so the
  * sign-in form stays in the first screen.
  */

@@ -107,7 +107,7 @@ A green-on-sage palette lifted from the Annuity Gator funnel (quiz.annuitygator.
 - **Sage Hairlines** (sage-hairline, sage-hairline-faint): `--cal-border-subtle` / coss-ui `--border`, and `--cal-border-muted`.
 
 ### Named Rules
-**The One Source Rule.** Every palette value lives in `packages/config/theme/tokens.css`, light and dark. `aim-brand.css` may reference tokens but never declares a new palette value, except the olive rail and the off-switch track.
+**The One Source Rule.** Every palette value lives in `packages/config/theme/tokens.css`, light and dark. `aim-brand.css` may reference tokens but never declares a new palette value, except the olive rail (including the login route drawn on it: connector #3d6a37, stop rings #6fca60, current stop #42a635), the off-switch track, and text selection.
 
 **The Muted Floor Rule.** No text on a light ground goes below text-muted. Stock cal markup that hard-codes `text-gray-400` / `text-zinc-400` (2.6:1 on white) is remapped to `--cal-text-muted` inside the advisor scope.
 
