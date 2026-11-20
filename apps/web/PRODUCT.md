@@ -8,7 +8,7 @@ web
 
 ## Users
 
-- **Annuity Gator advisors** (financial advisors who receive appointments from Annuity Gator's funnels). They come in rarely and for short tasks: connect their calendar and their own Zoom on first login, check upcoming appointments, adjust their hours. Accounts are created for them by AIM; they never sign up.
+- **Annuity Gator advisors** (financial advisors who receive appointments from Annuity Gator's funnels). They come in rarely and for short tasks: connect their calendar and their video meetings (their own Zoom, or Google Meet) on first login, check upcoming appointments, adjust their hours. Accounts are created for them by AIM; they never sign up.
 - **AIM admins** (staff of Advisor Internet Marketing, the company that runs Annuity Gator) manage advisor accounts.
 
 ## Product Purpose
@@ -22,14 +22,14 @@ It must feel like an Annuity Gator tool, not a third-party SaaS: advisors alread
 ## Operating Context
 
 - Sign-in: advisors with Google (`@annuitygator.com` Workspace); AIM admins with email, password and 2FA.
-- First login lands on "connect your calendar", then on Zoom. The calendar is already connected for them by ops (via gator@), so the step is mostly confirmation and adding calendars to check for conflicts.
+- First login lands on "connect your calendar", then on video meetings: Zoom or Google Meet. The calendar is already connected for them by ops (via gator@), so the step is mostly confirmation and adding calendars to check for conflicts.
 - Production cannot rebuild on its server; images are built elsewhere and shipped.
 
 ## Capabilities and Constraints
 
-- Interface language: English.
-- Out of scope: the public booking pages (booker, booking confirmation). They are owned by another developer (Miguel Alberto) and must not be touched (instruction from the owner on 2026-11-02).
-- Each advisor's Zoom is their own account; it cannot be pre-installed.
+- Interface language: follows each user's language preference (English first; Spanish strings kept in sync). Every string goes through i18n, none hard-coded.
+- Public booking pages (booker, booking confirmation) share the global Annuity Gator tokens and fonts since 2026-11-20 (decision of their owner); their layout and flow stay as they are.
+- Each advisor's Zoom is their own account; it cannot be pre-installed. Google Meet is the alternative to Zoom (decided 2026-11-20); the onboarding step still offers only Zoom.
 
 ## Brand Commitments
 
@@ -43,5 +43,5 @@ No testimonials, metrics or claims are provided for these screens; none should b
 ## Product Principles
 
 1. Only what applies to an advisor; hide everything cal ships for other businesses.
-2. First login ends with calendar and Zoom connected, unaided.
+2. First login ends with calendar and video meetings (Zoom or Google Meet) connected, unaided.
 3. Recognizably Annuity Gator, from the funnel the advisor already knows.

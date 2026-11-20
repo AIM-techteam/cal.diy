@@ -337,6 +337,7 @@
   --ag-brand: #2b7a24;
   --ag-brand-emphasis: #22631c;
   --ag-brand-text: #ffffff;
+  --ag-ring: #42a635;
 
   /* Box Shadows */
   --shadow-dropdown: 0px 5px 20px 0px rgba(0, 0, 0, 0.10), 0px 10px 40px 0px rgba(0, 0, 0, 0.03);
@@ -466,6 +467,7 @@
   --ag-brand: #4cae3e;
   --ag-brand-emphasis: #5cc04d;
   --ag-brand-text: #0d150b;
+  --ag-ring: #42a635;
 
   /* Fill Colors */
   --fill-emphasis: var(--cal-text-emphasis);

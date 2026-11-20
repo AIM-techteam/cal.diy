@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-03T00:00:00Z",
+  "generatedAt": "2026-11-20T17:47:41Z",
   "title": "Design System: Annuity Gator Advisor App",
   "extensions": {
     "colorMeta": {
@@ -94,6 +94,51 @@
           "#eaeee9"
         ]
       },
+      "route-connector": {
+        "role": "secondary",
+        "displayName": "Route Connector",
+        "canonical": "#3d6a37",
+        "tonalRamp": [
+          "#1b2419",
+          "#2f442c",
+          "#42663d",
+          "#548a4c",
+          "#83b57d",
+          "#b1ccae",
+          "#d6e2d5",
+          "#f1f4f0"
+        ]
+      },
+      "route-ring": {
+        "role": "secondary",
+        "displayName": "Route Ring",
+        "canonical": "#6fca60",
+        "tonalRamp": [
+          "#192716",
+          "#2b4b25",
+          "#3b7232",
+          "#489c3b",
+          "#79c66c",
+          "#acd4a5",
+          "#d4e5d1",
+          "#f0f5ef"
+        ]
+      },
+      "route-numeral": {
+        "role": "secondary",
+        "displayName": "Route Numeral",
+        "canonical": "#0d150b",
+        "tonalRamp": [
+          "#1b2419",
+          "#31442c",
+          "#46663e",
+          "#59894d",
+          "#88b57d",
+          "#b4cbae",
+          "#d7e2d5",
+          "#f1f4f0"
+        ]
+      },
       "rail-text": {
         "role": "secondary",
         "displayName": "Rail Cream",
@@ -154,19 +199,19 @@
           "#e8e9e8"
         ]
       },
-      "text": {
+      "heading-olive": {
         "role": "neutral",
-        "displayName": "Text",
-        "canonical": "#2f3a2c",
+        "displayName": "Heading Olive",
+        "canonical": "#1f3d1b",
         "tonalRamp": [
-          "#0e110d",
-          "#181d16",
-          "#21291f",
-          "#293327",
-          "#6d756b",
-          "#a1a6a0",
-          "#cbceca",
-          "#eaebea"
+          "#1a2518",
+          "#2d462a",
+          "#3f6a39",
+          "#4e9146",
+          "#7ebc76",
+          "#afcfaa",
+          "#d5e3d3",
+          "#f1f5f0"
         ]
       },
       "text-subtle": {
@@ -262,16 +307,31 @@
       "sage-stroke": {
         "role": "neutral",
         "displayName": "Sage Stroke",
-        "canonical": "#9fae99",
+        "canonical": "#82927c",
         "tonalRamp": [
-          "#30342e",
-          "#50574c",
-          "#6f7a6b",
-          "#8c9987",
-          "#bcc6b8",
-          "#d4dbd1",
-          "#e7ebe6",
-          "#f5f7f5"
+          "#1e201d",
+          "#373c35",
+          "#4f574c",
+          "#677462",
+          "#95a191",
+          "#bbc1b8",
+          "#daddd9",
+          "#f2f3f2"
+        ]
+      },
+      "switch-off-track": {
+        "role": "neutral",
+        "displayName": "Honest Off Track",
+        "canonical": "#7f8f79",
+        "tonalRamp": [
+          "#1e201d",
+          "#373b35",
+          "#4f574c",
+          "#677462",
+          "#95a191",
+          "#bbc1b8",
+          "#daddd9",
+          "#f2f3f2"
         ]
       },
       "sage-hairline": {
@@ -291,7 +351,7 @@
       },
       "sage-hairline-faint": {
         "role": "neutral",
-        "displayName": "Sage Hairline Faint",
+        "displayName": "Faint Sage Hairline",
         "canonical": "#eaf0e7",
         "tonalRamp": [
           "#464845",
@@ -306,13 +366,21 @@
       }
     },
     "typographyMeta": {
+      "display-xl": {
+        "displayName": "Display XL",
+        "purpose": "Login heading (2.25rem on phones) and the desktop rail statement; DM Serif Display 400 only."
+      },
       "display": {
         "displayName": "Display",
-        "purpose": "Auth page headings, DM Serif Display 400 only."
+        "purpose": "Auth utility page headings (AuthContainer), DM Serif Display 400 only."
       },
       "headline": {
         "displayName": "Headline",
         "purpose": "App page titles and onboarding card titles, DM Serif Display 400 only."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Route stop names on the desktop login rail, Inter 600."
       },
       "body": {
         "displayName": "Body",
@@ -321,113 +389,148 @@
       "label": {
         "displayName": "Label",
         "purpose": "Inter 500 for labels, nav items, buttons."
+      },
+      "label-caps": {
+        "displayName": "Label Caps",
+        "purpose": "The 'You are here' stop badge only."
       }
     },
-    "shadows": [
+    "shadows": [],
+    "motion": [
       {
-        "name": "card-sm",
-        "value": "0 1px 2px rgba(0,0,0,0.05)",
-        "purpose": "cal's stock small shadow on the login card; the theme adds no shadows."
+        "name": "login-halo",
+        "value": "aim-login-here 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s 2",
+        "purpose": "The login's one motion moment: a 0 to 12px halo in rgba(66,166,53,0.6 to 0) from the current route stop, twice. Off under prefers-reduced-motion."
+      },
+      {
+        "name": "ease-out-expo",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Easing of the login halo."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px",
+        "purpose": "login: larger heading (3rem), wider band padding"
+      },
+      {
+        "name": "md",
+        "value": "768px",
+        "purpose": "app rail appears (56px icon-only); mobile top bar hidden"
+      },
+      {
+        "name": "lg",
+        "value": "1024px",
+        "purpose": "app rail widens to 224px with labels; login splits into a 40% olive rail with the vertical route beside a white sign-in column"
       }
     ],
     "scope": {
       "selector": "body.aim-brand",
       "source": "apps/web/styles/aim-brand.css",
       "toggle": "apps/web/components/aim/AimBrandScope.tsx",
-      "purpose": "All brand tokens live under this selector so public booking pages keep cal's look."
-    },
-    "breakpoints": [
-      {
-        "name": "md",
-        "value": "768px",
-        "purpose": "rail appears (56px icon-only); mobile top bar hidden"
-      },
-      {
-        "name": "lg",
-        "value": "1024px",
-        "purpose": "rail widens to 224px with labels and wordmark"
-      }
-    ]
+      "unscoped": [
+        ".aim-rail",
+        ".aim-login-*"
+      ],
+      "purpose": "Advisor-app fixes tokens cannot express live under body.aim-brand; the rail and login route are unscoped so the olive paints before AimBrandScope mounts. Palette tokens are global in packages/config/theme/tokens.css."
+    }
   },
   "components": [
     {
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Every primary action: Sign in with Google, New, Continue.",
-      "html": "<button class=\"ds-btn-primary\">Sign in with Google</button>",
-      "css": ".ds-btn-primary { background: #2b7a24; color: #ffffff; font: 500 14px/20px Inter, system-ui, sans-serif; padding: 6px 16px; border: 1px solid #2b7a24; border-radius: 8px; cursor: pointer; transition: background .15s; } .ds-btn-primary:hover { background: #22631c; } .ds-btn-primary:focus-visible { outline: 2px solid #42a635; outline-offset: 2px; }"
+      "description": "Every primary action: New, Continue when no Google button is shown.",
+      "html": "<button class=\"ds-btn-primary\">Continue</button>",
+      "css": ".ds-btn-primary { background: var(--cal-brand, #2b7a24); color: var(--cal-brand-text, #ffffff); font-family: Inter, system-ui, sans-serif; font-weight: 500; font-size: 14px; height: 44px; padding: 0 16px; border: 1px solid transparent; border-radius: 12px; cursor: pointer; transition: background .15s; } .ds-btn-primary:hover { background: var(--cal-brand-emphasis, #22631c); } .ds-btn-primary:focus-visible { outline: 2px solid #42a635; outline-offset: 2px; }"
     },
     {
-      "name": "Secondary Button",
+      "name": "Google Sign-in Button",
       "kind": "button",
-      "refersTo": "button-secondary",
-      "description": "Outline action on white: Connect, password Continue.",
-      "html": "<button class=\"ds-btn-secondary\">Connect</button>",
-      "css": ".ds-btn-secondary { background: #ffffff; color: #1d2419; font: 500 14px/20px Inter, system-ui, sans-serif; padding: 6px 16px; border: 1px solid #9fae99; border-radius: 8px; cursor: pointer; } .ds-btn-secondary:hover { background: #f1f6ee; } .ds-btn-secondary:focus-visible { outline: 2px solid #42a635; outline-offset: 2px; }"
+      "refersTo": "button-google",
+      "description": "The advisor's way in on the login: primary green, 48px, colored Google mark.",
+      "html": "<button class=\"ds-btn-google\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 48 48\" aria-hidden=\"true\"><path fill=\"#FFC107\" d=\"M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z\"/><path fill=\"#FF3D00\" d=\"M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z\"/><path fill=\"#4CAF50\" d=\"M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z\"/><path fill=\"#1976D2\" d=\"M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z\"/></svg><span>Sign in with Google</span></button>",
+      "css": ".ds-btn-google { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 48px; background: var(--cal-brand, #2b7a24); color: var(--cal-brand-text, #ffffff); font-family: Inter, system-ui, sans-serif; font-weight: 500; font-size: 16px; border: 1px solid transparent; border-radius: 12px; cursor: pointer; transition: background .15s; } .ds-btn-google:hover { background: var(--cal-brand-emphasis, #22631c); } .ds-btn-google:focus-visible { outline: 2px solid #42a635; outline-offset: 2px; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-continue-outline",
+      "description": "Connect, and the login's Continue whenever Google is shown, so one primary action leads.",
+      "html": "<button class=\"ds-btn-outline\">Continue</button>",
+      "css": ".ds-btn-outline { background: var(--cal-bg, #ffffff); color: var(--cal-text, #1d2419); font-family: Inter, system-ui, sans-serif; font-weight: 500; font-size: 14px; height: 44px; padding: 0 16px; border: 1px solid var(--cal-border, #82927c); border-radius: 12px; cursor: pointer; transition: background .15s; } .ds-btn-outline:hover { background: var(--cal-bg-muted, #f7faf5); } .ds-btn-outline:focus-visible { outline: 2px solid #42a635; outline-offset: 2px; }"
     },
     {
       "name": "Text Input",
       "kind": "input",
       "refersTo": "input",
-      "description": "Form field on white with sage stroke and brand caret.",
-      "html": "<label class=\"ds-field\"><span>Email</span><input class=\"ds-input\" type=\"email\"></label>",
-      "css": ".ds-field { display: grid; gap: 6px; font: 500 14px/20px Inter, system-ui, sans-serif; color: #1d2419; } .ds-input { background: #ffffff; color: #1d2419; caret-color: #2b7a24; font: 400 14px/20px Inter, system-ui, sans-serif; padding: 6px 10px; border: 1px solid #9fae99; border-radius: 8px; } .ds-input:focus-visible { outline: 2px solid #42a635; outline-offset: 1px; }"
+      "description": "Form fields: white ground, sage stroke, brand-green caret, focus-green ring.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Email</span><input class=\"ds-input\" type=\"email\" /></label>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 8px; font-family: Inter, system-ui, sans-serif; } .ds-field-label { font-size: 14px; font-weight: 500; color: var(--cal-text, #1d2419); } .ds-input { height: 36px; padding: 0 12px; background: var(--cal-bg, #ffffff); color: var(--cal-text, #1d2419); border: 1px solid var(--cal-border, #82927c); border-radius: 12px; caret-color: var(--cal-brand, #2b7a24); font: inherit; font-size: 14px; } .ds-input:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(66,166,53,0.35); border-color: #42a635; }"
+    },
+    {
+      "name": "AIM Staff Divider",
+      "kind": "custom",
+      "refersTo": "",
+      "description": "Separates Google sign-in from the staff email form; shown only with a social button.",
+      "html": "<div class=\"ds-staff-divider\"><span></span><em>AIM staff</em><span></span></div>",
+      "css": ".ds-staff-divider { display: flex; align-items: center; gap: 16px; margin: 28px 0; font-family: Inter, system-ui, sans-serif; } .ds-staff-divider span { flex: 1; height: 1px; background: var(--cal-border-subtle, #dfe7db); } .ds-staff-divider em { font-style: normal; font-size: 14px; color: var(--cal-text-muted, #5a6655); }"
+    },
+    {
+      "name": "Login Route",
+      "kind": "custom",
+      "refersTo": "route-stop-current",
+      "description": "Signature: the three stops of a first login on the olive rail, current stop filled with one halo moment.",
+      "html": "<ol class=\"ds-route\"><li class=\"ds-stop\"><span class=\"ds-dot ds-dot-current\">1</span><strong>Sign in <span class=\"ds-here\">You are here</span></strong><p>With the Google account Annuity Gator set up for you.</p></li><li class=\"ds-stop\"><span class=\"ds-dot\">2</span><strong>Check your calendar</strong><p>It's already connected. Choose which calendars to check for conflicts.</p></li><li class=\"ds-stop\"><span class=\"ds-dot\">3</span><strong>Connect Zoom or Google Meet</strong><p>Every appointment gets its own meeting link.</p></li></ol>",
+      "css": ".ds-route { list-style: none; margin: 0; padding: 40px 56px; background: #1f3d1b; display: grid; gap: 40px; font-family: Inter, system-ui, sans-serif; } .ds-stop { position: relative; padding-left: 48px; } .ds-stop:not(:last-child)::after { content: \"\"; position: absolute; left: 13px; top: 28px; bottom: -40px; width: 2px; background: #3d6a37; } .ds-dot { position: absolute; left: 0; top: 0; width: 28px; height: 28px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 9999px; border: 2px solid #6fca60; background: #1f3d1b; color: #bdd3b6; font-size: 12px; font-weight: 600; } .ds-dot-current { border-color: #42a635; background: #42a635; color: #0d150b; animation: ds-here 1.6s cubic-bezier(0.16,1,0.3,1) 0.3s 2; } .ds-stop strong { display: flex; align-items: center; gap: 10px; color: #ffffff; font-size: 16px; font-weight: 600; } .ds-here { background: #e2f2dc; color: #1f3d1b; border-radius: 9999px; padding: 2px 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; } .ds-stop p { margin: 8px 0 0; max-width: 22rem; color: #bdd3b6; font-size: 14px; line-height: 1.375; } @keyframes ds-here { from { box-shadow: 0 0 0 0 rgba(66,166,53,0.6); } to { box-shadow: 0 0 0 12px rgba(66,166,53,0); } } @media (prefers-reduced-motion: reduce) { .ds-dot-current { animation: none; } }"
     },
     {
       "name": "Olive Rail",
       "kind": "nav",
       "refersTo": "nav-rail",
-      "description": "The signature sidebar: olive ground, cream Inter labels, light wordmark at its head.",
+      "description": "The app sidebar: olive ground, cream labels, translucent cream hover and active.",
       "html": "<nav class=\"ds-rail\"><a class=\"ds-rail-item ds-active\" href=\"#\">Event types</a><a class=\"ds-rail-item\" href=\"#\">Bookings</a><a class=\"ds-rail-item\" href=\"#\">Availability</a><small class=\"ds-rail-credit\">© Cal.com, Inc.</small></nav>",
-      "css": ".ds-rail { background: #1f3d1b; width: 224px; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; font: 500 14px/20px Inter, system-ui, sans-serif; } .ds-rail-item { color: #e2f2dc; text-decoration: none; padding: 6px 8px; border-radius: 6px; } .ds-rail-item:hover { background: rgba(226,242,220,0.1); color: #ffffff; } .ds-rail-item.ds-active { background: rgba(226,242,220,0.18); color: #ffffff; } .ds-rail-item:focus-visible { outline: 2px solid #42a635; } .ds-rail-credit { margin-top: 24px; font-size: 10px; color: #bdd3b6; }"
+      "css": ".ds-rail { background: #1f3d1b; width: 224px; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; font-family: Inter, system-ui, sans-serif; font-weight: 500; font-size: 14px; line-height: 20px; } .ds-rail-item { color: #e2f2dc; text-decoration: none; padding: 6px 8px; border-radius: 6px; } .ds-rail-item:hover { background: rgba(226,242,220,0.1); color: #ffffff; } .ds-rail-item.ds-active { background: rgba(226,242,220,0.18); color: #ffffff; } .ds-rail-item:focus-visible { outline: 2px solid #42a635; } .ds-rail-credit { margin-top: 24px; font-size: 10px; color: #bdd3b6; }"
     },
     {
       "name": "Switch",
       "kind": "custom",
       "refersTo": "switch-off",
-      "description": "On is brand green; off is sage stroke, never a brand tint.",
-      "html": "<span class=\"ds-switch\" role=\"switch\" aria-checked=\"false\"></span> <span class=\"ds-switch ds-on\" role=\"switch\" aria-checked=\"true\"></span>",
-      "css": ".ds-switch { display: inline-block; position: relative; width: 44px; height: 24px; border-radius: 999px; background: #7f8f79; vertical-align: middle; } .ds-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #ffffff; transition: left .15s; } .ds-switch.ds-on { background: #2b7a24; } .ds-switch.ds-on::after { left: 23px; }"
-    },
-    {
-      "name": "Login Card",
-      "kind": "card",
-      "refersTo": "card-login",
-      "description": "White card on sage ground with serif heading.",
-      "html": "<div class=\"ds-ground\"><div class=\"ds-card\"><h1 class=\"ds-h\">Advisor sign-in</h1><p class=\"ds-sub\">Welcome back! Sign in to continue</p></div></div>",
-      "css": ".ds-ground { background: #f1f6ee; padding: 32px; } .ds-card { background: #ffffff; border: 1px solid #dfe7db; border-radius: 12px; padding: 40px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); text-align: center; } .ds-h { font: 400 30px/36px \"DM Serif Display\", Georgia, serif; color: #1d2419; margin: 0 0 4px; } .ds-sub { font: 400 14px/20px Inter, system-ui, sans-serif; color: #4b5848; margin: 0; }"
+      "description": "On is brand green; off is the honest sage track, never a brand tint.",
+      "html": "<span class=\"ds-switch\" role=\"switch\" aria-checked=\"true\" tabindex=\"0\"></span> <span class=\"ds-switch ds-off\" role=\"switch\" aria-checked=\"false\" tabindex=\"0\"></span>",
+      "css": ".ds-switch { display: inline-block; position: relative; width: 36px; height: 20px; border-radius: 9999px; background: var(--cal-brand, #2b7a24); vertical-align: middle; } .ds-switch::after { content: \"\"; position: absolute; top: 2px; left: 18px; width: 16px; height: 16px; border-radius: 9999px; background: #ffffff; transition: left .15s; } .ds-switch.ds-off { background: #7f8f79; } .ds-switch.ds-off::after { left: 2px; } .ds-switch:focus-visible { outline: 2px solid #42a635; outline-offset: 2px; }"
     }
   ],
   "narrative": {
     "northStar": "The Funnel's Back Office",
-    "overview": "cal's screens, kept exactly as advisors know them, re-dressed in the Annuity Gator funnel identity they already trust. Layout, components and density are stock cal.diy; what changes is palette, heading face, wordmark, and one signature region: the olive sidebar rail. The neutral blue-gray SaaS look is refused; nothing else about cal's structure is reinvented.\n\nThe whole theme is a token override. It lives in `apps/web/styles/aim-brand.css` and applies only under `body.aim-brand`, a class `AimBrandScope` (`apps/web/components/aim/AimBrandScope.tsx`) adds while an advisor-facing screen is mounted (app shell, login, auth error, onboarding) and removes on unmount. It sits on `<body>` so portalled menus and dialogs inherit it. Public booking pages (booker, booking confirmation) never mount the scope and are owned by another developer; they must keep cal's own look.",
+    "overview": "cal's screens, re-dressed in the Annuity Gator funnel identity (quiz.annuitygator.com) that advisors and prospects already trust. The whole app speaks one brand: palette, heading face, wordmark, and one signature region, the olive rail. Advisors meet that rail at the door: the login is an olive rail carrying the route in (sign in, check your calendar, connect Zoom or Google Meet) beside a plain white sign-in column, and the same rail runs down the side of the app once they are inside. The neutral blue-gray SaaS look is refused, and so is the centered card on a flat ground for the login.\n\nThe theme has two layers:\n\n1. **Global tokens** in `packages/config/theme/tokens.css` (`:root` for light, `.dark` for dark) and fonts in `apps/web/app/fonts.ts` (Inter as `--font-sans`, DM Serif Display as `--font-cal`). Every surface, public booking pages included, reads these. `--ag-brand`, `--ag-brand-emphasis` and `--ag-brand-text` hold the brand per theme.\n2. **Advisor-app fixes** in `apps/web/styles/aim-brand.css`. Most rules sit under `body.aim-brand`, a class `AimBrandScope` (`apps/web/components/aim/AimBrandScope.tsx`) adds while an advisor-facing screen is mounted (app shell, login, auth error, onboarding); it sits on `<body>` so portalled menus and dialogs inherit it. They hold only what tokens cannot express: the coss-ui token family, stock markup that hard-codes grays, the off switch and text selection. The olive rail (`.aim-rail`) and the login route (`.aim-login-*`) are deliberately **not** scoped to `body.aim-brand`: `AimBrandScope` adds its class after mount, and the olive ground must be there on first paint or the cream wordmark sits on a light ground.\n\nRuntime brand colors (`useAppTheme` on `<html>`, an advisor's `brandColor`) are overridden by pinning `--cal-brand*` to `--ag-brand*`: on `<body>` in the advisor app, and on the booking wrapper through `BOOKING_BRAND_VARS` (`apps/web/modules/bookings/lib/booking-brand.ts`).",
     "keyCharacteristics": [
-      "Token remap, not component rewrite: the `--cal-*` tokens and the coss-ui tokens (`--primary`, `--primary-foreground`, `--ring`, `--border`, `--input`, `--muted-foreground`, `--foreground`) are redefined in the same scope.",
+      "Token remap, not component rewrite: `--cal-*` tokens are global; coss-ui tokens (`--primary`, `--primary-foreground`, `--ring`, `--border`, `--input`, `--muted-foreground`, `--foreground`) point at them inside the advisor scope.",
       "Brand green on every primary action, focus ring, selection, caret and native accent.",
-      "Olive rail on the left; content on white; sage grounds only on login and onboarding.",
+      "Olive rail on the left (the app sidebar, and the login's route rail); content on white. Sage grounds stay on onboarding and the auth utility pages (error, forgot password, logout).",
       "DM Serif Display for headings only; Inter for everything else.",
       "The Annuity Gator wordmark and arrow-A mark, used as supplied."
     ],
     "rules": [
       {
-        "name": "The Scope Rule",
-        "body": "Every brand value is declared under `body.aim-brand` and nowhere else. A global `:root` override would repaint the public booking pages, which are out of bounds.",
+        "name": "The One Source Rule",
+        "body": "Every palette value lives in `packages/config/theme/tokens.css`, light and dark. `aim-brand.css` may reference tokens but never declares a new palette value, except the olive rail (including the login route drawn on it: connector #3d6a37, stop rings #6fca60, current stop #42a635 with #0d150b numeral, \"You are here\" pill #e2f2dc on #1f3d1b ink, and the current stop's halo in the same green), the off-switch track, and text selection.",
         "section": "colors"
       },
       {
         "name": "The Muted Floor Rule",
-        "body": "No text on a light ground goes below text-muted. Stock cal markup that hard-codes `text-gray-400` / `text-zinc-400` (2.6:1 on white) is remapped to `--cal-text-muted` inside the scope.",
+        "body": "No text on a light ground goes below text-muted. Stock cal markup that hard-codes `text-gray-400` / `text-zinc-400` (2.6:1 on white) is remapped to `--cal-text-muted` inside the advisor scope.",
         "section": "colors"
       },
       {
         "name": "The Honest Off Rule",
-        "body": "An unchecked switch uses sage-stroke, never a brand tint, so a hidden event type cannot read as half-on.",
+        "body": "An unchecked switch uses switch-off-track `#7f8f79` (3.4:1 on white), never a brand tint, so a hidden event type cannot read as half-on.",
         "section": "colors"
       },
       {
-        "name": "The Neutral Dark Rule",
-        "body": "Dark theme keeps cal's own gray neutrals; only the brand green and the type follow the funnel.",
+        "name": "The Green Dark Rule",
+        "body": "Dark theme uses olive-black grounds derived from the funnel greens, never pure black or cal's grays: ground #11180f, muted #18221a, subtle #1f2c1d, emphasis #283826; text #e6eee2, headings #f3f8ef, subtle #a4b49f, muted #94a38f (4.69:1 or better on every dark ground); field strokes #5b7055 (3.35:1). Primary actions are #4cae3e with near-black #0d150b text (6.58:1), hover #5cc04d; white text never sits on the dark-theme green.",
         "section": "colors"
       },
       {
@@ -437,22 +540,37 @@
       },
       {
         "name": "The One Weight Rule",
-        "body": "DM Serif Display ships a single weight (400). Never pair `font-cal` with a bold or semibold weight; the browser fakes it.",
+        "body": "DM Serif Display ships a single weight (400). Never pair `font-cal` with a bold or semibold weight; the browser fakes it. `tokens.css` pins `.font-cal` to 400 with `font-synthesis: none`, so stock cal markup that asks for semibold still renders the real face.",
         "section": "typography"
+      },
+      {
+        "name": "The One Moment Rule",
+        "body": "The login has exactly one motion moment: a halo that grows from the current stop to 12px and fades, twice (1.6s, cubic-bezier(0.16, 1, 0.3, 1), 0.3s delay). `prefers-reduced-motion: reduce` turns it off.",
+        "section": "components"
+      },
+      {
+        "name": "The AIM Staff Divider Rule",
+        "body": "Advisors sign in with Google; the email and password form below is for AIM staff, introduced by a hairline divider labelled \"AIM staff\" in text-muted (28px above and below). It appears only when a social sign-in button is shown.",
+        "section": "components"
       }
     ],
     "dos": [
-      "Do add new brand values only inside `body.aim-brand` in `apps/web/styles/aim-brand.css`, and mount `AimBrandScope` on any new advisor-facing screen.",
-      "Do map both token families (`--cal-*` and coss-ui) when a new token is needed; coss-ui components ignore `--cal-*`.",
-      "Do use brand-green for every primary action and text-muted as the floor for light-ground text.",
-      "Do use the light wordmark on olive and the dark wordmark on white or sage."
+      "**Do** add new palette values to `packages/config/theme/tokens.css` in both `:root` and `.dark`, and mount `AimBrandScope` on any new advisor-facing screen.",
+      "**Do** map both token families (`--cal-*` and coss-ui) when a new token is needed; coss-ui components ignore `--cal-*`.",
+      "**Do** use brand-green for every primary action and text-muted as the floor for light-ground text.",
+      "**Do** use the light wordmark on olive and the dark wordmark on white or sage.",
+      "**Do** keep `.aim-rail` and the login route rules outside `body.aim-brand`, so the olive paints before `AimBrandScope` mounts.",
+      "**Do** keep one primary action per auth screen: when Google is shown, Continue drops to outline.",
+      "**Do** put every login string through `t()` with English and Spanish entries."
     ],
     "donts": [
-      "Don't touch the public booking pages or move any brand value to `:root`.",
-      "Don't set a heading in the serif at any weight other than 400.",
-      "Don't give an off switch or disabled control a brand tint.",
-      "Don't recolor, redraw or substitute the Annuity Gator wordmark.",
-      "Don't spread olive beyond the rail; content stays on white, and sage grounds stay on login and onboarding."
+      "**Don't** declare palette values outside `tokens.css`, or let a runtime brand color (advisor `brandColor`, `useAppTheme`) reach a brand surface unpinned.",
+      "**Don't** set a heading in the serif at any weight other than 400.",
+      "**Don't** give an off switch or disabled control a brand tint.",
+      "**Don't** recolor, redraw or substitute the Annuity Gator wordmark.",
+      "**Don't** spread olive beyond the rail; content stays on white, and sage grounds stay on onboarding and the auth utility pages.",
+      "**Don't** put the login back in a centered card on a flat ground.",
+      "**Don't** add a second motion moment to the login, or run the halo under reduced motion."
     ]
   }
 }

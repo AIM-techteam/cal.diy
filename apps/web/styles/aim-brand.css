@@ -3,10 +3,11 @@
  *
  * The brand itself (palette, light and dark, plus Inter and DM Serif Display) lives globally in
  * packages/config/theme/tokens.css and apps/web/app/fonts.ts. This file only holds what tokens
- * cannot express: coss-ui's separate token family, stock cal markup that hard-codes grays, and the
- * olive sidebar. It stays scoped to `body.aim-brand`, the class AimBrandScope adds while an
- * advisor-facing screen (app shell, login, onboarding) is mounted; putting it on <body> also
- * reaches menus and dialogs, which render in portals outside the shell.
+ * cannot express: coss-ui's separate token family, stock cal markup that hard-codes grays, the off
+ * switch, and the olive rail with the login route drawn on it. Most rules are scoped to
+ * `body.aim-brand`, the class AimBrandScope adds while an advisor-facing screen (app shell, login,
+ * onboarding) is mounted; on <body> it also reaches menus and dialogs rendered in portals. The rail
+ * and login route rules are the exception: they are unscoped so the olive paints on first load.
  */
 
 body.aim-brand {
@@ -21,7 +22,7 @@ body.aim-brand {
      Pointing them at --cal-* keeps one palette and lets the dark theme follow automatically. */
   --primary: var(--cal-brand);
   --primary-foreground: var(--cal-brand-text);
-  --ring: #42a635;
+  --ring: var(--ag-ring);
   --border: var(--cal-border-subtle);
   --input: var(--cal-border);
   --muted-foreground: var(--cal-text-muted);
@@ -37,7 +38,7 @@ body.aim-brand ::selection {
 }
 
 body.aim-brand :focus-visible {
-  outline-color: #42a635;
+  outline-color: var(--ag-ring);
 }
 
 /* Stock cal markup hard-codes Tailwind grays (e.g. the "Hidden" label, 2.6:1 on white). */
@@ -50,8 +51,10 @@ body.aim-brand button[role="switch"][data-state="unchecked"] {
   background-color: #7f8f79; /* 3.4:1 on white: a control boundary must reach 3:1 */
 }
 
-/* The sidebar is the funnel's olive: the one place the brand carries a whole region. */
-body.aim-brand .aim-rail {
+/* The sidebar (and the login rail) is the funnel's olive: the one place the brand carries a whole
+   region. Not scoped to body.aim-brand on purpose: AimBrandScope adds that class after mount, and
+   the olive ground must already be there on first paint or the cream wordmark sits on a light ground. */
+.aim-rail {
   --cal-bg-muted: #1f3d1b;
   --cal-bg-subtle: rgba(226, 242, 220, 0.1);
   --cal-bg-emphasis: rgba(226, 242, 220, 0.18);
@@ -65,10 +68,67 @@ body.aim-brand .aim-rail {
 }
 
 /* Credits line (licence attribution, kept): cal renders it at 8px and 50% opacity, unreadable on olive. */
-body.aim-brand .aim-rail small {
+.aim-rail small {
   font-size: 0.625rem;
   opacity: 1;
   color: var(--cal-text-subtle);
+}
+
+/* Login route (AimLoginRoute): the three stops of a first login, drawn on the olive rail. The
+   connector runs from each dot to the next one: across on small screens, down from lg. Its geometry
+   mirrors AimLoginRoute's classes: dots are size-7 (28px, so 13-14px is their center/radius), the
+   strip gap is gap-2 (0.5rem) and the lg gap is lg:gap-10 (2.5rem); change them together. */
+.aim-login-stop:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 13px;
+  left: calc(50% + 14px);
+  width: calc(100% - 28px + 0.5rem);
+  height: 2px;
+  background: #3d6a37;
+}
+
+@media (min-width: 1024px) {
+  .aim-login-stop:not(:last-child)::after {
+    top: 28px;
+    bottom: -2.5rem;
+    left: 13px;
+    width: 2px;
+    height: auto;
+  }
+}
+
+.aim-login-dot-upcoming {
+  border-color: #6fca60;
+  background: var(--cal-bg-muted);
+  color: var(--cal-text-subtle);
+}
+
+.aim-login-dot-current {
+  border-color: #42a635;
+  background: #42a635;
+  color: #0d150b;
+  animation: aim-login-here 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s 2;
+}
+
+.aim-login-here {
+  background: #e2f2dc;
+  color: #1f3d1b;
+}
+
+@keyframes aim-login-here {
+  from {
+    box-shadow: 0 0 0 0 rgba(66, 166, 53, 0.6);
+  }
+  to {
+    box-shadow: 0 0 0 12px rgba(66, 166, 53, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aim-login-dot-current {
+    animation: none;
+  }
 }
 
 html.dark body.aim-brand ::selection {
@@ -76,6 +136,6 @@ html.dark body.aim-brand ::selection {
   background: #2c5227;
 }
 
-html.dark body.aim-brand .aim-rail {
+html.dark .aim-rail {
   --cal-bg-muted: #142812;
 }
