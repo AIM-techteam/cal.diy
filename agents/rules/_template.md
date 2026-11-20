@@ -1,6 +1,7 @@
 ---
+# Replace with globs for the code this rule governs, or delete `paths` to load the rule in every session.
 paths:
-  - "agents/rules/**"
+  - "REPLACE/with/target/files/**"
 title: Rule Title Here
 impact: MEDIUM
 impactDescription: Optional description of impact (e.g., "20-50% improvement")
