@@ -3,25 +3,15 @@ import { loadTranslations } from "@calcom/i18n/server";
 import { IconSprites } from "@calcom/ui/components/icon";
 import { buildLegacyRequest } from "@lib/buildLegacyCtx";
 import { dir } from "i18next";
-import { Inter } from "next/font/google";
-import localFont from "next/font/local";
 import { cookies, headers } from "next/headers";
 import Script from "next/script";
 import type React from "react";
 
 import "../styles/globals.css";
 import { AppRouterI18nProvider } from "./AppRouterI18nProvider";
+import { headingFont, interFont } from "./fonts";
 import { Providers } from "./providers";
 import { SpeculationRules } from "./SpeculationRules";
-
-const interFont = Inter({ subsets: ["latin"], variable: "--font-sans", preload: true, display: "swap" });
-const calFont = localFont({
-  src: "../fonts/CalSans-SemiBold.woff2",
-  variable: "--font-cal",
-  preload: true,
-  display: "block",
-  weight: "600",
-});
 
 export const viewport = {
   width: "device-width",
@@ -117,7 +107,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <style>{`
           :root {
             --font-sans: ${interFont.style.fontFamily.replace(/\'/g, "")}, system-ui;
-            --font-cal: ${calFont.style.fontFamily.replace(/\'/g, "")};
+            --font-cal: ${headingFont.style.fontFamily.replace(/\'/g, "")};
           }
         `}</style>
         {process.env.NODE_ENV === "development" && (

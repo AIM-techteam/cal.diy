@@ -321,7 +321,7 @@ export const BookEventForm = ({
                 twoDayStyle
                   ? "h-auto! w-full justify-center rounded-xl! border-0! bg-(--td-fill)! px-4! py-4! font-bold! text-lg! text-white! hover:bg-(--td-fill-hover)! [&_*]:text-lg!"
                   : oncehubStyle
-                    ? "rounded-none! border-0! bg-[var(--cal-brand)]! px-8! py-2.5! text-white! hover:bg-[var(--cal-brand-emphasis)]!"
+                    ? "rounded-none! border-0! bg-[var(--cal-brand)]! px-8! py-2.5! text-[var(--cal-brand-text)]! hover:bg-[var(--cal-brand-emphasis)]!"
                     : ""
               } ${classNames?.confirmButton || ""}`}
               data-testid={

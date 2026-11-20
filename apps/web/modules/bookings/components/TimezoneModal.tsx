@@ -196,7 +196,7 @@ export const TimezoneModal = ({ open, currentTimezone, onConfirm, onDismiss }: T
               type="button"
               disabled={!iana}
               onClick={() => iana && onConfirm(iana)}
-              className="bg-[var(--cal-brand)] px-[15px] py-1 text-sm text-white transition-colors hover:bg-[var(--cal-brand-emphasis)] disabled:cursor-not-allowed disabled:opacity-50">
+              className="bg-[var(--cal-brand)] px-[15px] py-1 text-sm text-[var(--cal-brand-text)] transition-colors hover:bg-[var(--cal-brand-emphasis)] disabled:cursor-not-allowed disabled:opacity-50">
               {t("continue")}
             </button>
           </div>
