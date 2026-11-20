@@ -1,16 +1,14 @@
 "use client";
 
-import { signOut, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import type { ParsedUrlQuery } from "node:querystring";
-import { useEffect, useState } from "react";
-
 import { WEBSITE_URL } from "@calcom/lib/constants";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { Button } from "@calcom/ui/components/button";
+import { AimAuthSplitLayout } from "@components/aim/AimAuthSplitLayout";
 import { CheckIcon } from "@coss/ui/icons";
-
-import AuthContainer from "@components/ui/AuthContainer";
+import { useRouter } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 
 export type PageProps = {
   query: ParsedUrlQuery;
@@ -41,28 +39,24 @@ export function Logout(props: PageProps) {
   };
 
   return (
-    <AuthContainer showLogo>
-      <div className="mb-4">
-        <div className="bg-cal-success mx-auto flex h-12 w-12 items-center justify-center rounded-full">
-          <CheckIcon className="h-6 w-6 text-green-600" />
-        </div>
-        <div className="mt-3 text-center sm:mt-5">
-          <h3 className="text-emphasis text-lg font-medium leading-6" id="modal-title">
-            {t("youve_been_logged_out")}
-          </h3>
-          <div className="mt-2">
-            <p className="text-subtle text-sm">{t(message())}</p>
-          </div>
-        </div>
-      </div>
+    <AimAuthSplitLayout railHeading={t("aim_logout_rail_heading")}>
+      <span
+        aria-hidden="true"
+        className="aim-login-dot-current flex size-11 items-center justify-center rounded-full">
+        <CheckIcon className="size-5" />
+      </span>
+      <h1 className="font-cal text-emphasis mt-6 text-4xl leading-[1.05] sm:text-5xl" id="modal-title">
+        {t("youve_been_logged_out")}
+      </h1>
+      <p className="text-subtle mt-3 mb-8 text-base">{t(message())}</p>
       <Button
         data-testid="logout-btn"
         onClick={navigateToLogin}
-        className="flex w-full justify-center"
+        className="flex h-11 w-full justify-center"
         loading={btnLoading}>
         {t("go_back_login")}
       </Button>
-    </AuthContainer>
+    </AimAuthSplitLayout>
   );
 }
 

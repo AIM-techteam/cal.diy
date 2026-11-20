@@ -4808,6 +4808,7 @@
   "aim_login_you_are_here": "You are here",
   "aim_login_staff_divider": "AIM staff",
   "aim_login_subtitle": "Sign in to manage your appointments.",
+  "aim_logout_rail_heading": "Appointments from the funnel keep landing on your calendar.",
   "aim_login_help": "Need help? Contact your AIM representative.",
   "ADD_NEW_STRINGS_ABOVE_THIS_LINE_TO_PREVENT_MERGE_CONFLICTS": "↑↑↑↑↑↑↑↑↑↑↑↑↑ Add your new strings above here ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑"
 }
