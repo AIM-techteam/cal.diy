@@ -28,6 +28,7 @@ import { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
 import { AimBrandScope } from "@components/aim/AimBrandScope";
+import { AimLoginRoute } from "@components/aim/AimLoginRoute";
 import { AimLogo } from "@components/aim/AimLogo";
 
 interface LoginValues {
@@ -121,20 +122,25 @@ export default function Login({
   const showSignupLink = false;
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-subtle px-4 py-10">
+    <div className="bg-default grid min-h-dvh grid-rows-[auto_1fr] lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:grid-rows-1">
       <AimBrandScope />
 
-      <div className="relative z-10 flex w-full max-w-md flex-col items-center">
-        {/* Main Card */}
-        <div className="w-full rounded-xl border border-subtle bg-default p-10 shadow-sm">
-          {/* Logo */}
-          <div className="mb-6 flex justify-center">
-            <AimLogo className="h-7 w-auto" />
-          </div>
-          <h1 className="mb-1 text-center font-cal text-3xl text-emphasis">Advisor sign-in</h1>
+      <aside className="aim-rail bg-cal-muted flex flex-col gap-6 px-5 pt-6 pb-5 sm:px-8 lg:min-h-dvh lg:gap-0 lg:px-14 lg:py-14 xl:px-16">
+        <AimLogo variant="light" className="h-6 w-auto self-start lg:h-7" />
+        <h2 className="font-cal text-emphasis mt-16 mb-12 hidden max-w-[28rem] text-5xl leading-[1.08] text-balance lg:block">
+          {t("aim_login_route_heading")}
+        </h2>
+        <AimLoginRoute currentIndex={0} />
+        <p className="text-muted mt-auto hidden pt-12 text-sm lg:block">{t("aim_login_help")}</p>
+      </aside>
 
-          {/* Heading */}
-          <p className="mb-8 text-center text-sm text-subtle" data-testid="login-subtitle">
+      <main className="flex items-start justify-center px-5 pt-10 pb-12 sm:px-8 sm:pt-14 lg:items-center lg:px-12 lg:py-14">
+        <div className="w-full max-w-[440px]">
+          <h1 className="font-cal text-emphasis text-4xl leading-[1.05] sm:text-5xl">
+            {t("aim_advisor_sign_in")}
+          </h1>
+
+          <p className="text-subtle mt-3 mb-8 text-base" data-testid="login-subtitle">
             {twoFactorRequired ? t("2fa_code") : t("welcome_back_sign_in")}
           </p>
 
@@ -145,7 +151,7 @@ export default function Login({
                 <div className="flex flex-col gap-2">
                   {isGoogleLoginEnabled && (
                     <Button
-                      className="w-full py-1"
+                      className="h-12 w-full text-base"
                       disabled={formState.isSubmitting}
                       data-testid="google"
                       onClick={async (e) => {
@@ -179,10 +185,10 @@ export default function Login({
                   )}
                 </div>
 
-                {/* Divider */}
-                <div className="my-6 flex items-center gap-4">
+                {/* Advisors sign in with Google; the email form below is for AIM staff. */}
+                <div className="my-7 flex items-center gap-4">
                   <Separator className="flex-1" />
-                  <span className="text-sm text-muted">{t("or").toLowerCase()}</span>
+                  <span className="text-muted text-sm">{t("aim_login_staff_divider")}</span>
                   <Separator className="flex-1" />
                 </div>
               </>
@@ -258,8 +264,8 @@ export default function Login({
               {/* Submit Button */}
               <Button
                 type="submit"
-                variant="outline"
-                className="mt-8 w-full"
+                variant={showSocialLogin && !twoFactorRequired ? "outline" : "default"}
+                className="mt-8 h-11 w-full"
                 disabled={formState.isSubmitting}>
                 {twoFactorRequired ? t("submit") : t("continue")}
               </Button>
@@ -310,12 +316,11 @@ export default function Login({
               </div>
             )}
           </FormProvider>
-        </div>
 
-        {/* Footer Links */}
-        {!twoFactorRequired && (
-          <div className="mt-6 flex items-center justify-center gap-4 text-center">
-            {showSignupLink && (
+          <p className="text-subtle mt-10 text-sm lg:hidden">{t("aim_login_help")}</p>
+
+          {!twoFactorRequired && showSignupLink && (
+            <div className="mt-6 flex items-center justify-center gap-4 text-center">
               <Link
                 href={
                   callbackUrl
@@ -325,10 +330,10 @@ export default function Login({
                 className="text-sm font-medium text-emphasis hover:underline">
                 {t("create_account")}
               </Link>
-            )}
-          </div>
-        )}
-      </div>
+            </div>
+          )}
+        </div>
+      </main>
 
       <AddToHomescreen />
     </div>
