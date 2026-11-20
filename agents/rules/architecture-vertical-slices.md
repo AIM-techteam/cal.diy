@@ -1,4 +1,6 @@
 ---
+paths:
+  - "packages/features/**"
 title: Organize Code by Domain Using Vertical Slices
 impact: CRITICAL
 impactDescription: Dramatically improves discoverability and reduces cross-team conflicts

@@ -1,4 +1,10 @@
 ---
+paths:
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/*.spec.ts"
+  - "**/__tests__/**"
+  - "**/__mocks__/**"
 title: Maintain 80%+ Test Coverage for New Code
 impact: HIGH
 impactDescription: Prevents bugs and enables confident refactoring

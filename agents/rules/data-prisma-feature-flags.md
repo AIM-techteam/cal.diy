@@ -1,4 +1,6 @@
 ---
+paths:
+  - "packages/prisma/**"
 title: Feature Flag Seeding
 impact: MEDIUM
 impactDescription: Proper feature flag setup enables controlled rollouts

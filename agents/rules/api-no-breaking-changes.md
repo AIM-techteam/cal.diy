@@ -1,4 +1,9 @@
 ---
+paths:
+  - "apps/api/**"
+  - "packages/trpc/**"
+  - "apps/web/app/api/**"
+  - "apps/web/pages/api/**"
 title: Never Introduce Breaking API Changes
 impact: CRITICAL
 impactDescription: Maintains developer trust and prevents integration nightmares

@@ -1,4 +1,8 @@
 ---
+paths:
+  - "**/*Service.ts"
+  - "**/*Factory.ts"
+  - "**/services/**"
 title: Use Factory Pattern to Push Conditionals to Entry Points
 impact: HIGH
 impactDescription: Keeps services focused and prevents complexity accumulation

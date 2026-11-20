@@ -1,4 +1,6 @@
 ---
+paths:
+  - "packages/features/**"
 title: Enforce Feature Boundaries Through Public APIs
 impact: CRITICAL
 impactDescription: Prevents architectural erosion and maintains loose coupling

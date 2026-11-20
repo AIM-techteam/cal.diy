@@ -1,4 +1,7 @@
 ---
+paths:
+  - "**/tasker/**"
+  - "**/trigger/**"
 title: Trigger.dev Task Implementation
 impact: HIGH
 impactDescription: Consistent Trigger.dev patterns ensure reliable async task execution across web and API v2

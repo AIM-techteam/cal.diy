@@ -1,4 +1,7 @@
 ---
+paths:
+  - "**/*.e2e.ts"
+  - "apps/web/playwright/**"
 title: Playwright E2E Testing
 impact: HIGH
 impactDescription: E2E tests catch integration issues before production

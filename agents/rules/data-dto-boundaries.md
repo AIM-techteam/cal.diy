@@ -1,4 +1,9 @@
 ---
+paths:
+  - "packages/lib/dto/**"
+  - "packages/features/**"
+  - "packages/trpc/**"
+  - "apps/api/**"
 title: Use DTOs at Every Architectural Boundary
 impact: CRITICAL
 impactDescription: Prevents technology coupling and security risks

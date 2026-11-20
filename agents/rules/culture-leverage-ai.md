@@ -1,4 +1,10 @@
 ---
+paths:
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/*.spec.ts"
+  - "**/__tests__/**"
+  - "**/__mocks__/**"
 title: Leverage AI for Boilerplate and Testing
 impact: MEDIUM
 impactDescription: Accelerates development while maintaining quality

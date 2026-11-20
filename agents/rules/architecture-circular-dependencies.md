@@ -1,4 +1,6 @@
 ---
+paths:
+  - "packages/**"
 title: Prevent Circular Dependencies Between Packages
 impact: CRITICAL
 impactDescription: Prevents build failures, type errors, ensures honest implementation, and maintains clean dependency graph

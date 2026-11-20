@@ -1,4 +1,7 @@
 ---
+paths:
+  - "**/repositories/**"
+  - "**/*Repository.ts"
 title: Isolate Technology Choices Behind Repositories
 impact: CRITICAL
 impactDescription: Enables technology changes without codebase-wide refactors

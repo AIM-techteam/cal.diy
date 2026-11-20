@@ -1,3 +1,8 @@
+---
+paths:
+  - "agents/rules/**"
+---
+
 # Cal.diy Engineering Rules
 
 This directory contains modular, machine-readable engineering rules derived from [Cal.diy's Engineering Standards for 2026 and Beyond](https://cal.com/blog/engineering-in-2026-and-beyond).
