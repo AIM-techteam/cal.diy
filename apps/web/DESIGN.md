@@ -115,7 +115,7 @@ components:
 
 **Creative North Star: "The Funnel's Back Office"**
 
-cal's screens, re-dressed in the Annuity Gator funnel identity (quiz.annuitygator.com) that advisors and prospects already trust. The whole app speaks one brand: palette, heading face, wordmark, and one signature region, the olive rail. Advisors meet that rail at the door: the login is an olive rail carrying the route in (sign in, check your calendar, connect Zoom or Google Meet) beside a plain white sign-in column, and the same rail runs down the side of the app once they are inside. The neutral blue-gray SaaS look is refused, and so is the centered card on a flat ground for the login.
+cal's screens, re-dressed in the Annuity Gator funnel identity (quiz.annuitygator.com) that advisors and prospects already trust. The whole app speaks one brand: palette, heading face, wordmark, and one signature region, the olive rail. Advisors meet that rail at the door: the login is an olive rail carrying the route in (sign in, check your calendar, connect Zoom) beside a plain white sign-in column, and the same rail runs down the side of the app once they are inside. The neutral blue-gray SaaS look is refused, and so is the centered card on a flat ground for the login.
 
 The theme has two layers:
 
@@ -225,7 +225,7 @@ Rounded to match the funnel: `--radius-md` 10px, `--radius-lg` 12px (buttons, in
 - **On:** brand green. **Off:** switch-off-track.
 
 ### Login Route (signature)
-`AimLoginRoute` (`apps/web/components/aim/AimLoginRoute.tsx`) draws the three stops of a first login on the olive rail as an ordered list: sign in, check your calendar, connect Zoom or Google Meet. Stops are 28px numbered circles: the current one filled focus-green with a route-numeral, upcoming ones ringed route-ring on olive. A 2px route-connector runs between them, down from lg and across below it; its geometry in `aim-brand.css` mirrors the component's spacing classes and changes with them. The current stop carries `aria-current="step"` and, from lg, the "You are here" badge; descriptions show only from lg (max 22rem). Every string is an i18n key (`aim_login_*`, English and Spanish).
+`AimLoginRoute` (`apps/web/components/aim/AimLoginRoute.tsx`) draws the three stops of a first login on the olive rail as an ordered list: sign in, check your calendar, connect Zoom. Stops are 28px numbered circles: the current one filled focus-green with a route-numeral, upcoming ones ringed route-ring on olive. A 2px route-connector runs between them, down from lg and across below it; its geometry in `aim-brand.css` mirrors the component's spacing classes and changes with them. The current stop carries `aria-current="step"` and, from lg, the "You are here" badge; descriptions show only from lg (max 22rem). Every string is an i18n key (`aim_login_*`, English and Spanish).
 
 **The One Moment Rule.** The login has exactly one motion moment: a halo that grows from the current stop to 12px and fades, twice (1.6s, cubic-bezier(0.16, 1, 0.3, 1), 0.3s delay). `prefers-reduced-motion: reduce` turns it off.
 
