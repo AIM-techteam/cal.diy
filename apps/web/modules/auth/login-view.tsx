@@ -145,7 +145,9 @@ export default function Login({
           </p>
 
           <FormProvider {...methods}>
-            {/* Social Login Buttons */}
+            {/* Social Login Buttons. The sm: heights below are not duplicates: coss-ui's default
+                Button size shrinks to sm:h-8 from sm up, so the sign-in buttons pin their height
+                at every breakpoint. */}
             {!twoFactorRequired && showSocialLogin && (
               <>
                 <div className="flex flex-col gap-2">

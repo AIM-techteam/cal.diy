@@ -3,10 +3,11 @@
  *
  * The brand itself (palette, light and dark, plus Inter and DM Serif Display) lives globally in
  * packages/config/theme/tokens.css and apps/web/app/fonts.ts. This file only holds what tokens
- * cannot express: coss-ui's separate token family, stock cal markup that hard-codes grays, and the
- * olive sidebar. It stays scoped to `body.aim-brand`, the class AimBrandScope adds while an
- * advisor-facing screen (app shell, login, onboarding) is mounted; putting it on <body> also
- * reaches menus and dialogs, which render in portals outside the shell.
+ * cannot express: coss-ui's separate token family, stock cal markup that hard-codes grays, the off
+ * switch, and the olive rail with the login route drawn on it. Most rules are scoped to
+ * `body.aim-brand`, the class AimBrandScope adds while an advisor-facing screen (app shell, login,
+ * onboarding) is mounted; on <body> it also reaches menus and dialogs rendered in portals. The rail
+ * and login route rules are the exception: they are unscoped so the olive paints on first load.
  */
 
 body.aim-brand {
@@ -21,7 +22,7 @@ body.aim-brand {
      Pointing them at --cal-* keeps one palette and lets the dark theme follow automatically. */
   --primary: var(--cal-brand);
   --primary-foreground: var(--cal-brand-text);
-  --ring: #42a635;
+  --ring: var(--ag-ring);
   --border: var(--cal-border-subtle);
   --input: var(--cal-border);
   --muted-foreground: var(--cal-text-muted);
@@ -37,7 +38,7 @@ body.aim-brand ::selection {
 }
 
 body.aim-brand :focus-visible {
-  outline-color: #42a635;
+  outline-color: var(--ag-ring);
 }
 
 /* Stock cal markup hard-codes Tailwind grays (e.g. the "Hidden" label, 2.6:1 on white). */
