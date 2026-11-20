@@ -4803,7 +4803,7 @@
   "aim_login_step_sign_in_description": "With the Google account Annuity Gator set up for you.",
   "aim_login_step_calendar": "Check your calendar",
   "aim_login_step_calendar_description": "It's already connected. Choose which calendars to check for conflicts.",
-  "aim_login_step_zoom": "Connect Zoom",
+  "aim_login_step_zoom": "Connect Zoom or Google Meet",
   "aim_login_step_zoom_description": "Every appointment gets its own meeting link.",
   "aim_login_you_are_here": "You are here",
   "aim_login_staff_divider": "AIM staff",

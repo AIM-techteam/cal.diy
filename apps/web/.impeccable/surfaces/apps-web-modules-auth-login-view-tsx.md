@@ -7,13 +7,13 @@ related_targets: ["apps/web/modules/shell/SideBar.tsx","apps/web/modules/onboard
 
 Scope: advisor-facing app of cal.annuitygator.com — login (/auth/login), auth error, onboarding calendar step, app shell (sidebar, top nav, primary buttons). Mode: Operate. Public booking pages share the global tokens but keep their own layout (owned separately).
 
-Audience and job: Annuity Gator advisors, rare short visits; first login must end with calendar and Zoom connected, unaided. AIM admins sign in with email, password and 2FA. Nobody signs up here.
+Audience and job: Annuity Gator advisors, rare short visits; first login must end with calendar and video meetings (Zoom or Google Meet) connected, unaided. AIM admins sign in with email, password and 2FA. Nobody signs up here.
 
 Login (2026-11-20 redesign): the screen tells an infrequent advisor what happens after signing in, without numbers or promises.
 
 ## Direction contract
 
-THESIS: the olive rail advisors meet inside the app starts at the door and carries the route in: sign in, check your calendar, connect Zoom. Refuses the centered card on a flat ground that every SaaS login ships.
+THESIS: the olive rail advisors meet inside the app starts at the door and carries the route in: sign in, check your calendar, connect Zoom or Google Meet. Refuses the centered card on a flat ground that every SaaS login ships.
 
 OWN-WORLD: olive #1f3d1b rail (dark #142812) with cream type and the light wordmark; route line in olive hairline #3d6a37, stops ringed in #6fca60, the current stop filled #42a635; content side on white (dark #11180f) with a DM Serif Display heading in olive, Inter everywhere else, primary actions in brand green per tokens.css.
 
