@@ -1,9 +1,7 @@
 import { BOOKING_BRAND_VARS } from "@calcom/web/modules/bookings/lib/booking-brand";
 import PageWrapper from "@components/PageWrapperAppDir";
-import { Open_Sans } from "next/font/google";
 import { headers } from "next/headers";
-
-const openSansFont = Open_Sans({ subsets: ["latin"], display: "swap" });
+import { headingFont, interFont } from "../fonts";
 
 export default async function BookingPageWrapperLayout({ children }: { children: React.ReactNode }) {
   const h = await headers();
@@ -11,10 +9,10 @@ export default async function BookingPageWrapperLayout({ children }: { children:
 
   const bookingFontStyle = {
     display: "contents",
-    fontFamily: openSansFont.style.fontFamily,
-    "--font-sans": openSansFont.style.fontFamily,
-    "--font-cal": openSansFont.style.fontFamily,
-    // OnceHub-style brand tokens for the public booking page. Set here (not on
+    fontFamily: interFont.style.fontFamily,
+    "--font-sans": interFont.style.fontFamily,
+    "--font-cal": headingFont.style.fontFamily,
+    // Annuity Gator brand tokens for the public booking page. Set here (not on
     // :root) so they win over the brand colors useCalcomTheme writes onto
     // document.documentElement at runtime: a CSS var set on this wrapper is a
     // closer ancestor to the booker's DOM than documentElement, so it wins the
