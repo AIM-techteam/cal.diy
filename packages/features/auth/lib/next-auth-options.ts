@@ -8,6 +8,7 @@ import {
   isAimGoogleSsoEmailAllowed,
 } from "@calcom/features/auth/lib/aimGoogleSso";
 import { getIdentityProvider } from "@calcom/features/auth/lib/identityProviders";
+import { verifyTotpLoginJwt } from "@calcom/features/auth/lib/verifyTotpLoginJwt";
 import {
   OUTLOOK_CLIENT_ID,
   OUTLOOK_CLIENT_SECRET,
@@ -154,7 +155,7 @@ const checkIfUserShouldBelongToOrg = async (idP: IdentityProvider, email: string
  * Extracted for testability
  */
 export async function authorizeCredentials(
-  credentials: Record<"email" | "password" | "totpCode" | "backupCode", string> | undefined
+  credentials: Record<"email" | "password" | "totpCode" | "backupCode" | "totpToken", string> | undefined
 ): Promise<User | null> {
   log.debug("CredentialsProvider:credentials:authorize", safeStringify({ credentials }));
   if (!credentials) {
@@ -180,15 +181,33 @@ export async function authorizeCredentials(
     identifier: hashEmail(user.email),
   });
 
-  // Users without a password must use their identity provider (Google/SAML) to login
-  if (!user.password?.hash) {
+  // AIM: second step of an OAuth sign-in for a 2FA user. The signIn callback already authenticated
+  // this email with the IdP and sent the browser to /auth/login?totp=<signed jwt>; without this
+  // branch the step below demanded a password the browser never sends, so Google + 2FA could never
+  // finish. The token replaces ONLY the password: the TOTP/backup-code checks below still run, and
+  // a 2FA-less account can never use it (the token is only minted for 2FA users).
+  const totpTokenEmail = await verifyTotpLoginJwt(credentials.totpToken);
+  const isOAuthSecondStep = totpTokenEmail !== null && totpTokenEmail === user.email.toLowerCase();
+
+  if (credentials.totpToken && !isOAuthSecondStep) {
     throw new Error(ErrorCode.IncorrectEmailPassword);
   }
 
-  // Always verify password for users who have one
-  const isCorrectPassword = await verifyPassword(credentials.password, user.password.hash);
-  if (!isCorrectPassword) {
-    throw new Error(ErrorCode.IncorrectEmailPassword);
+  if (isOAuthSecondStep) {
+    if (!user.twoFactorEnabled) {
+      throw new Error(ErrorCode.IncorrectEmailPassword);
+    }
+  } else {
+    // Users without a password must use their identity provider (Google/SAML) to login
+    if (!user.password?.hash) {
+      throw new Error(ErrorCode.IncorrectEmailPassword);
+    }
+
+    // Always verify password for users who have one
+    const isCorrectPassword = await verifyPassword(credentials.password, user.password.hash);
+    if (!isCorrectPassword) {
+      throw new Error(ErrorCode.IncorrectEmailPassword);
+    }
   }
 
   if (user.twoFactorEnabled && credentials.backupCode) {
@@ -301,6 +320,7 @@ export const CalComCredentialsProvider = CredentialsProvider({
     password: { label: "Password", type: "password", placeholder: "Your super secure password" },
     totpCode: { label: "Two-factor Code", type: "input", placeholder: "Code from authenticator app" },
     backupCode: { label: "Backup Code", type: "input", placeholder: "Two-factor backup code" },
+    totpToken: { label: "OAuth second-step token", type: "hidden" },
   },
   authorize: authorizeCredentials,
 });
