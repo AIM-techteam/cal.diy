@@ -282,6 +282,45 @@ and sets the session cookie. Admin ID is NEVER trusted from the request body.
 - `impersonating_user_warning` — "Viewing as {user}"
 - `impersonating_stop_instructions` — "Click here to stop impersonating"
 
+### AIM staff Google sign-in (`google-aim` provider)
+
+Added 2026-11-23. A second "Sign in with Google" button ("AIM staff: sign in with Google")
+that accepts BOTH Workspace tenants, `advisorinternetmarketing.com` and `annuitygator.com`.
+
+**Why it exists:** the stock `google` provider uses `GOOGLE_API_CREDENTIALS`, the "Calendars"
+OAuth app. That app asks calendar scopes, so it is Internal to annuitygator.com, and Google
+blocks every AIM mailbox with "Access blocked: Calendars can only be used within its
+organization". AIM staff (ops admins on `@advisorinternetmarketing.com`) could not sign in.
+
+**Which OAuth client:** the Hub's shared AIM + AG login client, the SAME one LDS uses
+(`GOOGLE_SSO_*` in LDS prod, Infisical prod `AIM_GOOGLE_SSO_CLIENT_ID` /
+`AIM_GOOGLE_SSO_CLIENT_SECRET`, GCP project 632584028916). Rule: one shared login client for
+every sign-in that needs both domains; never create another one. Its authorized redirect
+URIs include `https://cal.annuitygator.com/api/auth/callback/google-aim`.
+
+**Behavior:**
+- Login scopes only (`userinfo.email`, `userinfo.profile`). It never installs Google
+  Calendar credentials (the jwt auto-install is keyed on `provider === "google"`), so an
+  account signed in this way never becomes a booking host by accident.
+- Server-side domain allow-list (`GOOGLE_SSO_ALLOWED_DOMAINS`), checked in the signIn
+  callback before any DB lookup. Google's `hd` accepts only one domain, so it cannot do this.
+- Existing accounts only: the `AIM_ALLOW_GOOGLE_SIGNUP` gate applies to this provider too.
+- Maps to `IdentityProvider.GOOGLE` (`sub` is per Google account, not per client), so an
+  advisor already linked via `google` lands on the same user row.
+- The button is hidden unless id, secret AND at least one allowed domain are set.
+
+**Gotcha (upstream behavior, unchanged):** the first Google sign-in converts a password
+(`CAL`) account to `GOOGLE`. The password hash is kept, so password login still works,
+but the admin 2FA requirement (`INACTIVE_ADMIN`) only applies to `CAL` accounts; after the
+conversion an admin is a full ADMIN without 2FA, by password too.
+
+**Files involved:**
+- `packages/features/auth/lib/aimGoogleSso.ts` (+ test) — env parsing and domain check
+- `packages/features/auth/lib/next-auth-options.ts` — provider + signIn domain gate
+- `packages/features/auth/lib/identityProviders.ts` — `google-aim` → GOOGLE
+- `apps/web/server/lib/auth/login/getServerSideProps.tsx`, `apps/web/modules/auth/login-view.tsx` — button
+- `packages/i18n/locales/en/common.json` — `signin_with_google_aim`
+
 ---
 
 ## AIM Production Deployment Context
@@ -318,6 +357,7 @@ All bulk operations are done via DB-direct SQL. Any `/api/v2/` endpoint will 404
 **Admin role requires 2FA.** `INACTIVE_ADMIN` is assigned to any admin user with
 `identityProvider='CAL'` who has not enabled TOTP 2FA. Enabling 2FA in Settings →
 Security promotes the role to `ADMIN`, which makes the admin sidebar sections appear.
+Admins whose `identityProvider` is `GOOGLE` are exempt (see the `google-aim` section).
 
 **85 advisor accounts are DB-seeded.** Created via `../scripts/seed-advisors.js`
 (direct Postgres INSERTs). Each has `identityProvider='CAL'`, `role='USER'`,
@@ -351,6 +391,8 @@ Full guide: `../docs/howto-deploy-ui-changes.md`
 | `EMAIL_SERVER_PASSWORD` | SendGrid API key |
 | `GOOGLE_API_CREDENTIALS` | Google Cloud project "AIM Calendar" — separate from any personal project |
 | `CALCOM_TELEMETRY_DISABLED` | `1` — always disabled in production |
+| `GOOGLE_SSO_CLIENT_ID` / `GOOGLE_SSO_CLIENT_SECRET` | Shared AIM + AG login client (Infisical `AIM_GOOGLE_SSO_*`), same as LDS. Enables the `google-aim` button |
+| `GOOGLE_SSO_ALLOWED_DOMAINS` | `advisorinternetmarketing.com,annuitygator.com`. Empty = button hidden |
 
 Never reuse credentials from `cale.ndi.mx` (Erandi's personal instance) — they are
 separate Google Cloud projects with separate OAuth clients.

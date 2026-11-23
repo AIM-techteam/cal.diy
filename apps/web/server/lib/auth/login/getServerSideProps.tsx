@@ -1,4 +1,5 @@
 import process from "node:process";
+import { getAimGoogleSsoConfig } from "@calcom/features/auth/lib/aimGoogleSso";
 import { getServerSession } from "@calcom/features/auth/lib/getServerSession";
 import { WEBSITE_URL } from "@calcom/lib/constants";
 import { getSafeRedirectUrl } from "@calcom/lib/getSafeRedirectUrl";
@@ -89,6 +90,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       csrfToken: await getCsrfToken(context),
       isGoogleLoginEnabled: IS_GOOGLE_LOGIN_ENABLED,
       isOutlookLoginEnabled: false,
+      // AIM: shared AIM + AG login client; off until GOOGLE_SSO_* are set (see aimGoogleSso.ts).
+      isAimGoogleSsoEnabled: getAimGoogleSsoConfig() !== null,
       totpEmail,
     },
   };

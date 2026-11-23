@@ -51,6 +51,7 @@ export default function Login({
   csrfToken,
   isGoogleLoginEnabled,
   isOutlookLoginEnabled,
+  isAimGoogleSsoEnabled,
   totpEmail,
 }: PageProps) {
   const searchParams = useCompatSearchParams();
@@ -116,7 +117,7 @@ export default function Login({
     else setErrorMessage(errorMessages[res.error] || t("something_went_wrong"));
   };
 
-  const showSocialLogin = isGoogleLoginEnabled || isOutlookLoginEnabled;
+  const showSocialLogin = isGoogleLoginEnabled || isOutlookLoginEnabled || isAimGoogleSsoEnabled;
   // AIM: accounts are provisioned by ops (onboard-advisors.js); nobody signs up from here.
   const showSignupLink = false;
 
@@ -158,6 +159,24 @@ export default function Login({
                       <GoogleIcon />
                       <span>{t("signin_with_google")}</span>
                       {lastUsed === "google" && <LastUsed />}
+                    </Button>
+                  )}
+                  {isAimGoogleSsoEnabled && (
+                    <Button
+                      variant="outline"
+                      className="w-full py-1"
+                      disabled={formState.isSubmitting}
+                      data-testid="google-aim"
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        setLastUsed("google-aim");
+                        await signIn("google-aim", {
+                          callbackUrl,
+                        });
+                      }}>
+                      <GoogleIcon />
+                      <span>{t("signin_with_google_aim")}</span>
+                      {lastUsed === "google-aim" && <LastUsed />}
                     </Button>
                   )}
                   {isOutlookLoginEnabled && (

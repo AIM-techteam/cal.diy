@@ -1287,3 +1287,104 @@ describe("Azure AD JWT callback", () => {
     });
   });
 });
+
+describe("AIM shared Google login (google-aim) signIn callback", () => {
+  let signInCallback: NonNullable<
+    ReturnType<typeof import("./next-auth-options").getOptions>["callbacks"]
+  >["signIn"];
+
+  const aimSignIn = (email: string, providerAccountId = "google-sub-1") =>
+    signInCallback({
+      user: { id: "1", email, name: "AIM Staff", emailVerified: null },
+      account: { provider: "google-aim", providerAccountId, type: "oauth" as const },
+      profile: { email_verified: true } as any,
+      credentials: undefined,
+      email: undefined,
+    } as any);
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    // The provider config is read once at module load, so the env must be set before a fresh import.
+    vi.stubEnv("GOOGLE_SSO_CLIENT_ID", "client-id");
+    vi.stubEnv("GOOGLE_SSO_CLIENT_SECRET", "client-secret");
+    vi.stubEnv("GOOGLE_SSO_ALLOWED_DOMAINS", "advisorinternetmarketing.com,annuitygator.com");
+    vi.resetModules();
+
+    mockGetIdentityProvider.mockImplementation((provider: string) =>
+      provider === "google" || provider === "google-aim" ? "GOOGLE" : null
+    );
+
+    const prismaDefault = ((await import("@calcom/prisma")) as any).default;
+    prismaDefault.user = {
+      ...prismaDefault.user,
+      findFirst: mockPrismaUserFindFirst,
+      create: mockPrismaUserCreate,
+      update: mockPrismaUserUpdate,
+    };
+    prismaDefault.team = { findFirst: mockPrismaTeamFindFirst };
+    mockPrismaUserFindFirst.mockResolvedValue(null);
+    mockPrismaUserUpdate.mockResolvedValue({});
+    mockPrismaTeamFindFirst.mockResolvedValue(null);
+
+    const adapterModule = await import("./next-auth-custom-adapter");
+    (adapterModule.default as any).mockReturnValue({ linkAccount: mockLinkAccount });
+    mockLinkAccount.mockResolvedValue(undefined);
+
+    const { getOptions } = await import("./next-auth-options");
+    const options = getOptions({ getDubId: () => undefined, getTrackingData: () => ({}) as any });
+    signInCallback = options.callbacks!.signIn! as any;
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("rejects a Google account outside the allowed domains before touching the database", async () => {
+    const result = await aimSignIn("someone@gmail.com");
+
+    expect(result).toBe("/auth/error?error=no-account");
+    expect(mockPrismaUserFindFirst).not.toHaveBeenCalled();
+  });
+
+  it("signs in an existing Google-linked user from an allowed domain", async () => {
+    mockPrismaUserFindFirst.mockResolvedValueOnce({
+      id: 103,
+      email: "cynthia@annuitygator.com",
+      identityProvider: "GOOGLE",
+      twoFactorEnabled: false,
+      accounts: [{ provider: "google-aim" }],
+    });
+
+    expect(await aimSignIn("cynthia@annuitygator.com")).toBe(true);
+  });
+
+  it("converts an existing password (CAL) admin on an AIM mailbox to GOOGLE", async () => {
+    mockPrismaUserFindFirst
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({
+        id: 195,
+        email: "fernandogodinez@advisorinternetmarketing.com",
+        emailVerified: new Date(),
+        identityProvider: "CAL",
+        password: { hash: "hashed" },
+        twoFactorEnabled: false,
+      });
+
+    const result = await aimSignIn("fernandogodinez@advisorinternetmarketing.com", "google-sub-195");
+
+    expect(mockPrismaUserUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ identityProvider: "GOOGLE", identityProviderId: "google-sub-195" }),
+      })
+    );
+    expect(result).toBe(true);
+  });
+
+  it("never creates an account for an allowed-domain email with no cal user", async () => {
+    const result = await aimSignIn("newperson@advisorinternetmarketing.com");
+
+    expect(result).toBe("/auth/error?error=no-account");
+    expect(mockPrismaUserCreate).not.toHaveBeenCalled();
+  });
+});
