@@ -308,6 +308,11 @@ URIs include `https://cal.annuitygator.com/api/auth/callback/google-aim`.
 - Maps to `IdentityProvider.GOOGLE` (`sub` is per Google account, not per client), so an
   advisor already linked via `google` lands on the same user row.
 - The button is hidden unless id, secret AND at least one allowed domain are set.
+- The three `GOOGLE_SSO_*` vars are listed in `turbo.json` `globalEnv`. The container starts
+  Next through `turbo run start`, which strips every env var not declared there, so a var in
+  `/opt/cal-aim/.env` that is missing from `globalEnv` never reaches the app (this hid the
+  button on the first test of PR #14). Same rule for ANY new runtime env var. Note that
+  `AIM_ALLOW_GOOGLE_SIGNUP` is not in `globalEnv` either, so it cannot be turned on today.
 
 **Gotcha (upstream behavior, unchanged):** the first Google sign-in converts a password
 (`CAL`) account to `GOOGLE`. The password hash is kept, so password login still works,
