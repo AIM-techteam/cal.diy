@@ -2,6 +2,11 @@ import process from "node:process";
 import { updateProfilePhotoGoogle } from "@calcom/app-store/_utils/oauth/updateProfilePhotoGoogle";
 import { updateProfilePhotoMicrosoft } from "@calcom/app-store/_utils/oauth/updateProfilePhotoMicrosoft";
 import { createGoogleCalendarServiceWithGoogleType } from "@calcom/app-store/googlecalendar/lib/CalendarService";
+import {
+  AIM_GOOGLE_SSO_PROVIDER_ID,
+  getAimGoogleSsoConfig,
+  isAimGoogleSsoEmailAllowed,
+} from "@calcom/features/auth/lib/aimGoogleSso";
 import { getIdentityProvider } from "@calcom/features/auth/lib/identityProviders";
 import {
   OUTLOOK_CLIENT_ID,
@@ -324,6 +329,27 @@ if (IS_GOOGLE_LOGIN_ENABLED) {
           scope: [...GOOGLE_OAUTH_SCOPES, ...GOOGLE_CALENDAR_SCOPES].join(" "),
           access_type: "offline",
           prompt: "consent",
+        },
+      },
+    })
+  );
+}
+
+const AIM_GOOGLE_SSO = getAimGoogleSsoConfig();
+
+if (AIM_GOOGLE_SSO) {
+  providers.push(
+    GoogleProvider({
+      id: AIM_GOOGLE_SSO_PROVIDER_ID,
+      name: "Google (AIM)",
+      clientId: AIM_GOOGLE_SSO.clientId,
+      clientSecret: AIM_GOOGLE_SSO.clientSecret,
+      allowDangerousEmailAccountLinking: true,
+      authorization: {
+        params: {
+          // Login scopes only: the shared client is External and unverified for sensitive scopes.
+          scope: GOOGLE_OAUTH_SCOPES.join(" "),
+          prompt: "select_account",
         },
       },
     })
@@ -839,6 +865,16 @@ export const getOptions = ({
             provider: account.provider,
           });
           return "/auth/error?error=unknown-provider";
+        }
+
+        if (
+          account.provider === AIM_GOOGLE_SSO_PROVIDER_ID &&
+          !isAimGoogleSsoEmailAllowed(user.email, AIM_GOOGLE_SSO?.allowedDomains ?? [])
+        ) {
+          log.warn("callbacks:signIn - AIM Google sign-in from a domain outside the allow-list, denied", {
+            emailDomain: user.email.split("@")[1],
+          });
+          return "/auth/error?error=no-account";
         }
         // Use optional chaining for safety, especially with AdapterUser potentially having different structure initially.
         const isEmailVerified = user.emailVerified || (profile as ExtendedOAuthProfile)?.email_verified;
