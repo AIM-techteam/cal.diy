@@ -6,6 +6,11 @@ describe("limitNationalDigits", () => {
     expect(limitNationalDigits("1", "60224390001234")).toBe("6022439000");
   });
 
+  it("drops a pasted leading country-code 1 before capping", () => {
+    expect(limitNationalDigits("1", "16022439000")).toBe("6022439000");
+    expect(formatNationalDigits("1", "+1 (602) 243-9000")).toBe("(602) 243 9000");
+  });
+
   it("leaves numbers of other dial codes untouched", () => {
     expect(limitNationalDigits("44", "791112345678")).toBe("791112345678");
   });

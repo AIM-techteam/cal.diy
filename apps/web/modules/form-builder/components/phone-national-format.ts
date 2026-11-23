@@ -8,7 +8,12 @@ const NANP_NATIONAL_LENGTH = 10;
 
 export function limitNationalDigits(dialCode: string, digits: string): string {
   const cleaned = digits.replace(/\D/g, "");
-  return dialCode === NANP_DIAL_CODE ? cleaned.slice(0, NANP_NATIONAL_LENGTH) : cleaned;
+  if (dialCode !== NANP_DIAL_CODE) return cleaned;
+  // A pasted "1 602 243 9000" carries the country code as a leading 1. NANP area codes never start
+  // with 1, so drop it instead of letting the cap cut off the last real digit.
+  const national =
+    cleaned.length > NANP_NATIONAL_LENGTH && cleaned.startsWith("1") ? cleaned.slice(1) : cleaned;
+  return national.slice(0, NANP_NATIONAL_LENGTH);
 }
 
 export function formatNationalDigits(dialCode: string, digits: string): string {
