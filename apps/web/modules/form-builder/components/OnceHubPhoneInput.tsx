@@ -7,7 +7,12 @@ import { getCountries, getCountryCallingCode, parsePhoneNumberFromString } from 
 import type { ChangeEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { TWO_DAY_INPUT_CLASS, useBookingFormStyle } from "./BookingFormStyleContext";
-import { formatNationalDigits, limitNationalDigits } from "./phone-national-format";
+import {
+  applyNumberEdit,
+  caretPositionForDigitIndex,
+  formatNationalDigits,
+  limitNationalDigits,
+} from "./phone-national-format";
 
 type OnceHubPhoneInputProps = {
   name?: string;
@@ -106,18 +111,21 @@ export const OnceHubPhoneInput = ({
   const displayedNumber = formatNationalDigits(dialCode, nationalDigits);
 
   const handleNumberChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { value: typed, selectionStart } = e.target;
-    let digits = typed.replace(/\D/g, "");
-    // Backspace over a formatting character ("(", ")" or a space) leaves the digits unchanged, so
-    // the re-render would restore the character and the caret would look stuck. Treat it as
-    // deleting the digit right before the caret instead.
-    if (typed.length < displayedNumber.length && digits === limitNationalDigits(dialCode, nationalDigits)) {
-      const digitsBeforeCaret = typed.slice(0, selectionStart ?? typed.length).replace(/\D/g, "").length;
-      if (digitsBeforeCaret > 0) {
-        digits = digits.slice(0, digitsBeforeCaret - 1) + digits.slice(digitsBeforeCaret);
-      }
-    }
+    const input = e.target;
+    const { digits, caretDigitIndex } = applyNumberEdit({
+      dialCode,
+      previousDigits: nationalDigits,
+      typed: input.value,
+      caret: input.selectionStart ?? input.value.length,
+      inputType: (e.nativeEvent as InputEvent).inputType,
+    });
     emit(country, digits);
+    // React swaps in the reformatted value after this handler, which throws the caret to the end
+    // of the field. Put it back after the same digit once that render has landed.
+    const caret = caretPositionForDigitIndex(formatNationalDigits(dialCode, digits), caretDigitIndex);
+    requestAnimationFrame(() => {
+      if (document.activeElement === input) input.setSelectionRange(caret, caret);
+    });
   };
 
   if (formStyle === "two-day") {
