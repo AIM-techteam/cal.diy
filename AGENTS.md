@@ -314,6 +314,15 @@ URIs include `https://cal.annuitygator.com/api/auth/callback/google-aim`.
   button on the first test of PR #14). Same rule for ANY new runtime env var. Note that
   `AIM_ALLOW_GOOGLE_SIGNUP` is not in `globalEnv` either, so it cannot be turned on today.
 
+**2FA after Google (fixed 2026-11-23):** for a 2FA account the OAuth signIn callback sends the
+browser to `/auth/login?totp=<jwt>` (`loginWithTotp`, token signed with CALENDSO_ENCRYPTION_KEY,
+2 min). Upstream's authorize step always checks a password, and our login view does not render the
+email input in 2FA mode, so the code was submitted with no email and no password and nothing
+happened. Now the view seeds the email from the token and sends it back as `totpToken`;
+`authorizeCredentials` verifies it (`verifyTotpLoginJwt.ts`), requires it to match the account's
+email and the account to have 2FA, skips ONLY the password and still checks the TOTP/backup code.
+An invalid token is rejected outright, never falling back to the password.
+
 **Gotcha (upstream behavior, unchanged):** the first Google sign-in converts a password
 (`CAL`) account to `GOOGLE`. The password hash is kept, so password login still works,
 but the admin 2FA requirement (`INACTIVE_ADMIN`) only applies to `CAL` accounts; after the

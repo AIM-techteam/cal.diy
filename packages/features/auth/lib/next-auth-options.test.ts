@@ -114,6 +114,7 @@ const mockPrismaUserUpdate = vi.fn();
 const mockPrismaTeamFindFirst = vi.fn();
 const mockPrismaSelectedCalendarCreate = vi.fn();
 const mockLinkAccount = vi.fn();
+const mockVerifyTotpLoginJwt = vi.fn();
 
 vi.mock("@calcom/features/credentials/repositories/CredentialRepository", () => ({
   CredentialRepository: {
@@ -177,6 +178,10 @@ vi.mock("@googleapis/calendar", () => ({
 
 vi.mock("next-auth/jwt", () => ({
   encode: vi.fn(),
+}));
+
+vi.mock("@calcom/features/auth/lib/verifyTotpLoginJwt", () => ({
+  verifyTotpLoginJwt: (...args: unknown[]) => mockVerifyTotpLoginJwt(...args),
 }));
 
 vi.mock("./signJwt", () => ({
@@ -451,6 +456,109 @@ describe("CredentialsProvider authorize", () => {
       } finally {
         process.env.CALENDSO_ENCRYPTION_KEY = originalKey;
       }
+    });
+  });
+
+  describe("OAuth second step (totpToken from /auth/login?totp=)", () => {
+    // The token itself is verified by verifyTotpLoginJwt (own test file, node environment, real
+    // jose); here it is mocked to return the email the token was issued for, or null.
+    const EMAIL = "erandi@advisorinternetmarketing.com";
+
+    const googleUserWith2fa = (overrides: Partial<any> = {}) =>
+      createMockUser({
+        email: EMAIL,
+        role: UserPermissionRole.ADMIN,
+        identityProvider: IdentityProvider.GOOGLE,
+        twoFactorEnabled: true,
+        twoFactorSecret: "encrypted-secret",
+        ...overrides,
+      });
+
+    beforeEach(async () => {
+      vi.stubEnv("CALENDSO_ENCRYPTION_KEY", "k".repeat(32));
+      const { symmetricDecrypt } = await import("@calcom/lib/crypto");
+      vi.mocked(symmetricDecrypt).mockReturnValue("a".repeat(32));
+      mockVerifyTotpLoginJwt.mockImplementation(async (token: string | undefined) =>
+        token === "valid-token" ? EMAIL : token === "other-email-token" ? "someone@else.com" : null
+      );
+    });
+
+    afterEach(() => {
+      vi.unstubAllEnvs();
+    });
+
+    it("signs in with a valid token + correct TOTP code and never checks a password", async () => {
+      mockFindByEmailAndIncludeProfilesAndPassword.mockResolvedValue(googleUserWith2fa());
+      const { totpAuthenticatorCheck } = await import("@calcom/lib/totp");
+      vi.mocked(totpAuthenticatorCheck).mockReturnValue(true);
+
+      const result = await authorizeCredentials({
+        email: EMAIL,
+        totpCode: "123456",
+        totpToken: "valid-token",
+      } as any);
+
+      expect(result).toEqual(expect.objectContaining({ email: EMAIL }));
+      expect(verifyPassword).not.toHaveBeenCalled();
+    });
+
+    it("still requires the TOTP code", async () => {
+      mockFindByEmailAndIncludeProfilesAndPassword.mockResolvedValue(googleUserWith2fa());
+
+      await expect(
+        authorizeCredentials({ email: EMAIL, totpToken: "valid-token" } as any)
+      ).rejects.toThrow(ErrorCode.SecondFactorRequired);
+    });
+
+    it("rejects a wrong TOTP code", async () => {
+      mockFindByEmailAndIncludeProfilesAndPassword.mockResolvedValue(googleUserWith2fa());
+      const { totpAuthenticatorCheck } = await import("@calcom/lib/totp");
+      vi.mocked(totpAuthenticatorCheck).mockReturnValue(false);
+
+      await expect(
+        authorizeCredentials({ email: EMAIL, totpCode: "000000", totpToken: "valid-token" } as any)
+      ).rejects.toThrow(ErrorCode.IncorrectTwoFactorCode);
+    });
+
+    it("works for a Google account that has no password at all", async () => {
+      mockFindByEmailAndIncludeProfilesAndPassword.mockResolvedValue(googleUserWith2fa({ password: null }));
+      const { totpAuthenticatorCheck } = await import("@calcom/lib/totp");
+      vi.mocked(totpAuthenticatorCheck).mockReturnValue(true);
+
+      const result = await authorizeCredentials({
+        email: EMAIL,
+        totpCode: "123456",
+        totpToken: "valid-token",
+      } as any);
+
+      expect(result).toEqual(expect.objectContaining({ email: EMAIL }));
+    });
+
+    it.each([
+      ["issued for another email", "other-email-token"],
+      ["that does not verify", "bad-token"],
+    ])("rejects a token %s, without falling back to the password", async (_label, token) => {
+      mockFindByEmailAndIncludeProfilesAndPassword.mockResolvedValue(googleUserWith2fa());
+      vi.mocked(verifyPassword).mockResolvedValue(true);
+
+      await expect(
+        authorizeCredentials({
+          email: EMAIL,
+          password: "correct-password",
+          totpCode: "123456",
+          totpToken: token,
+        } as any)
+      ).rejects.toThrow(ErrorCode.IncorrectEmailPassword);
+    });
+
+    it("rejects a valid token for an account without 2FA", async () => {
+      mockFindByEmailAndIncludeProfilesAndPassword.mockResolvedValue(
+        googleUserWith2fa({ twoFactorEnabled: false, twoFactorSecret: null })
+      );
+
+      await expect(
+        authorizeCredentials({ email: EMAIL, totpToken: "valid-token" } as any)
+      ).rejects.toThrow(ErrorCode.IncorrectEmailPassword);
     });
   });
 });

@@ -67,7 +67,12 @@ export default function Login({
     })
     // Passthrough other fields like totpCode
     .passthrough();
-  const methods = useForm<LoginValues>({ resolver: zodResolver(formSchema) });
+  // AIM: after Google sign-in for a 2FA account the email input is not rendered (2FA mode), so it
+  // must come from the verified ?totp token or the form fails validation silently.
+  const methods = useForm<LoginValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: totpEmail ? { email: totpEmail } : undefined,
+  });
   const { register, formState } = methods;
   const [twoFactorRequired, setTwoFactorRequired] = useState(!!totpEmail || false);
   const [twoFactorLostAccess, setTwoFactorLostAccess] = useState(false);
@@ -100,8 +105,10 @@ export default function Login({
   const onSubmit = async (values: LoginValues) => {
     setErrorMessage(null);
     // telemetry.event(telemetryEventTypes.login, collectPageParameters());
+    const totpToken = totpEmail ? searchParams?.get("totp") : null;
     const res = await signIn<"credentials">("credentials", {
       ...values,
+      ...(totpToken ? { totpToken } : {}),
       callbackUrl,
       redirect: false,
     });
