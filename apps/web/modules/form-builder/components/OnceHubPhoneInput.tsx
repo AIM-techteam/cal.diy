@@ -4,8 +4,10 @@ import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { ChevronDownIcon } from "@coss/ui/icons";
 import type { CountryCode } from "libphonenumber-js";
 import { getCountries, getCountryCallingCode, parsePhoneNumberFromString } from "libphonenumber-js";
+import type { ChangeEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { TWO_DAY_INPUT_CLASS, useBookingFormStyle } from "./BookingFormStyleContext";
+import { formatNationalDigits, limitNationalDigits } from "./phone-national-format";
 
 type OnceHubPhoneInputProps = {
   name?: string;
@@ -89,7 +91,7 @@ export const OnceHubPhoneInput = ({
       : (value ?? "").replace(/\D/g, "");
 
   const emit = (nextCountry: CountryCode, digits: string) => {
-    const cleaned = digits.replace(/\D/g, "");
+    const cleaned = limitNationalDigits(getCountryCallingCode(nextCountry), digits);
     if (!cleaned) {
       onChange("");
       return;
@@ -99,6 +101,23 @@ export const OnceHubPhoneInput = ({
     // digits we display (parsed.nationalNumber) and never carries a national trunk
     // prefix - e.g. GB "07911123456" is stored as "+447911123456", not "+4407911123456".
     onChange(parsePhoneNumberFromString(candidate)?.number ?? candidate);
+  };
+
+  const displayedNumber = formatNationalDigits(dialCode, nationalDigits);
+
+  const handleNumberChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { value: typed, selectionStart } = e.target;
+    let digits = typed.replace(/\D/g, "");
+    // Backspace over a formatting character ("(", ")" or a space) leaves the digits unchanged, so
+    // the re-render would restore the character and the caret would look stuck. Treat it as
+    // deleting the digit right before the caret instead.
+    if (typed.length < displayedNumber.length && digits === limitNationalDigits(dialCode, nationalDigits)) {
+      const digitsBeforeCaret = typed.slice(0, selectionStart ?? typed.length).replace(/\D/g, "").length;
+      if (digitsBeforeCaret > 0) {
+        digits = digits.slice(0, digitsBeforeCaret - 1) + digits.slice(digitsBeforeCaret);
+      }
+    }
+    emit(country, digits);
   };
 
   if (formStyle === "two-day") {
@@ -137,10 +156,10 @@ export const OnceHubPhoneInput = ({
           inputMode="tel"
           autoComplete="tel-national"
           className={TWO_DAY_INPUT_CLASS}
-          placeholder={placeholder || "(555) 555-5555"}
+          placeholder={placeholder || "(555) 555 5555"}
           readOnly={readOnly}
-          value={nationalDigits}
-          onChange={(e) => emit(country, e.target.value)}
+          value={displayedNumber}
+          onChange={handleNumberChange}
         />
       </div>
     );
@@ -176,8 +195,8 @@ export const OnceHubPhoneInput = ({
         className="w-full border-0 border-b border-[#D1D5DB] bg-transparent py-1.5 text-sm text-[#1A1A1A] placeholder:text-[#9CA3AF] dark:border-[#3f3c33] dark:text-[#ece9df] dark:placeholder:text-[#7d7a6c] focus:border-[var(--cal-brand)] focus:outline-none disabled:opacity-60"
         placeholder={placeholder}
         readOnly={readOnly}
-        value={nationalDigits}
-        onChange={(e) => emit(country, e.target.value)}
+        value={displayedNumber}
+        onChange={handleNumberChange}
       />
     </div>
   );
