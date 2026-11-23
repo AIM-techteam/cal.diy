@@ -33,10 +33,11 @@ yarn prisma generate                  # after editing packages/prisma/schema.pri
 
 ## Branches and delivery
 
-- Feature branches are `feat/…`, `fix/…`, `chore/…`, merged into the local integration line `develop`
-  (`Merge branch 'feat/x' into develop`). Releases reach `origin/main` through pull requests.
-- `origin` is AIM-techteam/cal.diy and only carries `main`; local `develop` is ahead of it and has no remote
-  counterpart — do not push to `origin develop`.
+- Feature branches are `feat/…`, `fix/…`, `chore/…`, merged locally into the integration line `develop`
+  (`Merge branch 'feat/x' into develop`) and then deleted; they are not pushed. Releases reach `origin/main`
+  through pull requests.
+- `origin` is AIM-techteam/cal.diy and carries `main` and `develop`; local `develop` tracks `origin/develop`.
+  Push `develop` only when asked, and only as a fast-forward.
 - Conventional commit subjects (`feat(scope): …`). No AI attribution trailers.
 - Keep changes reviewable: under ~500 lines and ~10 code files; split by layer (schema → service → UI) when
   larger. `agents/rules/quality-pr-creation.md` has the detail.
