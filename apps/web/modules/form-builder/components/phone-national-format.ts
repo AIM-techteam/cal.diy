@@ -28,3 +28,53 @@ export function formatNationalDigits(dialCode: string, digits: string): string {
   if (!line) return `(${area}) ${exchange}`;
   return `(${area}) ${exchange} ${line}`;
 }
+
+const countDigits = (text: string): number => text.replace(/\D/g, "").length;
+
+type NumberEdit = {
+  dialCode: string;
+  previousDigits: string;
+  typed: string;
+  caret: number;
+  inputType?: string;
+};
+
+// The field re-renders a formatted value after every keystroke, so the browser's own caret and
+// delete behaviour no longer line up with what was typed. Every edit is therefore reduced to digits
+// plus "how many digits sit before the caret", which survives reformatting.
+export function applyNumberEdit({ dialCode, previousDigits, typed, caret, inputType }: NumberEdit): {
+  digits: string;
+  caretDigitIndex: number;
+} {
+  const previous = limitNationalDigits(dialCode, previousDigits);
+  let digits = typed.replace(/\D/g, "");
+  let caretDigitIndex = countDigits(typed.slice(0, caret));
+
+  // Backspace or Delete on "(", ")" or a space leaves the digits unchanged, so the re-render would
+  // put the character straight back and the key would look dead. Delete the neighbouring digit in
+  // the direction the key points instead.
+  const deletedSeparator =
+    typed.length < formatNationalDigits(dialCode, previous).length && digits === previous;
+  if (deletedSeparator && inputType === "deleteContentForward") {
+    digits = digits.slice(0, caretDigitIndex) + digits.slice(caretDigitIndex + 1);
+  } else if (deletedSeparator && caretDigitIndex > 0) {
+    digits = digits.slice(0, caretDigitIndex - 1) + digits.slice(caretDigitIndex);
+    caretDigitIndex -= 1;
+  }
+
+  const limited = limitNationalDigits(dialCode, digits);
+  return { digits: limited, caretDigitIndex: Math.min(caretDigitIndex, limited.length) };
+}
+
+export function caretPositionForDigitIndex(formatted: string, digitIndex: number): number {
+  if (digitIndex <= 0) {
+    const firstDigit = formatted.search(/\d/);
+    return firstDigit === -1 ? formatted.length : firstDigit;
+  }
+  let seen = 0;
+  for (let position = 0; position < formatted.length; position++) {
+    if (/\d/.test(formatted[position])) seen++;
+    if (seen === digitIndex) return position + 1;
+  }
+  return formatted.length;
+}
