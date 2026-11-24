@@ -26,7 +26,10 @@ export const PasswordField = forwardRef<HTMLInputElement, InputFieldProps>(
     return (
       <InputField
         type={isPasswordVisible ? "text" : "password"}
-        placeholder={props.placeholder || "•••••••••••••"}
+        // AIM: no default "•••" placeholder. An empty field that shows bullets looks already filled,
+        // so staff changing their password could not tell whether they had typed anything yet.
+        // Callers that want a hint still pass their own placeholder.
+        placeholder={props.placeholder}
         ref={ref}
         {...props}
         className={classNames(
