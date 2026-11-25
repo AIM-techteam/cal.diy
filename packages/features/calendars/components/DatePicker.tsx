@@ -349,7 +349,7 @@ const Days = ({
             "relative w-full",
             // OnceHub: short rows (48px) with a thin divider line under each week, instead
             // of the tall square (pt-[100%]) cells.
-            oncehubStyle ? "flex h-12 items-center justify-center border-b border-[#EBEBEB]" : "pt-[100%]"
+            oncehubStyle ? "flex h-12 items-center justify-center border-b border-[#EBEBEB] dark:border-[#3A3A3A]" : "pt-[100%]"
           )}>
           {day === null ? (
             <div key={`e-${idx}`} />
@@ -511,7 +511,7 @@ const DatePicker = ({
           <span className="text-default">{monthTitle}</span>
           <div className="absolute right-0 flex items-center">
             {prevMonthButton}
-            <span className="mx-1 h-4 w-px bg-[#D1D5DB]" />
+            <span className="mx-1 h-4 w-px bg-[#D1D5DB] dark:bg-[#4B4B4B]" />
             {nextMonthButton}
           </div>
         </div>
@@ -529,7 +529,7 @@ const DatePicker = ({
       <div
         className={classNames(
           oncehubStyle
-            ? "mb-0 grid grid-cols-7 border-b border-[#EBEBEB] text-center"
+            ? "mb-0 grid grid-cols-7 border-b border-[#EBEBEB] text-center dark:border-[#3A3A3A]"
             : "border-subtle mb-2 grid grid-cols-7 gap-4 border-b border-t text-center md:mb-0 md:border-0"
         )}>
         {weekdayNames(locale, weekStart, "short").map((weekDay) => (
@@ -537,7 +537,7 @@ const DatePicker = ({
             key={weekDay}
             className={classNames(
               oncehubStyle
-                ? `py-3 text-xs font-normal text-[#6B7280]`
+                ? `py-3 text-xs font-normal text-[#6B7280] dark:text-[#A3A3A3]`
                 : `text-emphasis my-4 text-xs font-medium uppercase tracking-widest`,
               customClassNames?.datePickerDays
             )}>

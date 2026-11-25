@@ -38,7 +38,7 @@ const OnceHubMonthFooter = ({
       {canGoToPreviousMonth ? (
         <button
           type="button"
-          className="text-[#6B7280] hover:text-[var(--cal-brand)]"
+          className="text-[#6B7280] hover:text-[var(--cal-brand)] dark:text-[#B3B3B3]"
           onClick={() => onMonthChange(browsingDate.subtract(1, "month"))}
           data-testid="oncehub-previous-month">
           {"< "}
@@ -49,7 +49,7 @@ const OnceHubMonthFooter = ({
       )}
       <button
         type="button"
-        className="text-[#6B7280] hover:text-[var(--cal-brand)]"
+        className="text-[#6B7280] hover:text-[var(--cal-brand)] dark:text-[#B3B3B3]"
         onClick={() => onMonthChange(browsingDate.add(1, "month"))}
         data-testid="oncehub-next-month">
         {nextMonthLabel}
@@ -186,8 +186,11 @@ export const DatePicker = ({
         // Available days bold black text with no background (only the selected day gets the
         // orange circle); disabled days gray, normal weight. Reuses the existing
         // dayActive/dayDisabled override slots, only opted into for the OnceHub month view.
-        datePickerDatesActive: oncehubStyle ? "font-bold text-[#333333]" : classNames?.datePickerDatesActive,
-        datePickerDatesDisabled: oncehubStyle ? "font-normal text-[#9CA3AF]" : undefined,
+        // Dark mode (AIM, cal sandbox finding Mariana #18): the light grays were inverted on a dark
+        // background (unavailable #9CA3AF looked brighter than available #333333), so available
+        // days are white and unavailable days a dim gray there.
+        datePickerDatesActive: oncehubStyle ? "font-bold text-[#333333] dark:text-white" : classNames?.datePickerDatesActive,
+        datePickerDatesDisabled: oncehubStyle ? "font-normal text-[#9CA3AF] dark:text-[#5F6368]" : undefined,
         datePickerToggle: classNames?.datePickerToggle,
       }}
       className={classNames?.datePickerContainer}

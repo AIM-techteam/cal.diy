@@ -172,7 +172,7 @@ const SlotItem = ({
           onClick={onButtonClick}
           className={classNames(
             oncehubStyle
-              ? "mb-2 flex h-auto w-full grow flex-col items-center justify-center rounded-none! border! border-[#CCCCCC]! bg-[#F2F2F2]! px-4! py-2! text-center! text-sm! text-[#333333]! hover:border-[#333333]! hover:bg-white! hover:text-[#333333]! hover:underline!"
+              ? "mb-2 flex h-auto w-full grow flex-col items-center justify-center rounded-none! border! border-[#CCCCCC]! bg-[#F2F2F2]! px-4! py-2! text-center! text-sm! text-[#333333]! hover:border-[#333333]! hover:bg-white! hover:text-[#333333]! hover:underline! dark:border-[#4B4B4B]! dark:bg-[#262626]! dark:text-[#ECECEC]! dark:hover:border-[#ECECEC]! dark:hover:bg-[#333333]! dark:hover:text-white!"
               : "hover:border-brand-default min-h-9 mb-2 flex h-auto w-full grow flex-col justify-center py-2",
             !oncehubStyle && selectedSlots?.includes(slot.time) && "border-brand-default",
             `${customClassNames}`
@@ -290,17 +290,17 @@ const OnceHubSlotColumns = ({ slots, ...slotItemProps }: { slots: Slot[] } & Omi
   return (
     <div className="grid grid-cols-2 gap-4">
       <div>
-        <p className="mb-2 text-center text-sm uppercase text-[#6B7280]">{t("am")}</p>
+        <p className="mb-2 text-center text-sm uppercase text-[#6B7280] dark:text-[#A3A3A3]">{t("am")}</p>
         {amSlots.length === 0 ? (
-          <p className="text-center text-sm text-[#9CA3AF]">{t("no_am_times")}</p>
+          <p className="text-center text-sm text-[#9CA3AF] dark:text-[#6B6B6B]">{t("no_am_times")}</p>
         ) : (
           amSlots.map((slot) => <SlotItem key={slot.time} slot={slot} oncehubStyle {...slotItemProps} />)
         )}
       </div>
       <div>
-        <p className="mb-2 text-center text-sm uppercase text-[#6B7280]">{t("pm")}</p>
+        <p className="mb-2 text-center text-sm uppercase text-[#6B7280] dark:text-[#A3A3A3]">{t("pm")}</p>
         {pmSlots.length === 0 ? (
-          <p className="text-center text-sm text-[#9CA3AF]">{t("no_pm_times")}</p>
+          <p className="text-center text-sm text-[#9CA3AF] dark:text-[#6B6B6B]">{t("no_pm_times")}</p>
         ) : (
           pmSlots.map((slot) => <SlotItem key={slot.time} slot={slot} oncehubStyle {...slotItemProps} />)
         )}
