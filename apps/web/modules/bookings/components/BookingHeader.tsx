@@ -11,7 +11,10 @@ const hasDurationChoice = (event: Pick<BookerEvent, "metadata" | "isDynamic">) =
   (event.metadata?.multipleDuration?.length ?? 0) > 1 || !!event.isDynamic;
 
 type BookingHeaderProps = {
-  event?: Pick<BookerEvent, "length" | "lockTimeZoneToggleOnBookingPage" | "metadata" | "isDynamic"> | null;
+  event?: Pick<
+    BookerEvent,
+    "length" | "lockTimeZoneToggleOnBookingPage" | "metadata" | "isDynamic" | "subsetOfUsers"
+  > | null;
   onOpenTimezoneModal: () => void;
   /** Shown as a "Change selection" link top-right, next to the h1, when a timeslot is
    * already picked (i.e. the booker is on the confirmation-form step). Omit to hide it. */
@@ -71,8 +74,29 @@ export const BookingHeader = ({
     );
   }
 
+  // AIM: show the advisor's photo and name on the calendar step, like OnceHub (cal sandbox
+  // finding, Mariana #2). The OnceHub view hides the meta sidebar that normally holds the
+  // avatar, so it is rendered here. Only a real uploaded photo is shown (avatarUrl is null
+  // when the advisor has none), never a generated placeholder.
+  const host = event?.subsetOfUsers?.[0];
+  const hostAvatar = host?.avatarUrl || null;
+
   return (
     <div className="w-full text-left" data-testid="booking-header">
+      {hostAvatar && (
+        <div className="mb-4 flex items-center gap-3" data-testid="booking-header-host">
+          <img
+            src={hostAvatar}
+            alt={host?.name ?? ""}
+            className="h-16 w-16 rounded-full object-cover"
+            width={64}
+            height={64}
+          />
+          {host?.name && (
+            <span className="text-base font-semibold text-[#333333] dark:text-[#ece9df]">{host.name}</span>
+          )}
+        </div>
+      )}
       <h1 className="text-2xl font-bold text-[#333333] dark:text-[#ece9df]">{t("pick_a_date_and_time")}</h1>
       {twoDayStyle && event && hasDurationChoice(event) ? (
         // The two-day view has no EventMeta sidebar, so offer the duration choice here.
