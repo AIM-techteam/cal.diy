@@ -113,6 +113,12 @@ const BookerComponent = ({
   // lock flag isn't known until event.data resolves).
   const [isTimezoneModalOpen, setIsTimezoneModalOpen] = useState(false);
   const hasAutoOpenedTimezoneModalRef = useRef(false);
+  // AIM: zone the modal shows when it opens on its own. The stored preference (localStorage
+  // timeOption.preferredTimeZone) is shared with the advisor app on the same domain and is
+  // written on every confirm or dismiss, so one earlier choice (often Central) stuck for every
+  // later visit. The auto-open now starts from the visitor's browser zone, like OnceHub
+  // (cal sandbox finding, Mariana #17). Opening the modal by hand still shows the current zone.
+  const [autoOpenTimezone, setAutoOpenTimezone] = useState<string | null>(null);
 
   const handleTimezoneConfirm = (iana: string) => {
     // Defense in depth: the modal is already gated off for timezone-locked events (see
@@ -124,6 +130,7 @@ const BookerComponent = ({
     setTimePreferencesTimezone(iana);
     setBookerStoreContextTimezone(iana);
     updateQueryParam("cal.tz", iana);
+    setAutoOpenTimezone(null);
     setIsTimezoneModalOpen(false);
   };
 
@@ -235,7 +242,16 @@ const BookerComponent = ({
     if (searchParams?.get("cal.tz")) return;
     if (!event.data) return;
     hasAutoOpenedTimezoneModalRef.current = true;
-    if (!event.data.lockTimeZoneToggleOnBookingPage) setIsTimezoneModalOpen(true);
+    if (!event.data.lockTimeZoneToggleOnBookingPage) {
+      let browserTimezone: string | null = null;
+      try {
+        browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || null;
+      } catch {
+        browserTimezone = null;
+      }
+      setAutoOpenTimezone(browserTimezone);
+      setIsTimezoneModalOpen(true);
+    }
   }, [event.data, isOnceHubMonthView, isTwoDayView, isEmbed, searchParams]);
 
   const animationScope = useBookerResizeAnimation(layout, bookerState, isOnceHubMonthView);
@@ -421,9 +437,10 @@ const BookerComponent = ({
   const timezoneModal = isOnceHubMonthView && canChangeTimezone && (
     <TimezoneModal
       open={isTimezoneModalOpen}
-      currentTimezone={effectiveTimezone}
+      currentTimezone={autoOpenTimezone ?? effectiveTimezone}
       onConfirm={handleTimezoneConfirm}
-      onDismiss={() => handleTimezoneConfirm(effectiveTimezone)}
+      // Dismiss keeps the zone the modal was showing, so what the lead saw is what applies.
+      onDismiss={() => handleTimezoneConfirm(autoOpenTimezone ?? effectiveTimezone)}
     />
   );
   const captcha = shouldRenderCaptcha && (

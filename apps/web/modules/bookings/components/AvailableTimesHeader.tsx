@@ -48,7 +48,7 @@ export const AvailableTimesHeader = ({
           "mb-3 flex w-full flex-row items-center justify-center",
           customClassNames?.availableTimeSlotsHeaderContainer
         )}>
-        <p className="w-full text-center text-sm leading-[1.4] text-[#333333]">
+        <p className="w-full text-center text-sm leading-[1.4] text-[#333333] dark:text-[#ECECEC]">
           {before}
           <br />
           <strong>{dateLabel}</strong>
